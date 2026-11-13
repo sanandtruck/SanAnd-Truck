@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" style="background-color: #000000;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0b1120">
+    <meta name="background-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Spoke Conv">
-    <title>Convertitore Spoke App v12</title>
+    <meta name="apple-mobile-web-app-title" content="SanAnd">
+    <title>SanAnd Truck</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -17,18 +18,249 @@
         :root {
             --bg: #0b1120; --card: #1e293b; --border: #334155; --text: #f8fafc;
             --muted: #94a3b8; --blue: #3b82f6; --green: #10b981; --yellow: #fde047;
+            --cyan: #00f2fe;
         }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body {
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        input { user-select: text; -webkit-user-select: text; }
+        html, body {
             margin: 0;
-            padding: env(safe-area-inset-top, 14px) 14px env(safe-area-inset-bottom, 20px) 14px;
-            background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center;
+            background-color: var(--bg);
+            color: var(--text);
+            overscroll-behavior-y: none;
         }
-        .container { width: 100%; max-width: 1260px; }
+        body {
+            padding: env(safe-area-inset-top, 14px) 14px env(safe-area-inset-bottom, 20px) 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* ==========================================
+           SPLASH SCREEN CINEMATOGRAFICA ANIMATA
+           ========================================== */
+        #appSplash {
+            position: fixed;
+            inset: 0;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #appSplash.hide {
+            opacity: 0;
+            transform: scale(1.12);
+            pointer-events: none;
+        }
+
+        /* Scie luminose ad alta velocità sullo sfondo */
+        .speed-lines {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .speed-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00f2fe, #ffffff, transparent);
+            border-radius: 999px;
+            filter: drop-shadow(0 0 8px #00f2fe);
+            opacity: 0;
+            animation: shootLine 1.1s infinite ease-in;
+        }
+        .speed-line:nth-child(1) { top: 28%; width: 160px; animation-delay: 0.05s; }
+        .speed-line:nth-child(2) { top: 48%; width: 240px; animation-delay: 0.25s; }
+        .speed-line:nth-child(3) { top: 66%; width: 190px; animation-delay: 0.45s; }
+        .speed-line:nth-child(4) { top: 36%; width: 130px; animation-delay: 0.65s; }
+
+        @keyframes shootLine {
+            0% { left: -30%; opacity: 0; transform: scaleX(0.5); }
+            40% { opacity: 0.85; }
+            100% { left: 120%; opacity: 0; transform: scaleX(1.6); }
+        }
+
+        /* Contenitore principale del Logo Animato */
+        .splash-stage {
+            position: relative;
+            z-index: 2;
+            width: 92%;
+            max-width: 390px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Anello cyber rotante dietro l'ingranaggio */
+        .cyber-ring {
+            position: absolute;
+            width: 225px;
+            height: 225px;
+            border-radius: 50%;
+            border: 2px dashed rgba(0, 242, 254, 0.35);
+            box-shadow: 0 0 45px rgba(0, 242, 254, 0.25), inset 0 0 30px rgba(0, 242, 254, 0.2);
+            animation: spinRing 5s linear infinite, pulseRing 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulseRing {
+            0%, 100% { opacity: 0.45; transform: scale(0.94) rotate(0deg); }
+            50% { opacity: 0.95; transform: scale(1.06) rotate(180deg); }
+        }
+
+        /* Immagine del Logo con entrata dinamica + bagliore neon + spinta */
+        .logo-hero-box {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 18px;
+            animation: truckWarpIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                       neonEnginePulse 1.5s ease-in-out infinite 0.85s;
+        }
+        .logo-hero-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+            mix-blend-mode: lighten;
+            filter: contrast(1.08) saturate(1.15) drop-shadow(0 0 18px rgba(0, 242, 254, 0.55));
+        }
+
+        /* Fascio di luce elettrica che attraversa la scritta e la freccia */
+        .logo-hero-box::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(
+                105deg,
+                transparent 20%,
+                rgba(0, 242, 254, 0.18) 45%,
+                rgba(255, 255, 255, 0.55) 50%,
+                rgba(0, 242, 254, 0.18) 55%,
+                transparent 80%
+            );
+            animation: lightSweep 1.5s ease-in-out infinite 0.35s;
+            pointer-events: none;
+        }
+
+        @keyframes truckWarpIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-90px) scale(0.75) skewX(-10deg);
+                filter: blur(10px) brightness(2.2);
+            }
+            65% {
+                opacity: 1;
+                transform: translateX(8px) scale(1.03) skewX(2deg);
+                filter: blur(0px) brightness(1.3);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1) skewX(0deg);
+                filter: blur(0px) brightness(1);
+            }
+        }
+
+        @keyframes neonEnginePulse {
+            0%, 100% {
+                transform: scale(1) translateX(0);
+                filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.45));
+            }
+            50% {
+                transform: scale(1.025) translateX(3px);
+                filter: drop-shadow(0 0 28px rgba(0, 242, 254, 0.95)) brightness(1.12);
+            }
+        }
+
+        @keyframes lightSweep {
+            0% { left: -120%; }
+            100% { left: 160%; }
+        }
+
+        /* Barra di propulsione inferiore */
+        .splash-footer {
+            position: relative;
+            z-index: 2;
+            margin-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInFooter 0.6s ease forwards 0.3s;
+            opacity: 0;
+        }
+        @keyframes fadeInFooter {
+            to { opacity: 1; }
+        }
+        .splash-tag {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #67e8f9;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+            margin-bottom: 10px;
+        }
+        .splash-loader {
+            width: 170px;
+            height: 4px;
+            background: rgba(0, 242, 254, 0.14);
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+        }
+        .splash-loader::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 50%;
+            background: linear-gradient(90deg, transparent, #00f2fe, #ffffff);
+            border-radius: 999px;
+            animation: loadingSlide 0.85s infinite ease-in-out;
+        }
+        @keyframes loadingSlide {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(220%); }
+        }
+
+        /* ==========================================
+           INTERFACCIA PRINCIPALE DELL'APP
+           ========================================== */
+        .container {
+            width: 100%;
+            max-width: 1260px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+        .container.ready {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         header {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 16px 20px; border-radius: 14px; border: 2px solid var(--yellow); margin-bottom: 16px;
+            padding: 16px 20px; border-radius: 16px; border: 1.5px solid rgba(34, 211, 238, 0.55);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            margin-bottom: 16px;
         }
         header h1 { margin: 0; font-size: 18px; color: var(--yellow); }
         header p { margin: 4px 0 0 0; color: var(--muted); font-size: 12.5px; }
@@ -49,10 +281,10 @@
         .slot-card {
             background: var(--card);
             border: 2px dashed var(--slot-color, var(--border));
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 14px 10px;
             text-align: center;
-            transition: all 0.2s;
+            transition: transform 0.15s ease, background 0.2s ease, border 0.2s ease;
             cursor: pointer;
             position: relative;
             display: flex;
@@ -61,6 +293,7 @@
             justify-content: center;
             min-height: 125px;
         }
+        .slot-card:active { transform: scale(0.97); }
         .slot-card.loaded {
             border-style: solid;
             background: var(--slot-bg, rgba(255,255,255,0.06));
@@ -93,9 +326,10 @@
         }
 
         .excel-card {
-            background: var(--card); border: 2px dashed var(--border); border-radius: 14px; padding: 16px 14px; text-align: center;
-            transition: all 0.2s; cursor: pointer; position: relative; margin-bottom: 16px;
+            background: var(--card); border: 2px dashed var(--border); border-radius: 16px; padding: 16px 14px; text-align: center;
+            transition: transform 0.15s ease, all 0.2s; cursor: pointer; position: relative; margin-bottom: 16px;
         }
+        .excel-card:active { transform: scale(0.98); }
         .excel-card.loaded { border-style: solid; border-color: var(--green); background: rgba(16, 185, 129, 0.1); }
         .excel-card input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
         .excel-card h3 { margin: 0 0 4px 0; font-size: 15px; }
@@ -110,7 +344,7 @@
         .progress-fill { height: 100%; width: 0%; background: #3b82f6; transition: width 0.2s; }
 
         .controls-bar {
-            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
             padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;
         }
         .filters-group { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: end; }
@@ -120,7 +354,7 @@
 
         .toggle-field {
             display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg); border: 1px solid var(--yellow);
-            padding: 9px 10px; border-radius: 8px; cursor: pointer; height: 42px;
+            padding: 9px 10px; border-radius: 10px; cursor: pointer; height: 42px;
         }
         .toggle-field span { font-size: 13px; font-weight: 600; color: var(--yellow); }
 
@@ -128,9 +362,11 @@
         @media (min-width: 640px) { .action-bar { grid-template-columns: 1fr 1fr auto; } }
 
         button {
-            background: var(--blue); color: white; border: none; padding: 14px 16px; border-radius: 10px;
+            background: var(--blue); color: white; border: none; padding: 14px 16px; border-radius: 12px;
             font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+            transition: transform 0.12s ease, opacity 0.2s;
         }
+        button:active:not(:disabled) { transform: scale(0.97); }
         button:disabled { opacity: 0.45; cursor: not-allowed; }
         .btn-wa { background: #25D366; color: #052e16; font-weight: 800; }
         .btn-success { background: var(--yellow); color: #422006; font-weight: 800; }
@@ -138,11 +374,11 @@
 
         .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
         @media (min-width: 768px) { .stats-bar { grid-template-columns: repeat(4, 1fr); } }
-        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 14px; }
         .stat-box .num { font-size: 22px; font-weight: 700; margin-top: 2px; }
         .stat-box .lbl { font-size: 11px; color: var(--muted); }
 
-        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 580px; }
         th { background: #0f172a; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid #263349; }
@@ -151,11 +387,40 @@
 </head>
 <body>
 
-<div class="container">
+<!-- SPLASH SCREEN CON LOGO ANIMATO -->
+<div id="appSplash">
+    <div class="speed-lines">
+        <div class="speed-line"></div>
+        <div class="speed-line"></div>
+        <div class="speed-line"></div>
+        <div class="speed-line"></div>
+    </div>
+
+    <div class="splash-stage">
+        <div class="cyber-ring"></div>
+        <div class="logo-hero-box">
+            <img src="Gemini_Generated_Image_uqpz9quqpz9quqpz.png"
+                 onerror="this.onerror=null; this.src='icon-512.png';"
+                 alt="SanAnd Truck Logo">
+        </div>
+    </div>
+
+    <div class="splash-footer">
+        <div class="splash-tag">Navigazione Corriere Espresso</div>
+        <div class="splash-loader"></div>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
     <header>
         <div>
-            <div style="display:flex;align-items:center;gap:12px;"><img src="icon-192.png" alt="Logo" style="width:42px;height:42px;border-radius:10px;border:1px solid #22d3ee;object-fit:cover;"><div><h1>Convertitore Spoke App</h1>
-            <p>Terminale: <strong>TP784-02-Santiago</strong> • 5 Slot Colorati + Excel</p></div></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <img src="icon-512.png" alt="Logo" style="width:46px;height:46px;border-radius:12px;border:1.5px solid #00f2fe;object-fit:cover;box-shadow:0 0 12px rgba(0,242,254,0.35);">
+                <div>
+                    <h1>Convertitore Spoke App</h1>
+                    <p>Terminale: <strong>TP784-02-Santiago</strong> • 5 Slot Colorati + Excel</p>
+                </div>
+            </div>
         </div>
         <span class="badge">APP v12</span>
     </header>
@@ -177,7 +442,6 @@
 
     <div class="controls-bar">
         <div class="filters-group">
-            <!-- Filtri nascosti ma attivi dietro le quinte -->
             <div class="field" style="display: none;">
                 <label>Filtro Area DCR</label>
                 <input type="text" id="filterDcr" value="2DRM, 2DRM2">
@@ -230,6 +494,16 @@
 </div>
 
 <script>
+// Durata dell'animazione del logo all'avvio (1.6 secondi)
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const splash = document.getElementById('appSplash');
+        const main = document.getElementById('mainContainer');
+        if (splash) splash.classList.add('hide');
+        if (main) main.classList.add('ready');
+    }, 1600);
+});
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
@@ -450,234 +724,4 @@ function formatPhone(val) {
     let clean = s.replace(/[^\d+]/g, '');
     if (clean.startsWith("0039")) clean = "+39" + clean.slice(4);
     else if (clean.startsWith("39") && clean.length === 12) clean = "+" + clean;
-    else if (!clean.startsWith("+") && (clean.length === 9 || clean.length === 10)) clean = "+39" + clean;
-    return clean;
-}
-
-function addStopToMap(groupedMap, doMerge, unmergedIndexRef, item) {
-    const { base, extra, city, prov, zip, tel, colli, cash, badgeEmoji, badgeLabel, cliente, dest, barcode } = item;
-
-    let tag = cash > 0 ? `🔴 €${cash.toFixed(2)} ${badgeEmoji} [${badgeLabel}]` : `${badgeEmoji} [${badgeLabel}]`;
-    let parts = [tag];
-    if (cliente) parts.push(cliente);
-    if (dest) parts.push(dest);
-    if (extra) parts.push(`(${extra})`);
-    if (barcode) parts.push(`Barcode: ${barcode}`);
-
-    const detailStr = parts.join(" - ");
-
-    if (!doMerge) {
-        groupedMap.set(`ROW_${unmergedIndexRef.val++}`, {
-            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
-        });
-        return;
-    }
-
-    const keyNoZip = normalizeAddrKey(base, "");
-    const keyWithZip = normalizeAddrKey(base, zip);
-    const existingKey = groupedMap.has(keyWithZip) ? keyWithZip : (groupedMap.has(keyNoZip) ? keyNoZip : keyWithZip);
-
-    if (!groupedMap.has(existingKey)) {
-        groupedMap.set(existingKey, {
-            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
-        });
-    } else {
-        const g = groupedMap.get(existingKey);
-        if (!g.zip && zip) g.zip = zip;
-        if (tel && !g.tels.includes(tel)) g.tels.push(tel);
-        g.totColli += colli;
-        g.totCash += cash;
-        g.details.push(detailStr);
-    }
-}
-
-function processAll() {
-    finalSpokeRows = [];
-    let countSlotPackages = 0, countInpost = 0, countSpec = 0;
-
-    const dcrList = document.getElementById('filterDcr').value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-    const statusTarget = document.getElementById('filterStatus').value.trim().toUpperCase();
-    const driverFilter = document.getElementById('filterDriver').value.trim().toUpperCase();
-    const doMerge = document.getElementById('mergeSameAddress').checked;
-
-    const groupedMap = new Map();
-    const unmergedIndexRef = { val: 0 };
-
-    // 1. Elabora i 5 Slot Colorati (Screenshot)
-    SLOTS_CONFIG.forEach(slot => {
-        const customName = (document.getElementById(`slotName_${slot.id}`).value || slot.defaultName).trim().toUpperCase();
-        for (const row of slotRows[slot.id]) {
-            const indRaw = row['Ind Destinazione'] || "";
-            const { base, extra } = cleanAddress(indRaw);
-            if (!base) continue;
-
-            addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-                base,
-                extra,
-                city: String(row['Citta Destinazione'] || "Roma").trim(),
-                prov: String(row['Provincia Destinazione'] || "RM").trim(),
-                zip: "",
-                tel: formatPhone(row['Tel Destinazione']),
-                colli: parseInt(row['N Colli'] || 1, 10) || 1,
-                cash: parseFloat(row['Val Contrassegno'] || 0) || 0,
-                badgeEmoji: slot.emoji,
-                badgeLabel: customName,
-                cliente: String(row['Cliente'] || "").trim(),
-                dest: String(row['Den Destinazione'] || "").trim(),
-                barcode: ""
-            });
-            countSlotPackages++;
-        }
-    });
-
-    // 2. Elabora eventuali Excel HRP
-    for (const row of rawExcelHrpRows) {
-        const terminale = String(row['Terminale'] || row['Autista'] || "").toUpperCase();
-        if (driverFilter && terminale && !terminale.includes(driverFilter)) continue;
-
-        const indRaw = row['Ind Destinazione'] || row['Indirizzo'] || "";
-        const { base, extra } = cleanAddress(indRaw);
-        if (!base) continue;
-
-        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base,
-            extra,
-            city: String(row['Citta Destinazione'] || row['Città'] || "Roma").trim(),
-            prov: String(row['Provincia Destinazione'] || row['Provincia'] || "RM").trim(),
-            zip: formatCap(row['Cap Destinazione'] || row['CAP']),
-            tel: formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono']),
-            colli: parseInt(row['N Colli'] || row['Colli'] || 1, 10) || 1,
-            cash: parseFloat(row['Val Contrassegno'] || row['Contrassegno'] || 0) || 0,
-            badgeEmoji: "🔵",
-            badgeLabel: "HRP",
-            cliente: String(row['Cliente'] || "").trim(),
-            dest: String(row['Den Destinazione'] || row['Destinatario'] || "").trim(),
-            barcode: String(row['Codice pacco'] || row['Segnacollo'] || "").trim()
-        });
-        countSlotPackages++;
-    }
-
-    // 3. Elabora eventuali Excel InPost
-    for (const row of rawInpostRows) {
-        const indRaw = row['Destinatario - indirizzo'] || "";
-        if (!indRaw) continue;
-
-        const status = String(row['Status attuale'] || "").trim().toUpperCase();
-        const dcr = String(row['Area DCR attuale'] || "").trim().toUpperCase();
-        const corriere = String(row["Corriere - ultimo 'Assegnato per la consegna'"] || "").toUpperCase();
-
-        if (statusTarget && status !== statusTarget) continue;
-        if (dcrList.length > 0 && !dcrList.includes(dcr)) continue;
-        if (driverFilter && corriere && !corriere.includes(driverFilter)) continue;
-
-        const { base, extra } = cleanAddress(indRaw);
-
-        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base,
-            extra,
-            city: String(row['Deposito di destino'] || row['Destinatario - città'] || "ROMA").trim(),
-            prov: String(row['Destinatario - provincia'] || "RM").trim(),
-            zip: formatCap(row['Destinatario - codice']),
-            tel: formatPhone(row['Destinatario - telefono']),
-            colli: 1,
-            cash: 0,
-            badgeEmoji: "🟡",
-            badgeLabel: `INPOST ${dcr || ''}`.trim(),
-            cliente: String(row['Mittente - denominazione'] || "").trim(),
-            dest: "",
-            barcode: String(row['Codice pacco'] || "").trim()
-        });
-        countInpost++;
-    }
-
-    for (const [, g] of groupedMap.entries()) {
-        let finalNotes = "";
-        if (g.tels.length > 0) finalNotes += `📱 TEL: ${g.tels.join(" / ")} ➔ `;
-        if (g.totCash > 0) {
-            finalNotes += `🔴 TOT CONTRASSEGNO €${g.totCash.toFixed(2)} ➔ `;
-            countSpec++;
-        } else if (g.totColli >= 2) {
-            finalNotes += `🟢 MULTI: ${g.totColli} PACCHI ➔ `;
-            countSpec++;
-        }
-        finalNotes += g.details.join(" | ");
-
-        finalSpokeRows.push({
-            "Address Line 1": g.base, "City": g.city, "Province": g.prov, "Zip": g.zip, "Notes": finalNotes
-        });
-    }
-
-    document.getElementById('statTot').textContent = finalSpokeRows.length;
-    document.getElementById('statHrp').textContent = countSlotPackages;
-    document.getElementById('statInpost').textContent = countInpost;
-    document.getElementById('statSpecial').textContent = countSpec;
-    document.getElementById('btnDownload').disabled = finalSpokeRows.length === 0;
-    document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
-
-    const tbody = document.getElementById('previewBody');
-    tbody.innerHTML = finalSpokeRows.length === 0
-        ? `<tr><td colspan="6" class="empty-state">Nessuna fermata trovata. Carica gli screenshot nei 5 slot sopra.</td></tr>`
-        : finalSpokeRows.map((r, i) => `
-            <tr>
-                <td style="color:var(--muted)">${i + 1}</td>
-                <td style="font-weight:600">${r["Address Line 1"]}</td>
-                <td>${r["City"]}</td>
-                <td>${r["Province"]}</td>
-                <td><code>${r["Zip"]}</code></td>
-                <td>${r["Notes"]}</td>
-            </tr>`).join('');
-}
-
-function generateWorkbook() {
-    const ws = XLSX.utils.json_to_sheet(finalSpokeRows, { header: ["Address Line 1", "City", "Province", "Zip", "Notes"] });
-    ws['!cols'] = [{ wch: 35 }, { wch: 16 }, { wch: 8 }, { wch: 10 }, { wch: 125 }];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Giro_Spoke");
-    const today = new Date().toISOString().slice(0,10);
-    return { wb, filename: `Giro_Spoke_Santiago_${today}.xlsx` };
-}
-
-function downloadSpokeExcel() {
-    if (!finalSpokeRows.length) return;
-    const { wb, filename } = generateWorkbook();
-    XLSX.writeFile(wb, filename);
-}
-
-async function shareSpokeExcel() {
-    if (!finalSpokeRows.length) return;
-    const { wb, filename } = generateWorkbook();
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-            await navigator.share({ files: [file], title: 'Giro Spoke', text: 'Giro Spoke aggiornato!' });
-            return;
-        } catch (err) {
-            if (err.name !== 'AbortError') console.error(err);
-            return;
-        }
-    }
-    downloadSpokeExcel();
-}
-
-function resetAll() {
-    slotRows = [[], [], [], [], []];
-    rawExcelHrpRows = [];
-    rawInpostRows = [];
-    finalSpokeRows = [];
-    SLOTS_CONFIG.forEach(slot => {
-        document.getElementById(`slotInput_${slot.id}`).value = "";
-        const st = document.getElementById(`slotStatus_${slot.id}`);
-        st.style.display = 'none';
-        st.textContent = "";
-        document.getElementById(`slotCard_${slot.id}`).classList.remove('loaded');
-    });
-    document.getElementById('fileInput').value = "";
-    document.getElementById('statusFiles').style.display = 'none';
-    document.getElementById('dropArea').classList.remove('loaded');
-    processAll();
-}
-</script>
-</body>
-</html>
+    else if (!
