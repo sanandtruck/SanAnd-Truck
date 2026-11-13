@@ -1,0 +1,33 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "SanAnd Truck",
+  "orientation": "any",
+  "scope": "./",
+  "short_name": "SanAnd",
+  "start_url": "./",
+  "theme_color": "#ffffff",
+  "id": "SpokeApp",
+  "description": "Navigazione corriere espresso",
+  "categories": [
+    "cars",
+    "navigation",
+    "productivity",
+    "transportation"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
