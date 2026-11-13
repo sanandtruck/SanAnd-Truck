@@ -461,7 +461,7 @@
         </div>
 
         <div class="action-bar">
-            <button class="btn-wa" id="btnShare" onclick="shareSpokeExcel()" disabled>📲 Invia su WhatsApp</button>
+            <button class="btn-wa" id="btnShare" onclick="sendWhatsAppReport()" disabled>📲 Invia su WhatsApp</button>
             <button class="btn-success" id="btnDownload" onclick="downloadSpokeExcel()" disabled>⬇️ Scarica Excel</button>
             <button class="btn-reset" onclick="resetAll()">🔄 Svuota Tutto</button>
         </div>
@@ -914,22 +914,31 @@ function downloadSpokeExcel() {
     XLSX.writeFile(wb, filename);
 }
 
-async function shareSpokeExcel() {
-    if (!finalSpokeRows.length) return;
-    const { wb, filename } = generateWorkbook();
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-            await navigator.share({ files: [file], title: 'Giro Spoke', text: 'Giro Spoke aggiornato!' });
-            return;
-        } catch (err) {
-            if (err.name !== 'AbortError') console.error(err);
-            return;
-        }
+// Funzione avanzata WhatsApp integrata
+function sendWhatsAppReport() {
+    if (!finalSpokeRows.length) {
+        alert("Nessuna fermata da inviare.");
+        return;
     }
-    downloadSpokeExcel();
+
+    const today = new Date().toLocaleDateString('it-IT');
+    let message = `📦 *GIRO SPOKE - SANAND TRUCK* 📦\n`;
+    message += `📅 Data: ${today}\n`;
+    message += `📍 Terminale: TP784-02-Santiago\n`;
+    message += `🛑 Totale Fermate: *${finalSpokeRows.length}*\n`;
+    message += `----------------------------------\n\n`;
+
+    finalSpokeRows.forEach((r, i) => {
+        message += `*${i + 1}. ${r["Address Line 1"]}* (${r["City"]})\n`;
+        message += `📝 ${r["Notes"]}\n\n`;
+    });
+
+    message += `----------------------------------\n`;
+    message += `_Generato con SanAnd Truck App_`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
 }
 
 function resetAll() {
