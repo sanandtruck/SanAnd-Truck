@@ -63,7 +63,6 @@
             pointer-events: none;
         }
 
-        /* Scie luminose ad alta velocità sullo sfondo */
         .speed-lines {
             position: absolute;
             inset: 0;
@@ -91,7 +90,6 @@
             100% { left: 120%; opacity: 0; transform: scaleX(1.6); }
         }
 
-        /* Contenitore principale del Logo Animato */
         .splash-stage {
             position: relative;
             z-index: 2;
@@ -102,7 +100,6 @@
             justify-content: center;
         }
 
-        /* Anello cyber rotante dietro l'ingranaggio */
         .cyber-ring {
             position: absolute;
             width: 225px;
@@ -123,7 +120,6 @@
             50% { opacity: 0.95; transform: scale(1.06) rotate(180deg); }
         }
 
-        /* Immagine del Logo con entrata dinamica + bagliore neon + spinta */
         .logo-hero-box {
             position: relative;
             width: 100%;
@@ -140,7 +136,6 @@
             filter: contrast(1.08) saturate(1.15) drop-shadow(0 0 18px rgba(0, 242, 254, 0.55));
         }
 
-        /* Fascio di luce elettrica che attraversa la scritta e la freccia */
         .logo-hero-box::after {
             content: "";
             position: absolute;
@@ -194,7 +189,6 @@
             100% { left: 160%; }
         }
 
-        /* Barra di propulsione inferiore */
         .splash-footer {
             position: relative;
             z-index: 2;
@@ -359,11 +353,11 @@
         .toggle-field span { font-size: 13px; font-weight: 600; color: var(--yellow); }
 
         .action-bar { display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-        @media (min-width: 640px) { .action-bar { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 640px) { .action-bar { grid-template-columns: repeat(5, 1fr); } }
 
         button {
             background: var(--blue); color: white; border: none; padding: 14px 16px; border-radius: 12px;
-            font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+            font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
             transition: transform 0.12s ease, opacity 0.2s;
         }
         button:active:not(:disabled) { transform: scale(0.97); }
@@ -371,6 +365,7 @@
         .btn-wa { background: #25D366; color: #052e16; font-weight: 800; }
         .btn-success { background: var(--yellow); color: #422006; font-weight: 800; }
         .btn-maps { background: #ea4335; color: #ffffff; font-weight: 800; }
+        .btn-history { background: #0284c7; color: #ffffff; font-weight: 800; }
         .btn-reset { background: #475569; }
 
         .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
@@ -384,6 +379,9 @@
         th { background: #0f172a; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid #263349; }
         .empty-state { padding: 30px 15px; text-align: center; color: var(--muted); font-size: 13px; }
+        
+        /* Stile riga completata nella checklist */
+        tr.completed-row { opacity: 0.45; background: rgba(16, 185, 129, 0.05); text-decoration: line-through; }
     </style>
 </head>
 <body>
@@ -462,10 +460,11 @@
         </div>
 
         <div class="action-bar">
-            <button class="btn-maps" id="btnMaps" onclick="openGoogleMapsRoute()" disabled>🗺️ Apri in Maps</button>
-            <button class="btn-wa" id="btnShare" onclick="sendWhatsAppReport()" disabled>📲 Invia su WhatsApp</button>
-            <button class="btn-success" id="btnDownload" onclick="downloadSpokeExcel()" disabled>⬇️ Scarica Excel</button>
-            <button class="btn-reset" onclick="resetAll()">🔄 Svuota Tutto</button>
+            <button class="btn-maps" id="btnMaps" onclick="openGoogleMapsRoute()" disabled>🗺️ Maps</button>
+            <button class="btn-wa" id="btnShare" onclick="sendWhatsAppReport()" disabled>📲 WhatsApp</button>
+            <button class="btn-history" id="btnHistory" onclick="loadLastHistory()" style="display:none;">📂 Ripristina Giro</button>
+            <button class="btn-success" id="btnDownload" onclick="downloadSpokeExcel()" disabled>⬇️ Excel</button>
+            <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
         </div>
     </div>
 
@@ -480,6 +479,7 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width: 40px; text-align:center;">✓</th>
                     <th>#</th>
                     <th>Address Line 1</th>
                     <th>City</th>
@@ -489,7 +489,7 @@
                 </tr>
             </thead>
             <tbody id="previewBody">
-                <tr><td colspan="6" class="empty-state">Carica gli screenshot negli slot colorati o i file Excel qui sopra.</td></tr>
+                <tr><td colspan="7" class="empty-state">Carica gli screenshot negli slot colorati o i file Excel qui sopra.</td></tr>
             </tbody>
         </table>
     </div>
@@ -504,6 +504,9 @@ window.addEventListener('DOMContentLoaded', () => {
         if (splash) splash.classList.add('hide');
         if (main) main.classList.add('ready');
     }, 1600);
+
+    // Controlla se c'è un giro salvato in cronologia
+    checkHistoryButton();
 });
 
 if ('serviceWorker' in navigator) {
@@ -523,6 +526,7 @@ let slotRows = [[], [], [], [], []];
 let rawExcelHrpRows = [];
 let rawInpostRows = [];
 let finalSpokeRows = [];
+let completedStops = new Set(); // Per la checklist interattiva
 
 // Genera dinamicamente i 5 slot nell'interfaccia
 const slotsContainer = document.getElementById('slotsContainer');
@@ -888,18 +892,75 @@ function processAll() {
     document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
     document.getElementById('btnMaps').disabled = finalSpokeRows.length === 0;
 
+    // Salva automaticamente in cronologia locale
+    if (finalSpokeRows.length > 0) {
+        localStorage.setItem('sanand_last_route', JSON.stringify(finalSpokeRows));
+        checkHistoryButton();
+    }
+
+    renderTable();
+}
+
+// Renderizza la tabella con le caselle di spunta (Checklist)
+function renderTable() {
     const tbody = document.getElementById('previewBody');
-    tbody.innerHTML = finalSpokeRows.length === 0
-        ? `<tr><td colspan="6" class="empty-state">Nessuna fermata trovata. Carica gli screenshot negli slot sopra.</td></tr>`
-        : finalSpokeRows.map((r, i) => `
-            <tr>
+    if (finalSpokeRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Carica gli screenshot negli slot sopra o i file Excel.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = finalSpokeRows.map((r, i) => {
+        const isChecked = completedStops.has(i);
+        return `
+            <tr class="${isChecked ? 'completed-row' : ''}">
+                <td style="text-align:center;">
+                    <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${isChecked ? 'checked' : ''} onchange="toggleStop(${i})">
+                </td>
                 <td style="color:var(--muted)">${i + 1}</td>
                 <td style="font-weight:600">${r["Address Line 1"]}</td>
                 <td>${r["City"]}</td>
                 <td>${r["Province"]}</td>
                 <td><code>${r["Zip"]}</code></td>
                 <td>${r["Notes"]}</td>
-            </tr>`).join('');
+            </tr>`;
+    }).join('');
+}
+
+// Gestisce la spunta della singola fermata
+function toggleStop(index) {
+    if (completedStops.has(index)) {
+        completedStops.delete(index);
+    } else {
+        completedStops.add(index);
+    }
+    renderTable();
+}
+
+// Verifica se c'è una cronologia salvata per mostrare il tasto di ripristino
+function checkHistoryButton() {
+    const saved = localStorage.getItem('sanand_last_route');
+    const btn = document.getElementById('btnHistory');
+    if (saved && btn) {
+        btn.style.display = 'flex';
+    }
+}
+
+// Ripristina l'ultimo giro salvato
+function loadLastHistory() {
+    const saved = localStorage.getItem('sanand_last_route');
+    if (!saved) return;
+    try {
+        finalSpokeRows = JSON.parse(saved);
+        completedStops.clear();
+        document.getElementById('statTot').textContent = finalSpokeRows.length;
+        document.getElementById('btnDownload').disabled = false;
+        document.getElementById('btnShare').disabled = false;
+        document.getElementById('btnMaps').disabled = false;
+        renderTable();
+        alert("Giro precedente ripristinato con successo!");
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 function generateWorkbook() {
@@ -917,7 +978,7 @@ function downloadSpokeExcel() {
     XLSX.writeFile(wb, filename);
 }
 
-// Funzione WhatsApp avanzata
+// WhatsApp avanzato
 function sendWhatsAppReport() {
     if (!finalSpokeRows.length) return;
 
@@ -929,7 +990,8 @@ function sendWhatsAppReport() {
     message += `----------------------------------\n\n`;
 
     finalSpokeRows.forEach((r, i) => {
-        message += `*${i + 1}. ${r["Address Line 1"]}* (${r["City"]})\n`;
+        const statusCheck = completedStops.has(i) ? "✅ [CONSEGNATO]" : "";
+        message += `*${i + 1}. ${r["Address Line 1"]}* (${r["City"]}) ${statusCheck}\n`;
         message += `📝 ${r["Notes"]}\n\n`;
     });
 
@@ -941,15 +1003,11 @@ function sendWhatsAppReport() {
     window.open(whatsappUrl, '_blank');
 }
 
-// Funzione per aprire Google Maps con la sequenza degli indirizzi
+// Google Maps con sequenza
 function openGoogleMapsRoute() {
     if (!finalSpokeRows.length) return;
 
-    // Prende il primo indirizzo come partenza/destinazione e crea la rotta in sequenza
     const addresses = finalSpokeRows.map(r => encodeURIComponent(`${r["Address Line 1"]}, ${r["City"]}`));
-    
-    // Google Maps supporta un URL speciale per le direzioni con più tappe (waypoints)
-    // Usiamo il primo come origine, l'ultimo come destinazione e i restanti in mezzo
     const origin = addresses[0];
     const destination = addresses[addresses.length - 1];
     
@@ -968,6 +1026,9 @@ function resetAll() {
     rawExcelHrpRows = [];
     rawInpostRows = [];
     finalSpokeRows = [];
+    completedStops.clear();
+    localStorage.removeItem('sanand_last_route');
+    
     SLOTS_CONFIG.forEach(slot => {
         document.getElementById(`slotInput_${slot.id}`).value = "";
         const st = document.getElementById(`slotStatus_${slot.id}`);
@@ -978,6 +1039,10 @@ function resetAll() {
     document.getElementById('fileInput').value = "";
     document.getElementById('statusFiles').style.display = 'none';
     document.getElementById('dropArea').classList.remove('loaded');
+    
+    const histBtn = document.getElementById('btnHistory');
+    if (histBtn) histBtn.style.display = 'none';
+    
     processAll();
 }
 </script>
