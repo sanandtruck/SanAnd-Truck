@@ -1,13 +1,13 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#0b1120",
   "dir": "ltr",
   "display": "standalone",
   "name": "SanAnd Truck",
-  "orientation": "any",
+  "orientation": "portrait",
   "scope": "./",
   "short_name": "SanAnd",
   "start_url": "./",
-  "theme_color": "#ffffff",
+  "theme_color": "#0b1120",
   "id": "SpokeApp",
   "description": "Navigazione corriere espresso",
   "categories": [
