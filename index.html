@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Truck v16</title>
+    <title>SanAnd Truck v16.1</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -163,14 +163,13 @@
                 <p>Terminale: <strong>TP784-02-Santiago</strong></p>
             </div>
         </div>
-        <span class="badge">APP v16</span>
+        <span class="badge">APP v16.1</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
     <div class="slots-grid" id="slotsContainer"></div>
 
     <div class="excel-card" id="dropArea">
-        <!-- Supporto esteso a qualsiasi Excel, CSV e PDF -->
         <input type="file" id="fileInput" accept=".xls,.xlsx,.csv,.pdf,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" multiple>
         <h3>📁 Carica File (Excel, PDF o CSV)</h3>
         <p>Seleziona file InPost 🟡, HRP 🔵 o PDF da smartphone o PC</p>
@@ -191,4 +190,629 @@
         </label>
 
         <div class="action-bar">
-            <button class="btn-
+            <button class="btn-wa" id="btnShare" onclick="shareSpokeExcel()" disabled>📲 WhatsApp File</button>
+            <button class="btn-success" id="btnDownload" onclick="downloadSpokeExcel()" disabled>⬇️ Excel</button>
+            <button class="btn-maps" id="btnMaps" onclick="openGoogleMapsRoute()" disabled>🗺️ Maps</button>
+            <button class="btn-history" id="btnHistory" onclick="loadLastHistory()" style="display:none;">📂 Ripristina</button>
+            <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-box"><div class="lbl">FERMATE SPOKE</div><div class="num" id="statTot">0</div></div>
+        <div class="stat-box"><div class="lbl">📸 PACCHI SLOT/HRP</div><div class="num" id="statHrp" style="color:#60a5fa">0</div></div>
+        <div class="stat-box"><div class="lbl">🟡 PACCHI INPOST</div><div class="num" id="statInpost" style="color:#facc15">0</div></div>
+        <div class="stat-box"><div class="lbl">🟢 MULTI / 🔴 CASH</div><div class="num" id="statSpecial" style="color:#10b981">0</div></div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align:center;">✓</th>
+                    <th>#</th>
+                    <th>Address Line 1</th>
+                    <th>City</th>
+                    <th>Prv</th>
+                    <th>Zip</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="previewBody">
+                <tr><td colspan="7" class="empty-state">Carica i file o gli screenshot qui sopra.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const splash = document.getElementById('appSplash');
+        const main = document.getElementById('mainContainer');
+        if (splash) splash.classList.add('hide');
+        if (main) main.classList.add('ready');
+    }, 800);
+    checkHistoryButton();
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+const SLOTS_CONFIG = [
+    { id: 0, emoji: "🔵", defaultName: "HRP", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.14)" },
+    { id: 1, emoji: "🟡", defaultName: "INPOST", color: "#facc15", bg: "rgba(250, 204, 21, 0.14)" },
+    { id: 2, emoji: "🟣", defaultName: "ZONA 3", color: "#c084fc", bg: "rgba(192, 132, 252, 0.14)" },
+    { id: 3, emoji: "🟠", defaultName: "ZONA 4", color: "#fb923c", bg: "rgba(251, 146, 60, 0.14)" },
+    { id: 4, emoji: "🩵", defaultName: "ZONA 5", color: "#22d3ee", bg: "rgba(34, 211, 238, 0.14)" }
+];
+
+let slotRows = [[], [], [], [], []];
+let rawExcelHrpRows = [];
+let rawInpostRows = [];
+let finalSpokeRows = [];
+let completedStops = new Set();
+
+const slotsContainer = document.getElementById('slotsContainer');
+SLOTS_CONFIG.forEach(slot => {
+    const savedName = localStorage.getItem(`spoke_slot_name_${slot.id}`) || slot.defaultName;
+    const card = document.createElement('div');
+    card.className = 'slot-card';
+    card.id = `slotCard_${slot.id}`;
+    card.style.setProperty('--slot-color', slot.color);
+    card.style.setProperty('--slot-bg', slot.bg);
+    card.innerHTML = `
+        <input type="file" id="slotInput_${slot.id}" accept="image/*" multiple>
+        <div class="slot-dot">${slot.emoji}</div>
+        <input type="text" class="slot-label-input" id="slotName_${slot.id}" value="${savedName}" placeholder="Nome Slot">
+        <div class="slot-sub">Tocca per caricare</div>
+        <div class="slot-status" id="slotStatus_${slot.id}"></div>
+    `;
+    slotsContainer.appendChild(card);
+
+    document.getElementById(`slotInput_${slot.id}`).addEventListener('change', (e) => handleSlotImages(slot.id, e.target.files));
+    document.getElementById(`slotName_${slot.id}`).addEventListener('input', (e) => {
+        localStorage.setItem(`spoke_slot_name_${slot.id}`, e.target.value);
+        processAll();
+    });
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => handleFiles(e.target.files));
+document.getElementById('mergeSameAddress').addEventListener('change', () => processAll());
+
+function preprocessImageForOCR(file) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scale = img.width < 1200 ? 1.5 : 1;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(file);
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+async function handleSlotImages(slotId, fileList) {
+    if (!fileList || fileList.length === 0) return;
+    const slotCfg = SLOTS_CONFIG[slotId];
+    const progBox = document.getElementById('ocrProgressBox');
+    const progText = document.getElementById('ocrStatusText');
+    const progFill = document.getElementById('ocrProgressFill');
+    const debugBox = document.getElementById('debugBox');
+    debugBox.style.display = 'none';
+    progBox.style.display = 'block';
+    progBox.style.borderColor = slotCfg.color;
+    progText.style.color = slotCfg.color;
+
+    let totalFoundInBatch = 0;
+    let lastRawText = "";
+
+    for (let idx = 0; idx < fileList.length; idx++) {
+        const file = fileList[idx];
+        progText.textContent = `${slotCfg.emoji} Analisi immagine ${idx + 1} di ${fileList.length}...`;
+        progFill.style.backgroundColor = slotCfg.color;
+        progFill.style.width = '10%';
+
+        try {
+            const processedSrc = await preprocessImageForOCR(file);
+            const result = await Tesseract.recognize(processedSrc, 'ita', {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        progFill.style.width = Math.round(m.progress * 100) + '%';
+                    }
+                }
+            });
+            lastRawText = result.data.text || "";
+            const parsedRows = parseSmartText(lastRawText);
+            slotRows[slotId] = slotRows[slotId].concat(parsedRows);
+            totalFoundInBatch += parsedRows.length;
+        } catch (err) {
+            console.error("Errore OCR:", err);
+        }
+    }
+
+    progBox.style.display = 'none';
+    const st = document.getElementById(`slotStatus_${slotId}`);
+    st.style.display = 'block';
+    st.textContent = `✓ ${slotRows[slotId].length} pacchi`;
+    document.getElementById(`slotCard_${slotId}`).classList.add('loaded');
+    processAll();
+}
+
+function parseSmartText(rawText) {
+    const results = [];
+    if (/Destinatario\s*:/i.test(rawText)) {
+        const blocks = rawText.split(/Destinatario\s*:/i).slice(1);
+        for (const block of blocks) {
+            const destMatch = block.match(/^([\s\S]*?)(?=Mittente\s*:|$)/i);
+            const mittMatch = block.match(/Mittente\s*:([\s\S]*?)(?=N\.\s*Colli|Colli\s*:|$)/i);
+            const colliMatch = block.match(/Colli\s*:\s*(\d+)/i);
+            const cashMatch = block.match(/Contrassegno\s*:\s*([\d.,]+)/i);
+
+            if (!destMatch) continue;
+            let destSection = destMatch[1].replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+
+            let tel = "";
+            const telMatch = destSection.match(/(?:Tel|Cell)\s*:\s*([+\d\s]{8,16})/i);
+            if (telMatch) {
+                tel = telMatch[1].replace(/\s+/g, '');
+                destSection = destSection.split(/Tel\s*:|Cell\s*:/i)[0].trim();
+            }
+
+            const streetKeywords = /\b(Via|Viale|Piazza|Piazzale|Largo|Vicolo|Corso|Lungotevere|Circonvallazione|Strada|Traversa)\b/i;
+            const streetMatch = destSection.match(streetKeywords);
+
+            let destName = "", fullAddr = "", city = "Roma", prov = "RM";
+            if (streetMatch) {
+                destName = destSection.slice(0, streetMatch.index).trim();
+                fullAddr = destSection.slice(streetMatch.index).trim();
+            } else {
+                fullAddr = destSection;
+            }
+
+            const cityProvMatch = fullAddr.match(/([A-Za-zÀ-ÿ\s']+?)\s*\(([A-Z]{2})\)\s*$/);
+            if (cityProvMatch) {
+                city = cityProvMatch[1].trim();
+                prov = cityProvMatch[2].trim();
+                fullAddr = fullAddr.slice(0, cityProvMatch.index).trim();
+            }
+
+            let cliente = "";
+            if (mittMatch) {
+                const mText = mittMatch[1].replace(/\n+/g, ' ').trim();
+                const mStreet = mText.match(streetKeywords);
+                cliente = mStreet ? mText.slice(0, mStreet.index).trim() : mText.split(' ')[0];
+            }
+
+            const colli = colliMatch ? parseInt(colliMatch[1], 10) : 1;
+            const cash = cashMatch ? parseFloat(cashMatch[1].replace(',', '.')) : 0;
+
+            if (fullAddr) {
+                results.push({
+                    'Ind Destinazione': fullAddr, 'Citta Destinazione': city, 'Provincia Destinazione': prov,
+                    'Den Destinazione': destName, 'Cliente': cliente, 'Tel Destinazione': tel,
+                    'N Colli': colli, 'Val Contrassegno': cash
+                });
+            }
+        }
+        if (results.length > 0) return results;
+    }
+
+    const lines = rawText.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    const streetLineRegex = /\b(Via|Viale|Piazza|Piazzale|Largo|Vicolo|Corso|Lungotevere|Circonvallazione|Strada|Traversa)\s+[A-Za-zÀ-ÿ0-9\s\.',\-]+\d+/i;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/Mittente|Francolino|Carpiano|Via del Commercio/i.test(line)) continue;
+
+        const match = line.match(streetLineRegex);
+        if (match) {
+            let addrCandidate = line.slice(match.index).trim();
+            let zip = "", city = "Roma";
+            const capMatch = addrCandidate.match(/\b(\d{5})\b/);
+            if (capMatch) {
+                zip = capMatch[1];
+                addrCandidate = addrCandidate.slice(0, capMatch.index).trim();
+            }
+            addrCandidate = addrCandidate.replace(/\s*\([A-Z]{2}\)\s*$/, '').replace(/\bRoma\b\s*$/i, '').trim();
+
+            const contextBlock = [lines[i - 1] || "", line, lines[i + 1] || ""].join(" ");
+            const phoneMatch = contextBlock.match(/(\+39\s*\d{9,10}|\b3\d{2}[\s\-]?\d{6,7}\b)/);
+            const tel = phoneMatch ? phoneMatch[1].replace(/\s+/g, '') : "";
+
+            let destName = "";
+            if (i > 0 && !streetLineRegex.test(lines[i - 1]) && lines[i - 1].length > 2 && lines[i - 1].length < 40) {
+                destName = lines[i - 1].replace(/^Destinatario\s*:/i, '').trim();
+            }
+
+            if (addrCandidate.length >= 5) {
+                results.push({
+                    'Ind Destinazione': addrCandidate, 'Citta Destinazione': city, 'Provincia Destinazione': 'RM',
+                    'Cap Destinazione': zip, 'Den Destinazione': destName, 'Cliente': '',
+                    'Tel Destinazione': tel, 'N Colli': 1, 'Val Contrassegno': 0
+                });
+            }
+        }
+    }
+    return results;
+}
+
+async function handleFiles(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    let hrpNames = [], inpostNames = [], pdfNames = [];
+    const progBox = document.getElementById('ocrProgressBox');
+    const progText = document.getElementById('ocrStatusText');
+    progBox.style.display = 'block';
+
+    await Promise.all(Array.from(fileList).map(async (file) => {
+        const fileName = file.name.toLowerCase();
+        
+        if (fileName.endsWith('.pdf') || file.type === 'application/pdf') {
+            progText.textContent = `Estrazione testo da PDF: ${file.name}...`;
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullPdfText = "";
+                for (let p = 1; p <= pdf.numPages; p++) {
+                    const page = await pdf.getPage(p);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullPdfText += pageText + "\n";
+                }
+                const parsedFromPdf = parseSmartText(fullPdfText);
+                rawExcelHrpRows = rawExcelHrpRows.concat(parsedFromPdf);
+                pdfNames.push(file.name);
+            } catch (err) {
+                console.error("Errore lettura PDF:", err);
+            }
+        } else {
+            progText.textContent = `Lettura file Excel/CSV: ${file.name}...`;
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(new Uint8Array(buffer), {type: 'array', dense: true});
+            for (const sheetName of workbook.SheetNames) {
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: "", raw: false});
+                if (json.length > 0) {
+                    const sampleKeys = Object.keys(json[0]).join(" ").toLowerCase();
+                    if (sampleKeys.includes('area dcr') || sampleKeys.includes('destinatario - indirizzo') || sampleKeys.includes('status attuale')) {
+                        rawInpostRows = rawInpostRows.concat(json);
+                        if (!inpostNames.includes(file.name)) inpostNames.push(file.name);
+                    } else {
+                        rawExcelHrpRows = rawExcelHrpRows.concat(json);
+                        if (!hrpNames.includes(file.name)) hrpNames.push(file.name);
+                    }
+                }
+            }
+        }
+    }));
+
+    progBox.style.display = 'none';
+    const st = document.getElementById('statusFiles');
+    st.style.display = 'block';
+    let html = "";
+    if (hrpNames.length) html += `<div>🔵 <b>HRP:</b> ${hrpNames.join(', ')} (${rawExcelHrpRows.length} righe)</div>`;
+    if (inpostNames.length) html += `<div>🟡 <b>InPost:</b> ${inpostNames.join(', ')} (${rawInpostRows.length} righe)</div>`;
+    if (pdfNames.length) html += `<div>📄 <b>PDF:</b> ${pdfNames.join(', ')}</div>`;
+    st.innerHTML = html || "File caricati correttamente.";
+    document.getElementById('dropArea').classList.add('loaded');
+    processAll();
+}
+
+const simpleRegex = /^[a-zA-ZÀ-ÿ\s\.',]+?(?:,\s*|\s+)\d+(?:\/[a-zA-Z0-9]{1,2}|[a-zA-Z])?(?:\s+bis)?$/i;
+const splitRegex = /^([a-zA-ZÀ-ÿ\s\.',]+?(?:,\s*|\s+)\d+(?:\/[a-zA-Z0-9]{1,2}(?=\s)|[a-zA-Z](?=\s))?(?:\s+bis(?=\s))?)(?:\s*[\/,\-]\s*|\s+)(.+)$/i;
+
+function cleanAddress(raw) {
+    if (!raw) return { base: "", extra: "" };
+    let addr = String(raw).trim().replace(/\s*\.\s*$/, '').replace(/\s*,\s*(\d+)/g, ', $1').replace(/,?\s+-\s+(\d+)/g, ' $1');
+    if (simpleRegex.test(addr)) return { base: addr, extra: "" };
+    const match = addr.match(splitRegex);
+    if (match) {
+        let base = match[1].trim(), extra = match[2].trim();
+        if (extra.toLowerCase() === base.toLowerCase()) extra = "";
+        return { base, extra };
+    }
+    return { base: addr, extra: "" };
+}
+
+function normalizeAddrKey(baseAddr, zip) {
+    const cleanBase = String(baseAddr || "").toLowerCase().trim().replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim();
+    return zip ? `${cleanBase}|${zip}` : cleanBase;
+}
+
+function formatCap(val) {
+    if (!val) return "";
+    let num = parseInt(parseFloat(String(val).trim()), 10);
+    return !isNaN(num) ? String(num).padStart(5, '0') : String(val).trim();
+}
+
+function formatPhone(val) {
+    if (!val) return "";
+    let s = String(val).trim();
+    if (s === "-" || s === "0000000000" || s === "") return "";
+    let clean = s.replace(/[^\d+]/g, '');
+    if (clean.startsWith("0039")) clean = "+39" + clean.slice(4);
+    else if (clean.startsWith("39") && clean.length === 12) clean = "+" + clean;
+    else if (!clean.startsWith("+") && (clean.length === 9 || clean.length === 10)) clean = "+39" + clean;
+    return clean;
+}
+
+function addStopToMap(groupedMap, doMerge, unmergedIndexRef, item) {
+    const { base, extra, city, prov, zip, tel, colli, cash, badgeEmoji, badgeLabel, cliente, dest, barcode } = item;
+
+    let tag = cash > 0 ? `🔴 €${cash.toFixed(2)} ${badgeEmoji} [${badgeLabel}]` : `${badgeEmoji} [${badgeLabel}]`;
+    let parts = [tag];
+    if (cliente) parts.push(cliente);
+    if (dest) parts.push(dest);
+    if (extra) parts.push(`(${extra})`);
+    if (barcode) parts.push(`Barcode: ${barcode}`);
+
+    const detailStr = parts.join(" - ");
+
+    if (!doMerge) {
+        groupedMap.set(`ROW_${unmergedIndexRef.val++}`, {
+            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
+        });
+        return;
+    }
+
+    const keyNoZip = normalizeAddrKey(base, "");
+    const keyWithZip = normalizeAddrKey(base, zip);
+    const existingKey = groupedMap.has(keyWithZip) ? keyWithZip : (groupedMap.has(keyNoZip) ? keyNoZip : keyWithZip);
+
+    if (!groupedMap.has(existingKey)) {
+        groupedMap.set(existingKey, {
+            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
+        });
+    } else {
+        const g = groupedMap.get(existingKey);
+        if (!g.zip && zip) g.zip = zip;
+        if (tel && !g.tels.includes(tel)) g.tels.push(tel);
+        g.totColli += colli;
+        g.totCash += cash;
+        g.details.push(detailStr);
+    }
+}
+
+function processAll() {
+    finalSpokeRows = [];
+    let countSlotPackages = 0, countInpost = 0, countSpec = 0;
+    const doMerge = document.getElementById('mergeSameAddress').checked;
+
+    const groupedMap = new Map();
+    const unmergedIndexRef = { val: 0 };
+
+    SLOTS_CONFIG.forEach(slot => {
+        const customName = (document.getElementById(`slotName_${slot.id}`).value || slot.defaultName).trim().toUpperCase();
+        for (const row of slotRows[slot.id]) {
+            const indRaw = row['Ind Destinazione'] || "";
+            const { base, extra } = cleanAddress(indRaw);
+            if (!base) continue;
+
+            addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
+                base, extra,
+                city: String(row['Citta Destinazione'] || "Roma").trim(),
+                prov: String(row['Provincia Destinazione'] || "RM").trim(),
+                zip: formatCap(row['Cap Destinazione'] || ""),
+                tel: formatPhone(row['Tel Destinazione']),
+                colli: parseInt(row['N Colli'] || 1, 10) || 1,
+                cash: parseFloat(row['Val Contrassegno'] || 0) || 0,
+                badgeEmoji: slot.emoji,
+                badgeLabel: customName,
+                cliente: String(row['Cliente'] || "").trim(),
+                dest: String(row['Den Destinazione'] || "").trim(),
+                barcode: ""
+            });
+            countSlotPackages++;
+        }
+    });
+
+    for (const row of rawExcelHrpRows) {
+        const indRaw = row['Ind Destinazione'] || row['Indirizzo'] || row['Indirizzo Destinatario'] || "";
+        const { base, extra } = cleanAddress(indRaw);
+        if (!base) continue;
+
+        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
+            base, extra,
+            city: String(row['Citta Destinazione'] || row['Città'] || row['Citta Destinatario'] || "Roma").trim(),
+            prov: String(row['Provincia Destinazione'] || row['Provincia'] || "RM").trim(),
+            zip: formatCap(row['Cap Destinazione'] || row['CAP'] || row['Cap Destinatario']),
+            tel: formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono']),
+            colli: parseInt(row['N Colli'] || row['Colli'] || 1, 10) || 1,
+            cash: parseFloat(row['Val Contrassegno'] || row['Contrassegno'] || 0) || 0,
+            badgeEmoji: "🔵",
+            badgeLabel: "HRP",
+            cliente: String(row['Cliente'] || "").trim(),
+            dest: String(row['Den Destinazione'] || row['Destinatario'] || "").trim(),
+            barcode: String(row['Codice pacco'] || row['Segnacollo'] || row['Barcode'] || "").trim()
+        });
+        countSlotPackages++;
+    }
+
+    for (const row of rawInpostRows) {
+        const indRaw = row['Destinatario - indirizzo'] || "";
+        if (!indRaw) continue;
+
+        const { base, extra } = cleanAddress(indRaw);
+        const dcr = String(row['Area DCR attuale'] || "").trim().toUpperCase();
+
+        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
+            base, extra,
+            city: String(row['Deposito di destino'] || row['Destinatario - città'] || "ROMA").trim(),
+            prov: String(row['Destinatario - provincia'] || "RM").trim(),
+            zip: formatCap(row['Destinatario - codice']),
+            tel: formatPhone(row['Destinatario - telefono']),
+            colli: 1,
+            cash: 0,
+            badgeEmoji: "🟡",
+            badgeLabel: `INPOST ${dcr || ''}`.trim(),
+            cliente: String(row['Mittente - denominazione'] || "").trim(),
+            dest: "",
+            barcode: String(row['Codice pacco'] || "").trim()
+        });
+        countInpost++;
+    }
+
+    for (const [, g] of groupedMap.entries()) {
+        let finalNotes = "";
+        if (g.tels.length > 0) finalNotes += `📱 TEL: ${g.tels.join(" / ")} ➔ `;
+        if (g.totCash > 0) {
+            finalNotes += `🔴 TOT CONTRASSEGNO €${g.totCash.toFixed(2)} ➔ `;
+            countSpec++;
+        } else if (g.totColli >= 2) {
+            finalNotes += `🟢 MULTI: ${g.totColli} PACCHI ➔ `;
+            countSpec++;
+        }
+        finalNotes += g.details.join(" | ");
+
+        finalSpokeRows.push({
+            "Address Line 1": g.base, "City": g.city, "Province": g.prov, "Zip": g.zip, "Notes": finalNotes
+        });
+    }
+
+    document.getElementById('statTot').textContent = finalSpokeRows.length;
+    document.getElementById('statHrp').textContent = countSlotPackages;
+    document.getElementById('statInpost').textContent = countInpost;
+    document.getElementById('statSpecial').textContent = countSpec;
+    document.getElementById('btnDownload').disabled = finalSpokeRows.length === 0;
+    document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
+    document.getElementById('btnMaps').disabled = finalSpokeRows.length === 0;
+
+    if (finalSpokeRows.length > 0) {
+        localStorage.setItem('sanand_last_route', JSON.stringify(finalSpokeRows));
+        checkHistoryButton();
+    }
+
+    renderTable();
+}
+
+function renderTable() {
+    const tbody = document.getElementById('previewBody');
+    if (finalSpokeRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nessuna fermata trovata. Carica i file o gli screenshot qui sopra.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = finalSpokeRows.map((r, i) => {
+        const isChecked = completedStops.has(i);
+        return `
+            <tr class="${isChecked ? 'completed-row' : ''}">
+                <td style="text-align:center;">
+                    <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${isChecked ? 'checked' : ''} onchange="toggleStop(${i})">
+                </td>
+                <td style="color:var(--muted)">${i + 1}</td>
+                <td style="font-weight:600">${r["Address Line 1"]}</td>
+                <td>${r["City"]}</td>
+                <td>${r["Province"]}</td>
+                <td><code>${r["Zip"]}</code></td>
+                <td>${r["Notes"]}</td>
+            </tr>`;
+    }).join('');
+}
+
+function toggleStop(index) {
+    if (completedStops.has(index)) completedStops.delete(index);
+    else completedStops.add(index);
+    renderTable();
+}
+
+function checkHistoryButton() {
+    const saved = localStorage.getItem('sanand_last_route');
+    const btn = document.getElementById('btnHistory');
+    if (saved && btn) btn.style.display = 'flex';
+}
+
+function loadLastHistory() {
+    const saved = localStorage.getItem('sanand_last_route');
+    if (!saved) return;
+    try {
+        finalSpokeRows = JSON.parse(saved);
+        completedStops.clear();
+        document.getElementById('statTot').textContent = finalSpokeRows.length;
+        document.getElementById('btnDownload').disabled = false;
+        document.getElementById('btnShare').disabled = false;
+        document.getElementById('btnMaps').disabled = false;
+        renderTable();
+    } catch (e) { console.error(e); }
+}
+
+function generateWorkbook() {
+    const ws = XLSX.utils.json_to_sheet(finalSpokeRows, { header: ["Address Line 1", "City", "Province", "Zip", "Notes"] });
+    ws['!cols'] = [{ wch: 35 }, { wch: 16 }, { wch: 8 }, { wch: 10 }, { wch: 125 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Giro_Spoke");
+    const today = new Date().toISOString().slice(0,10);
+    return { wb, filename: `Giro_Spoke_Santiago_${today}.xlsx` };
+}
+
+function downloadSpokeExcel() {
+    if (!finalSpokeRows.length) return;
+    const { wb, filename } = generateWorkbook();
+    XLSX.writeFile(wb, filename);
+}
+
+async function shareSpokeExcel() {
+    if (!finalSpokeRows.length) return;
+    const { wb, filename } = generateWorkbook();
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'Giro Spoke SanAnd',
+                text: `Giro Spoke aggiornato (${finalSpokeRows.length} fermate)`
+            });
+            return;
+        } catch (err) {
+            if (err.name !== 'AbortError') console.error(err);
+            return;
+        }
+    }
+    downloadSpokeExcel();
+}
+
+function openGoogleMapsRoute() {
+    if (!finalSpokeRows.length) return;
+    const addresses = finalSpokeRows.slice(0, 10).map(r => encodeURIComponent(`${r["Address Line 1"]}, ${r["City"]}`));
+    const origin = addresses[0];
+    const destination = addresses[addresses.length - 1];
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+    if (addresses.length > 2) {
+        mapsUrl += `&waypoints=${addresses.slice(1, addresses.length - 1).join('|')}`;
+    }
+    window.open(mapsUrl, '_blank');
+}
+
+function resetAll() {
+    slotRows = [[], [], [], [], []];
+    rawExcelHrpRows = [];
+    rawInpostRows = [];
+    finalSpokeRows = [];
+    completedStops.clear();
+    localStorage.removeItem('sanand_last_route');
+
+    SLOTS_CONFIG.forEach(slot => {
+        document.getElementById(`slotInput_${slot.id}`).value = "";
+        const st = document.getElementById(`slotStatus_${slot.id}`);
+        st.style.display = 'none';
+        st.textContent = "";
+        document.getElementById(`slotCard_${slot.id}`).classList.remove('loaded');
+    });
+    document.getElementById('fileInput').value = "";
+    document.getElementById('statusFiles').style.display = 'none';
+    document.getElementById('debugBox').style.display = 'none';
+    document.getElementById('dropArea').classList.remove('loaded');
+
+    const histBtn = document.getElementById('btnHistory');
+    if (histBtn) histBtn.style.display = 'none';
+    processAll();
+}
+</script>
+</body>
+</html>
