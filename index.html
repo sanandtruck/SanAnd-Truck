@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Truck v16.3</title>
+    <title>SanAnd Truck v16.4</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -22,7 +22,7 @@
         :root {
             --bg: #0b1120; --card: #1e293b; --border: #334155; --text: #f8fafc;
             --muted: #94a3b8; --blue: #3b82f6; --green: #10b981; --yellow: #fde047;
-            --cyan: #00f2fe; --maps: #ea4335;
+            --cyan: #00f2fe; --maps: #ea4335; --hrp: #00d2ff;
         }
         * {
             box-sizing: border-box;
@@ -128,6 +128,7 @@
         .btn-maps { background: #ea4335; color: #ffffff; font-weight: 800; }
         .btn-history { background: #0284c7; color: #ffffff; font-weight: 800; }
         .btn-reset { background: #475569; }
+        .btn-cam { background: #00d2ff; color: #000000; font-weight: 800; padding: 6px 10px; font-size: 11px; border-radius: 8px; margin-top: 4px; }
 
         .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
         @media (min-width: 768px) { .stats-bar { grid-template-columns: repeat(4, 1fr); } }
@@ -138,7 +139,7 @@
         .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 580px; }
         th { background: #0f172a; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--border); }
-        td { padding: 10px 12px; border-bottom: 1px solid #263349; }
+        td { padding: 10px 12px; border-bottom: 1px solid #263349; vertical-align: middle; }
         .empty-state { padding: 30px 15px; text-align: center; color: var(--muted); font-size: 13px; }
         tr.completed-row { opacity: 0.45; background: rgba(16, 185, 129, 0.05); text-decoration: line-through; }
     </style>
@@ -163,7 +164,7 @@
                 <p>Terminale: <strong>TP784-02-Santiago</strong></p>
             </div>
         </div>
-        <span class="badge">APP v16.3</span>
+        <span class="badge">APP v16.4</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
@@ -180,8 +181,6 @@
         <div id="ocrStatusText" style="font-size:13px; font-weight:600; color:#60a5fa;">Elaborazione in corso...</div>
         <div class="progress-bar"><div class="progress-fill" id="ocrProgressFill"></div></div>
     </div>
-
-    <div class="debug-box" id="debugBox"></div>
 
     <div class="controls-bar">
         <label class="toggle-field">
@@ -215,7 +214,7 @@
                     <th>City</th>
                     <th>Prv</th>
                     <th>Zip</th>
-                    <th>Notes</th>
+                    <th>Notes / HRP Cam</th>
                 </tr>
             </thead>
             <tbody id="previewBody">
@@ -304,14 +303,9 @@ async function handleSlotImages(slotId, fileList) {
     const progBox = document.getElementById('ocrProgressBox');
     const progText = document.getElementById('ocrStatusText');
     const progFill = document.getElementById('ocrProgressFill');
-    const debugBox = document.getElementById('debugBox');
-    debugBox.style.display = 'none';
     progBox.style.display = 'block';
     progBox.style.borderColor = slotCfg.color;
     progText.style.color = slotCfg.color;
-
-    let totalFoundInBatch = 0;
-    let lastRawText = "";
 
     for (let idx = 0; idx < fileList.length; idx++) {
         const file = fileList[idx];
@@ -328,10 +322,8 @@ async function handleSlotImages(slotId, fileList) {
                     }
                 }
             });
-            lastRawText = result.data.text || "";
-            const parsedRows = parseSmartText(lastRawText);
+            const parsedRows = parseSmartText(result.data.text || "");
             slotRows[slotId] = slotRows[slotId].concat(parsedRows);
-            totalFoundInBatch += parsedRows.length;
         } catch (err) {
             console.error("Errore OCR:", err);
         }
@@ -413,223 +405,4 @@ function parseSmartText(rawText) {
 
         const match = line.match(streetLineRegex);
         if (match) {
-            let addrCandidate = line.slice(match.index).trim();
-            let zip = "", city = "Roma";
-            const capMatch = addrCandidate.match(/\b(\d{5})\b/);
-            if (capMatch) {
-                zip = capMatch[1];
-                addrCandidate = addrCandidate.slice(0, capMatch.index).trim();
-            }
-            addrCandidate = addrCandidate.replace(/\s*\([A-Z]{2}\)\s*$/, '').replace(/\bRoma\b\s*$/i, '').trim();
-
-            const contextBlock = [lines[i - 1] || "", line, lines[i + 1] || ""].join(" ");
-            const phoneMatch = contextBlock.match(/(\+39\s*\d{9,10}|\b3\d{2}[\s\-]?\d{6,7}\b)/);
-            const tel = phoneMatch ? phoneMatch[1].replace(/\s+/g, '') : "";
-
-            let destName = "";
-            if (i > 0 && !streetLineRegex.test(lines[i - 1]) && lines[i - 1].length > 2 && lines[i - 1].length < 40) {
-                destName = lines[i - 1].replace(/^Destinatario\s*:/i, '').trim();
-            }
-
-            if (addrCandidate.length >= 5) {
-                results.push({
-                    'Ind Destinazione': addrCandidate, 'Citta Destinazione': city, 'Provincia Destinazione': 'RM',
-                    'Cap Destinazione': zip, 'Den Destinazione': destName, 'Cliente': '',
-                    'Tel Destinazione': tel, 'N Colli': 1, 'Val Contrassegno': 0
-                });
-            }
-        }
-    }
-    return results;
-}
-
-async function handleFiles(fileList) {
-    if (!fileList || fileList.length === 0) return;
-    let fileNamesList = [];
-    const progBox = document.getElementById('ocrProgressBox');
-    const progText = document.getElementById('ocrStatusText');
-    progBox.style.display = 'block';
-
-    rawExcelHrpRows = [];
-    rawInpostRows = [];
-
-    await Promise.all(Array.from(fileList).map(async (file) => {
-        const fileName = file.name.toLowerCase();
-        
-        if (fileName.endsWith('.pdf') || file.type === 'application/pdf') {
-            progText.textContent = `Estrazione testo da PDF: ${file.name}...`;
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let fullPdfText = "";
-                for (let p = 1; p <= pdf.numPages; p++) {
-                    const page = await pdf.getPage(p);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    fullPdfText += pageText + "\n";
-                }
-                const parsedFromPdf = parseSmartText(fullPdfText);
-                rawExcelHrpRows = rawExcelHrpRows.concat(parsedFromPdf);
-                fileNamesList.push(file.name);
-            } catch (err) {
-                console.error("Errore lettura PDF:", err);
-            }
-        } else {
-            progText.textContent = `Lettura file: ${file.name}...`;
-            const buffer = await file.arrayBuffer();
-            const workbook = XLSX.read(new Uint8Array(buffer), {type: 'array', dense: true});
-            for (const sheetName of workbook.SheetNames) {
-                const sheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(sheet, {defval: "", raw: false});
-                if (json.length > 0) {
-                    json.forEach(row => {
-                        let rowStr = Object.values(row).join(" ").toLowerCase();
-                        if (rowStr.includes('area dcr') || rowStr.includes('destinatario - indirizzo') || rowStr.includes('status attuale')) {
-                            rawInpostRows.push(row);
-                        } else {
-                            rawExcelHrpRows.push(row);
-                        }
-                    });
-                    fileNamesList.push(file.name);
-                }
-            }
-        }
-    }));
-
-    progBox.style.display = 'none';
-    const st = document.getElementById('statusFiles');
-    st.style.display = 'block';
-    st.innerHTML = `<div>📁 <b>File caricati:</b> ${fileNamesList.join(', ')} (${rawExcelHrpRows.length + rawInpostRows.length} righe totali)</div>`;
-    document.getElementById('dropArea').classList.add('loaded');
-    processAll();
-}
-
-const simpleRegex = /^[a-zA-ZÀ-ÿ\s\.',]+?(?:,\s*|\s+)\d+(?:\/[a-zA-Z0-9]{1,2}|[a-zA-Z])?(?:\s+bis)?$/i;
-const splitRegex = /^([a-zA-ZÀ-ÿ\s\.',]+?(?:,\s*|\s+)\d+(?:\/[a-zA-Z0-9]{1,2}(?=\s)|[a-zA-Z](?=\s))?(?:\s+bis(?=\s))?)(?:\s*[\/,\-]\s*|\s+)(.+)$/i;
-
-function cleanAddress(raw) {
-    if (!raw) return { base: "", extra: "" };
-    let addr = String(raw).trim().replace(/\s*\.\s*$/, '').replace(/\s*,\s*(\d+)/g, ', $1').replace(/,?\s+-\s+(\d+)/g, ' $1');
-    if (simpleRegex.test(addr)) return { base: addr, extra: "" };
-    const match = addr.match(splitRegex);
-    if (match) {
-        let base = match[1].trim(), extra = match[2].trim();
-        if (extra.toLowerCase() === base.toLowerCase()) extra = "";
-        return { base, extra };
-    }
-    return { base: addr, extra: "" };
-}
-
-function normalizeAddrKey(baseAddr, zip) {
-    const cleanBase = String(baseAddr || "").toLowerCase().trim().replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim();
-    return zip ? `${cleanBase}|${zip}` : cleanBase;
-}
-
-function formatCap(val) {
-    if (!val) return "";
-    let num = parseInt(parseFloat(String(val).trim()), 10);
-    return !isNaN(num) ? String(num).padStart(5, '0') : String(val).trim();
-}
-
-function formatPhone(val) {
-    if (!val) return "";
-    let s = String(val).trim();
-    if (s === "-" || s === "0000000000" || s === "") return "";
-    let clean = s.replace(/[^\d+]/g, '');
-    if (clean.startsWith("0039")) clean = "+39" + clean.slice(4);
-    else if (clean.startsWith("39") && clean.length === 12) clean = "+" + clean;
-    else if (!clean.startsWith("+") && (clean.length === 9 || clean.length === 10)) clean = "+39" + clean;
-    return clean;
-}
-
-function addStopToMap(groupedMap, doMerge, unmergedIndexRef, item) {
-    const { base, extra, city, prov, zip, tel, colli, cash, badgeEmoji, badgeLabel, cliente, dest, barcode } = item;
-
-    let tag = cash > 0 ? `🔴 €${cash.toFixed(2)} ${badgeEmoji} [${badgeLabel}]` : `${badgeEmoji} [${badgeLabel}]`;
-    let parts = [tag];
-    if (cliente) parts.push(cliente);
-    if (dest) parts.push(dest);
-    if (extra) parts.push(`(${extra})`);
-    if (barcode) parts.push(`Barcode: ${barcode}`);
-
-    const detailStr = parts.join(" - ");
-
-    if (!doMerge) {
-        groupedMap.set(`ROW_${unmergedIndexRef.val++}`, {
-            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
-        });
-        return;
-    }
-
-    const keyNoZip = normalizeAddrKey(base, "");
-    const keyWithZip = normalizeAddrKey(base, zip);
-    const existingKey = groupedMap.has(keyWithZip) ? keyWithZip : (groupedMap.has(keyNoZip) ? keyNoZip : keyWithZip);
-
-    if (!groupedMap.has(existingKey)) {
-        groupedMap.set(existingKey, {
-            base, city, prov, zip, tels: tel ? [tel] : [], totColli: colli, totCash: cash, details: [detailStr]
-        });
-    } else {
-        const g = groupedMap.get(existingKey);
-        if (!g.zip && zip) g.zip = zip;
-        if (tel && !g.tels.includes(tel)) g.tels.push(tel);
-        g.totColli += colli;
-        g.totCash += cash;
-        g.details.push(detailStr);
-    }
-}
-
-function processAll() {
-    finalSpokeRows = [];
-    let countSlotPackages = 0, countInpost = 0, countSpec = 0;
-    const doMerge = document.getElementById('mergeSameAddress').checked;
-
-    const groupedMap = new Map();
-    const unmergedIndexRef = { val: 0 };
-
-    // 1. Slot colorati (Screenshot OCR)
-    SLOTS_CONFIG.forEach(slot => {
-        const customName = (document.getElementById(`slotName_${slot.id}`).value || slot.defaultName).trim().toUpperCase();
-        for (const row of slotRows[slot.id]) {
-            const indRaw = row['Ind Destinazione'] || "";
-            const { base, extra } = cleanAddress(indRaw);
-            if (!base) continue;
-
-            addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-                base, extra,
-                city: String(row['Citta Destinazione'] || "Roma").trim(),
-                prov: String(row['Provincia Destinazione'] || "RM").trim(),
-                zip: formatCap(row['Cap Destinazione'] || ""),
-                tel: formatPhone(row['Tel Destinazione']),
-                colli: parseInt(row['N Colli'] || 1, 10) || 1,
-                cash: parseFloat(row['Val Contrassegno'] || 0) || 0,
-                badgeEmoji: slot.emoji,
-                badgeLabel: customName,
-                cliente: String(row['Cliente'] || "").trim(),
-                dest: String(row['Den Destinazione'] || "").trim(),
-                barcode: ""
-            });
-            countSlotPackages++;
-        }
-    });
-
-    // 2. File Excel/CSV/PDF HRP
-    for (const row of rawExcelHrpRows) {
-        let indRaw = "";
-        for (let k in row) {
-            if (/indirizzo|via|destinazione|address|ind/i.test(k) && row[k]) {
-                indRaw = row[k];
-                break;
-            }
-        }
-        if (!indRaw) indRaw = row['Ind Destinazione'] || row['Indirizzo'] || row['Indirizzo Destinatario'] || Object.values(row)[1] || "";
-        
-        const { base, extra } = cleanAddress(indRaw);
-        if (!base) continue;
-
-        const city = row['Citta Destinazione'] || row['Città'] || row['Citta Destinatario'] || row['city'] || "Roma";
-        const prov = row['Provincia Destinazione'] || row['Provincia'] || row['Prv'] || row['province'] || "RM";
-        const zip = formatCap(row['Cap Destinazione'] || row['CAP'] || row['Cap Destinatario'] || row['zip']);
-        const tel = formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono'] || row['Cellulare'] || row['phone']);
-        const cliente = row['Cliente'] || row['Mittente'] || row['client'] || "";
-        const dest = row['Den Destin
+            let addrCandidate = line
