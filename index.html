@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="it" style="background-color: #000000;">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0b1120">
-    <meta name="background-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Truck v17.0</title>
+    <title>SanAnd Truck v17.1</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -38,20 +37,7 @@
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        /* SPLASH SCREEN */
-        #appSplash {
-            position: fixed; inset: 0; background-color: #000000; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden; transition: opacity 0.45s ease, transform 0.45s ease;
-        }
-        #appSplash.hide { opacity: 0; transform: scale(1.1); pointer-events: none; }
-        .splash-stage { position: relative; z-index: 2; width: 85%; max-width: 340px; display: flex; align-items: center; justify-content: center; }
-        .logo-hero-box img { width: 100%; height: auto; display: block; border-radius: 18px; }
-        .splash-tag { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #67e8f9; margin-top: 18px; }
-
-        /* INTERFACCIA PRINCIPALE */
-        .container { width: 100%; max-width: 1260px; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
-        .container.ready { opacity: 1; transform: translateY(0); }
+        .container { width: 100%; max-width: 1260px; }
 
         header {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
@@ -146,15 +132,6 @@
 </head>
 <body>
 
-<div id="appSplash">
-    <div class="splash-stage">
-        <div class="logo-hero-box">
-            <img src="icon-512.png" alt="SanAnd Truck Logo">
-        </div>
-    </div>
-    <div class="splash-tag">SanAnd Truck • Avvio...</div>
-</div>
-
 <div class="container" id="mainContainer">
     <header>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -164,7 +141,7 @@
                 <p>Terminale: <strong>TP784-02-Santiago</strong></p>
             </div>
         </div>
-        <span class="badge">APP v17.0</span>
+        <span class="badge">APP v17.1</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
@@ -227,20 +204,6 @@
 </div>
 
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const splash = document.getElementById('appSplash');
-        const main = document.getElementById('mainContainer');
-        if (splash) splash.classList.add('hide');
-        if (main) main.classList.add('ready');
-    }, 800);
-    checkHistoryButton();
-});
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
-
 const SLOTS_CONFIG = [
     { id: 0, emoji: "🔵", defaultName: "HRP", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.14)" },
     { id: 1, emoji: "🟡", defaultName: "INPOST", color: "#facc15", bg: "rgba(250, 204, 21, 0.14)" },
@@ -628,4 +591,225 @@ function processAll() {
         const dest = row['Den Destinazione'] || row['Destinatario'] || row['recipient'] || "";
         const colli = parseInt(row['N Colli'] || row['Colli'] || 1, 10) || 1;
         const cash = parseFloat(row['Val Contrassegno'] || row['Contrassegno'] || 0) || 0;
-        const barcode =
+        const barcode = row['Codice pacco'] || row['Segnacollo'] || row['Barcode'] || row['Codice Collo'] || "";
+
+        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
+            base, extra,
+            city: String(city).trim(),
+            prov: String(prov).trim(),
+            zip: zip,
+            tel: tel,
+            colli: colli,
+            cash: cash,
+            badgeEmoji: "🔵",
+            badgeLabel: "HRP",
+            cliente: String(cliente).trim(),
+            dest: String(dest).trim(),
+            barcode: String(barcode).trim()
+        });
+        countSlotPackages++;
+    }
+
+    for (const row of rawInpostRows) {
+        const indRaw = row['Destinatario - indirizzo'] || row['Indirizzo'] || Object.values(row)[0] || "";
+        if (!indRaw) continue;
+
+        const { base, extra } = cleanAddress(indRaw);
+        const dcr = String(row['Area DCR attuale'] || "").trim().toUpperCase();
+
+        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
+            base, extra,
+            city: String(row['Deposito di destino'] || row['Destinatario - città'] || "ROMA").trim(),
+            prov: String(row['Destinatario - provincia'] || "RM").trim(),
+            zip: formatCap(row['Destinatario - codice']),
+            tel: formatPhone(row['Destinatario - telefono']),
+            colli: 1,
+            cash: 0,
+            badgeEmoji: "🟡",
+            badgeLabel: `INPOST ${dcr || ''}`.trim(),
+            cliente: String(row['Mittente - denominazione'] || "").trim(),
+            dest: "",
+            barcode: String(row['Codice pacco'] || "").trim()
+        });
+        countInpost++;
+    }
+
+    for (const [, g] of groupedMap.entries()) {
+        let finalNotes = "";
+        if (g.tels.length > 0) finalNotes += `📱 TEL: ${g.tels.join(" / ")} ➔ `;
+        if (g.totCash > 0) {
+            finalNotes += `🔴 TOT CONTRASSEGNO €${g.totCash.toFixed(2)} ➔ `;
+            countSpec++;
+        } else if (g.totColli >= 2) {
+            finalNotes += `🟢 MULTI: ${g.totColli} PACCHI ➔ `;
+            countSpec++;
+        }
+        finalNotes += g.details.join(" | ");
+
+        finalSpokeRows.push({
+            "Address Line 1": g.base, "City": g.city, "Province": g.prov, "Zip": g.zip, "Notes": finalNotes, "Barcode": g.barcode || ""
+        });
+    }
+
+    document.getElementById('statTot').textContent = finalSpokeRows.length;
+    document.getElementById('statHrp').textContent = countSlotPackages;
+    document.getElementById('statInpost').textContent = countInpost;
+    document.getElementById('statSpecial').textContent = countSpec;
+    document.getElementById('btnDownload').disabled = finalSpokeRows.length === 0;
+    document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
+    document.getElementById('btnSpoke').disabled = finalSpokeRows.length === 0;
+
+    if (finalSpokeRows.length > 0) {
+        localStorage.setItem('sanand_last_route', JSON.stringify(finalSpokeRows));
+        checkHistoryButton();
+    }
+
+    renderTable();
+}
+
+function renderTable() {
+    const tbody = document.getElementById('previewBody');
+    if (finalSpokeRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nessuna fermata trovata. Carica i file o gli screenshot qui sopra.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = finalSpokeRows.map((r, i) => {
+        const isChecked = completedStops.has(i);
+        const barcodeText = r["Barcode"] || "";
+        return `
+            <tr class="${isChecked ? 'completed-row' : ''}">
+                <td style="text-align:center;">
+                    <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${isChecked ? 'checked' : ''} onchange="toggleStop(${i})">
+                </td>
+                <td style="color:var(--muted)">${i + 1}</td>
+                <td style="font-weight:600">${r["Address Line 1"]}</td>
+                <td>${r["City"]}</td>
+                <td>${r["Province"]}</td>
+                <td><code>${r["Zip"]}</code></td>
+                <td>
+                    ${r["Notes"]}
+                    ${barcodeText ? `<br><button class="btn-cam" onclick="copyBarcode('${barcodeText}')">📷 Copia Barcode</button>` : ''}
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function copyBarcode(code) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+            alert(`Barcode copiato negli appunti: ${code}\nOra puoi incollarlo nell'app HRP/InPost!`);
+        }).catch(() => {
+            prompt("Copia manualmente il barcode:", code);
+        });
+    } else {
+        prompt("Copia manualmente il barcode:", code);
+    }
+}
+
+function toggleStop(index) {
+    if (completedStops.has(index)) completedStops.delete(index);
+    else completedStops.add(index);
+    renderTable();
+}
+
+function checkHistoryButton() {
+    const saved = localStorage.getItem('sanand_last_route');
+    const btn = document.getElementById('btnHistory');
+    if (saved && btn) btn.style.display = 'flex';
+}
+
+function loadLastHistory() {
+    const saved = localStorage.getItem('sanand_last_route');
+    if (!saved) return;
+    try {
+        finalSpokeRows = JSON.parse(saved);
+        completedStops.clear();
+        document.getElementById('statTot').textContent = finalSpokeRows.length;
+        document.getElementById('btnDownload').disabled = false;
+        document.getElementById('btnShare').disabled = false;
+        document.getElementById('btnSpoke').disabled = false;
+        renderTable();
+    } catch (e) { console.error(e); }
+}
+
+function generateWorkbook() {
+    const exportData = finalSpokeRows.map(r => ({
+        "Address Line 1": r["Address Line 1"],
+        "City": r["City"],
+        "Province": r["Province"],
+        "Zip": r["Zip"],
+        "Notes": r["Notes"]
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportData, { header: ["Address Line 1", "City", "Province", "Zip", "Notes"] });
+    ws['!cols'] = [{ wch: 35 }, { wch: 16 }, { wch: 8 }, { wch: 10 }, { wch: 125 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Giro_Spoke");
+    const today = new Date().toISOString().slice(0,10);
+    return { wb, filename: `Giro_Spoke_Santiago_${today}.xlsx` };
+}
+
+function downloadSpokeExcel() {
+    if (!finalSpokeRows.length) return;
+    const { wb, filename } = generateWorkbook();
+    XLSX.writeFile(wb, filename);
+}
+
+async function shareSpokeExcel() {
+    if (!finalSpokeRows.length) return;
+    const { wb, filename } = generateWorkbook();
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'Giro Spoke SanAnd',
+                text: `Giro Spoke aggiornato (${finalSpokeRows.length} fermate)`
+            });
+            return;
+        } catch (err) {
+            if (err.name !== 'AbortError') console.error(err);
+            return;
+        }
+    }
+    downloadSpokeExcel();
+}
+
+function openSpokeApp() {
+    downloadSpokeExcel();
+    const spokeScheme = "circuit://";
+    window.location.href = spokeScheme;
+    setTimeout(() => {
+        alert("Il file Excel è stato scaricato.\n\nSe l'app Spoke (Circuit) non si è aperta automaticamente, aprila manualmente e seleziona il file appena scaricato per importare il giro!");
+    }, 1000);
+}
+
+function resetAll() {
+    slotRows = [[], [], [], [], []];
+    rawExcelHrpRows = [];
+    rawInpostRows = [];
+    finalSpokeRows = [];
+    completedStops.clear();
+    localStorage.removeItem('sanand_last_route');
+
+    SLOTS_CONFIG.forEach(slot => {
+        document.getElementById(`slotInput_${slot.id}`).value = "";
+        const st = document.getElementById(`slotStatus_${slot.id}`);
+        st.style.display = 'none';
+        st.textContent = "";
+        document.getElementById(`slotCard_${slot.id}`).classList.remove('loaded');
+    });
+    document.getElementById('fileInput').value = "";
+    document.getElementById('statusFiles').style.display = 'none';
+    document.getElementById('debugBox').style.display = 'none';
+    document.getElementById('dropArea').classList.remove('loaded');
+
+    const histBtn = document.getElementById('btnHistory');
+    if (histBtn) histBtn.style.display = 'none';
+    processAll();
+}
+</script>
+</body>
+</html>
