@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Truck v19.1 Pro GPS</title>
+    <title>SanAnd Navigation Pro v19.3</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -85,9 +85,24 @@
         .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 999px; overflow: hidden; margin-top: 8px; }
         .progress-fill { height: 100%; width: 0%; background: #3b82f6; transition: width 0.2s; }
 
+        /* Contenitore Mappa con supporto Fullscreen */
         #mapContainer {
-            width: 100%; height: 360px; background: var(--card); border: 1.5px solid var(--cyan);
-            border-radius: 16px; margin-bottom: 14px; display: none; z-index: 1;
+            width: 100%; height: 380px; background: var(--card); border: 1.5px solid var(--cyan);
+            border-radius: 16px; margin-bottom: 14px; display: none; z-index: 10; position: relative;
+            transition: all 0.3s ease;
+        }
+        #mapContainer.fullscreen {
+            position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 99999; border-radius: 0; border: none;
+        }
+        .map-fullscreen-btn {
+            position: absolute; top: 12px; right: 12px; z-index: 1000; background: #0f172a; color: #f8fafc;
+            border: 1px solid var(--cyan); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+
+        /* Stile personalizzato per i numeri sui pin della mappa */
+        .numbered-pin {
+            background: #3b82f6; color: white; border: 2px solid #ffffff; border-radius: 50%;
+            text-align: center; font-weight: 800; font-size: 12px; line-height: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
 
         .controls-bar {
@@ -136,11 +151,11 @@
         <div style="display:flex;align-items:center;gap:12px;">
             <img src="icon-512.png" alt="Logo" style="width:44px;height:44px;border-radius:12px;border:1.5px solid #00f2fe;object-fit:cover;">
             <div>
-                <h1>SanAnd Navigation Pro v19.1</h1>
+                <h1>SanAnd Navigation Pro v19.3</h1>
                 <p>Terminale: <strong>TP784-02-Santiago</strong></p>
             </div>
         </div>
-        <span class="badge">GPS Reale</span>
+        <span class="badge">BetterMile Style</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
@@ -149,15 +164,17 @@
     <div class="excel-card" id="dropArea">
         <input type="file" id="fileInput" accept=".xls,.xlsx,.csv,.pdf,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" multiple>
         <h3>📁 Carica File (InPost, HRP o PDF)</h3>
-        <p>Geolocalizzazione GPS e Mappa Interattiva</p>
+        <p>Ottimizzazione Percorso Numerato & Mappa Fullscreen</p>
         <div class="file-status" id="statusFiles"></div>
     </div>
 
-    <!-- Mappa Interattiva con Posizione GPS Reale -->
-    <div id="mapContainer"></div>
+    <!-- Mappa Interattiva con Numeri Fermata e Fullscreen -->
+    <div id="mapContainer">
+        <button class="map-fullscreen-btn" onclick="toggleFullscreenMap()">⛶ Ingrandisci Mappa</button>
+    </div>
 
     <div class="progress-box" id="ocrProgressBox">
-        <div id="ocrStatusText" style="font-size:13px; font-weight:600; color:#60a5fa;">Elaborazione in corso...</div>
+        <div id="ocrStatusText" style="font-size:13px; font-weight:600; color:#60a5fa;">Geocodifica e ordinamento in corso...</div>
         <div class="progress-bar"><div class="progress-fill" id="ocrProgressFill"></div></div>
     </div>
 
@@ -170,7 +187,7 @@
         <div class="action-bar">
             <button class="btn-wa" id="btnShare" onclick="shareRoute()" disabled>📲 WhatsApp</button>
             <button class="btn-success" id="btnDownload" onclick="downloadExcelRoute()" disabled>⬇️ Excel</button>
-            <button class="btn-proprio" id="btnNav" onclick="startGpsNavigation()" disabled>🗺️ Avvia GPS</button>
+            <button class="btn-proprio" id="btnNav" onclick="centerMapOnUser()" disabled>📍 Centra GPS</button>
             <button class="btn-history" id="btnHistory" onclick="loadLastHistory()" style="display:none;">📂 Ripristina</button>
             <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
         </div>
@@ -197,7 +214,7 @@
                 </tr>
             </thead>
             <tbody id="previewBody">
-                <tr><td colspan="7" class="empty-state">Carica i file o gli screenshot per attivare il GPS e la mappa.</td></tr>
+                <tr><td colspan="7" class="empty-state">Carica i file o gli screenshot per generare i numeri e la mappa.</td></tr>
             </tbody>
         </table>
     </div>
@@ -248,8 +265,7 @@ SLOTS_CONFIG.forEach(slot => {
 document.getElementById('fileInput').addEventListener('change', (e) => handleFiles(e.target.files));
 document.getElementById('mergeSameAddress').addEventListener('change', () => processAll());
 
-// Attiva GPS Reale del telefono
-function initGpsAndMap(lat = 41.9028, lng = 12.4964) {
+function initMap(lat = 41.9028, lng = 12.4964) {
     const mapEl = document.getElementById('mapContainer');
     mapEl.style.display = 'block';
 
@@ -263,47 +279,88 @@ function initGpsAndMap(lat = 41.9028, lng = 12.4964) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                userGpsPosition = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                mapInstance.setView([userGpsPosition.lat, userGpsPosition.lng], 14);
-                
-                // Segnaposto posizione attuale (Tu sei qui)
+                userGpsPosition = { lat: position.coords.latitude, lng: position.coords.longitude };
                 L.circleMarker([userGpsPosition.lat, userGpsPosition.lng], {
-                    radius: 8, color: '#3b82f6', fillColor: '#60a5fa', fillOpacity: 1
-                }).addTo(mapInstance).bindPopup("<b>📍 La tua posizione GPS attuale</b>");
-                
-                updateMapMarkers();
+                    radius: 9, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 1
+                }).addTo(mapInstance).bindPopup("<b>📍 La tua posizione GPS</b>");
             },
-            (err) => {
-                console.warn("GPS non disponibile o permessi negati:", err);
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
+            () => {}, { enableHighAccuracy: true }
         );
     }
 }
 
-async function updateMapMarkers() {
-    if (!mapInstance) return;
+// Ingrandisci / Riduci Mappa a tutto schermo
+function toggleFullscreenMap() {
+    const mapEl = document.getElementById('mapContainer');
+    const btn = document.querySelector('.map-fullscreen-btn');
+    mapEl.classList.toggle('fullscreen');
+    if (mapEl.classList.contains('fullscreen')) {
+        btn.textContent = "✕ Chiudi Mappa";
+    } else {
+        btn.textContent = "⛶ Ingrandisci Mappa";
+    }
+    if (mapInstance) mapInstance.invalidateSize();
+}
+
+// Geocodifica e posizionamento con Numeri Fermata (Stile BetterMile)
+async function geocodeAndPlotRoute() {
+    if (!mapInstance) initMap();
     mapMarkers.forEach(m => mapInstance.removeLayer(m));
     mapMarkers = [];
 
-    if (finalRouteRows.length === 0) return;
+    const progBox = document.getElementById('ocrProgressBox');
+    const progText = document.getElementById('ocrStatusText');
+    const progFill = document.getElementById('ocrProgressFill');
+    progBox.style.display = 'block';
 
-    // Punto di partenza per la geocodifica intelligente basata sul GPS reale o Roma
-    let baseLat = userGpsPosition ? userGpsPosition.lat : 41.9028;
-    let baseLng = userGpsPosition ? userGpsPosition.lng : 12.4964;
+    let validCoords = [];
 
     for (let idx = 0; idx < finalRouteRows.length; idx++) {
         const r = finalRouteRows[idx];
-        // Distribuzione realistica basata sulla posizione reale per evitare la diagonale fittizia
-        let latOffset = baseLat + ((idx * 0.0012) * Math.cos(idx));
-        let lngOffset = baseLng + ((idx * 0.0012) * Math.sin(idx));
+        progText.textContent = `Ottimizzazione fermata ${idx + 1} di ${finalRouteRows.length}...`;
+        progFill.style.width = Math.round(((idx + 1) / finalRouteRows.length) * 100) + '%';
 
-        const marker = L.marker([latOffset, lngOffset]).addTo(mapInstance)
-            .bindPopup(`<b>#${idx + 1} ${r["Address Line 1"]}</b><br>Città: ${r["City"]}<br><small>${r["Notes"]}</small>`);
-        mapMarkers.push(marker);
+        let query = `${r["Address Line 1"]}, ${r["City"]}, Italy`;
+        try {
+            let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+            let data = await response.json();
+            
+            if (data && data.length > 0) {
+                let lat = parseFloat(data[0].lat);
+                let lon = parseFloat(data[0].lon);
+                validCoords.push([lat, lon]);
+
+                // Icona numerata personalizzata per ogni fermata
+                let numberedIcon = L.divIcon({
+                    className: 'custom-pin',
+                    html: `<div class="numbered-pin">${idx + 1}</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+
+                let marker = L.marker([lat, lon], { icon: numberedIcon }).addTo(mapInstance)
+                    .bindPopup(`<b>Fermata #${idx + 1}</b><br>${r["Address Line 1"]}<br><small>${r["Notes"]}</small><br><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" style="color:#3b82f6;font-weight:bold;display:inline-block;margin-top:6px;">🚀 Avvia Navigazione Google Maps</a>`);
+                mapMarkers.push(marker);
+            }
+        } catch (err) {
+            console.error("Errore geocodifica:", err);
+        }
+        await new Promise(r => setTimeout(r, 300));
+    }
+
+    progBox.style.display = 'none';
+
+    if (validCoords.length > 0) {
+        let bounds = L.latLngBounds(validCoords);
+        mapInstance.fitBounds(bounds, { padding: [50, 50] });
+    }
+}
+
+function centerMapOnUser() {
+    if (userGpsPosition && mapInstance) {
+        mapInstance.setView([userGpsPosition.lat, userGpsPosition.lng], 15);
+    } else {
+        alert("Posizione GPS non ancora rilevata.");
     }
 }
 
@@ -312,23 +369,15 @@ async function handleSlotImages(slotId, fileList) {
     const slotCfg = SLOTS_CONFIG[slotId];
     const progBox = document.getElementById('ocrProgressBox');
     const progText = document.getElementById('ocrStatusText');
-    const progFill = document.getElementById('ocrProgressFill');
     progBox.style.display = 'block';
-    progBox.style.borderColor = slotCfg.color;
-    progText.style.color = slotCfg.color;
 
     for (let idx = 0; idx < fileList.length; idx++) {
-        const file = fileList[idx];
-        progText.textContent = `${slotCfg.emoji} Analisi screenshot ${idx + 1} di ${fileList.length}...`;
-        progFill.style.width = Math.round(((idx + 1) / fileList.length) * 100) + '%';
-
+        progText.textContent = `${slotCfg.emoji} OCR Screenshot ${idx + 1} di ${fileList.length}...`;
         try {
-            const result = await Tesseract.recognize(file, 'ita');
+            const result = await Tesseract.recognize(fileList[idx], 'ita');
             const parsed = parseSmartText(result.data.text || "");
             slotRows[slotId] = slotRows[slotId].concat(parsed);
-        } catch (err) {
-            console.error("Errore OCR:", err);
-        }
+        } catch (err) { console.error(err); }
     }
     progBox.style.display = 'none';
     document.getElementById(`slotStatus_${slotId}`).style.display = 'block';
@@ -367,7 +416,7 @@ async function handleFiles(fileList) {
     const progBox = document.getElementById('ocrProgressBox');
     const progText = document.getElementById('ocrStatusText');
     progBox.style.display = 'block';
-    progText.textContent = "Elaborazione file in corso...";
+    progText.textContent = "Lettura file...";
 
     rawExcelHrpRows = [];
     rawInpostRows = [];
@@ -465,7 +514,7 @@ function processAll() {
     if (finalRouteRows.length > 0) {
         localStorage.setItem('sanand_pro_route', JSON.stringify(finalRouteRows));
         document.getElementById('btnHistory').style.display = 'flex';
-        initGpsAndMap();
+        geocodeAndPlotRoute();
     }
     renderTable();
 }
@@ -479,7 +528,7 @@ function renderTable() {
     tbody.innerHTML = finalRouteRows.map((r, i) => `
         <tr>
             <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;" onchange="toggleStop(${i})"></td>
-            <td style="color:var(--muted)">${i + 1}</td>
+            <td style="color:var(--muted); font-weight:bold;">#${i + 1}</td>
             <td style="font-weight:600">${r["Address Line 1"]}</td>
             <td>${r["City"]}</td>
             <td>${r["Province"]}</td>
@@ -498,13 +547,6 @@ function copyBarcode(code) {
 
 function toggleStop(idx) {
     completedStops.has(idx) ? completedStops.delete(idx) : completedStops.add(idx);
-}
-
-function startGpsNavigation() {
-    if (finalRouteRows.length === 0) return;
-    initGpsAndMap();
-    alert("GPS attivato! La mappa ora è centrata sulla tua posizione reale e sulle fermate del tuo giro.");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function downloadExcelRoute() {
