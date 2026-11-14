@@ -42,9 +42,7 @@
             min-height: 100vh;
         }
 
-        /* ==========================================
-           SPLASH SCREEN CINEMATOGRAFICA ANIMATA
-           ========================================== */
+        /* SPLASH SCREEN */
         #appSplash {
             position: fixed;
             inset: 0;
@@ -63,20 +61,11 @@
             pointer-events: none;
         }
 
-        .speed-lines {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 1;
-        }
+        .speed-lines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
         .speed-line {
-            position: absolute;
-            height: 2px;
+            position: absolute; height: 2px;
             background: linear-gradient(90deg, transparent, #00f2fe, #ffffff, transparent);
-            border-radius: 999px;
-            filter: drop-shadow(0 0 8px #00f2fe);
-            opacity: 0;
+            border-radius: 999px; filter: drop-shadow(0 0 8px #00f2fe); opacity: 0;
             animation: shootLine 1.1s infinite ease-in;
         }
         .speed-line:nth-child(1) { top: 28%; width: 160px; animation-delay: 0.05s; }
@@ -91,170 +80,78 @@
         }
 
         .splash-stage {
-            position: relative;
-            z-index: 2;
-            width: 92%;
-            max-width: 390px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; z-index: 2; width: 92%; max-width: 390px;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .cyber-ring {
-            position: absolute;
-            width: 225px;
-            height: 225px;
-            border-radius: 50%;
+            position: absolute; width: 225px; height: 225px; border-radius: 50%;
             border: 2px dashed rgba(0, 242, 254, 0.35);
             box-shadow: 0 0 45px rgba(0, 242, 254, 0.25), inset 0 0 30px rgba(0, 242, 254, 0.2);
             animation: spinRing 5s linear infinite, pulseRing 1.6s ease-in-out infinite;
             pointer-events: none;
         }
-
-        @keyframes spinRing {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes pulseRing {
             0%, 100% { opacity: 0.45; transform: scale(0.94) rotate(0deg); }
             50% { opacity: 0.95; transform: scale(1.06) rotate(180deg); }
         }
 
         .logo-hero-box {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-            border-radius: 18px;
-            animation: truckWarpIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-                       neonEnginePulse 1.5s ease-in-out infinite 0.85s;
+            position: relative; width: 100%; overflow: hidden; border-radius: 18px;
+            animation: truckWarpIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards, neonEnginePulse 1.5s ease-in-out infinite 0.85s;
         }
         .logo-hero-box img {
-            width: 100%;
-            height: auto;
-            display: block;
-            mix-blend-mode: lighten;
+            width: 100%; height: auto; display: block; mix-blend-mode: lighten;
             filter: contrast(1.08) saturate(1.15) drop-shadow(0 0 18px rgba(0, 242, 254, 0.55));
         }
-
         .logo-hero-box::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -120%;
-            width: 75%;
-            height: 100%;
-            background: linear-gradient(
-                105deg,
-                transparent 20%,
-                rgba(0, 242, 254, 0.18) 45%,
-                rgba(255, 255, 255, 0.55) 50%,
-                rgba(0, 242, 254, 0.18) 55%,
-                transparent 80%
-            );
-            animation: lightSweep 1.5s ease-in-out infinite 0.35s;
-            pointer-events: none;
+            content: ""; position: absolute; top: 0; left: -120%; width: 75%; height: 100%;
+            background: linear-gradient(105deg, transparent 20%, rgba(0, 242, 254, 0.18) 45%, rgba(255, 255, 255, 0.55) 50%, rgba(0, 242, 254, 0.18) 55%, transparent 80%);
+            animation: lightSweep 1.5s ease-in-out infinite 0.35s; pointer-events: none;
         }
-
         @keyframes truckWarpIn {
-            0% {
-                opacity: 0;
-                transform: translateX(-90px) scale(0.75) skewX(-10deg);
-                filter: blur(10px) brightness(2.2);
-            }
-            65% {
-                opacity: 1;
-                transform: translateX(8px) scale(1.03) skewX(2deg);
-                filter: blur(0px) brightness(1.3);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0) scale(1) skewX(0deg);
-                filter: blur(0px) brightness(1);
-            }
+            0% { opacity: 0; transform: translateX(-90px) scale(0.75) skewX(-10deg); filter: blur(10px) brightness(2.2); }
+            65% { opacity: 1; transform: translateX(8px) scale(1.03) skewX(2deg); filter: blur(0px) brightness(1.3); }
+            100% { opacity: 1; transform: translateX(0) scale(1) skewX(0deg); filter: blur(0px) brightness(1); }
         }
-
         @keyframes neonEnginePulse {
-            0%, 100% {
-                transform: scale(1) translateX(0);
-                filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.45));
-            }
-            50% {
-                transform: scale(1.025) translateX(3px);
-                filter: drop-shadow(0 0 28px rgba(0, 242, 254, 0.95)) brightness(1.12);
-            }
+            0%, 100% { transform: scale(1) translateX(0); filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.45)); }
+            50% { transform: scale(1.025) translateX(3px); filter: drop-shadow(0 0 28px rgba(0, 242, 254, 0.95)) brightness(1.12); }
         }
-
-        @keyframes lightSweep {
-            0% { left: -120%; }
-            100% { left: 160%; }
-        }
+        @keyframes lightSweep { 0% { left: -120%; } 100% { left: 160%; } }
 
         .splash-footer {
-            position: relative;
-            z-index: 2;
-            margin-top: 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeInFooter 0.6s ease forwards 0.3s;
-            opacity: 0;
+            position: relative; z-index: 2; margin-top: 22px; display: flex; flex-direction: column; align-items: center;
+            animation: fadeInFooter 0.6s ease forwards 0.3s; opacity: 0;
         }
-        @keyframes fadeInFooter {
-            to { opacity: 1; }
-        }
+        @keyframes fadeInFooter { to { opacity: 1; } }
         .splash-tag {
-            font-size: 11.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2.5px;
-            color: #67e8f9;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
-            margin-bottom: 10px;
+            font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px;
+            color: #67e8f9; text-shadow: 0 0 10px rgba(0, 242, 254, 0.6); margin-bottom: 10px;
         }
         .splash-loader {
-            width: 170px;
-            height: 4px;
-            background: rgba(0, 242, 254, 0.14);
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+            width: 170px; height: 4px; background: rgba(0, 242, 254, 0.14); border-radius: 999px;
+            overflow: hidden; position: relative; box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
         }
         .splash-loader::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            width: 50%;
-            background: linear-gradient(90deg, transparent, #00f2fe, #ffffff);
-            border-radius: 999px;
+            content: ""; position: absolute; inset: 0; width: 50%;
+            background: linear-gradient(90deg, transparent, #00f2fe, #ffffff); border-radius: 999px;
             animation: loadingSlide 0.85s infinite ease-in-out;
         }
-        @keyframes loadingSlide {
-            0% { transform: translateX(-110%); }
-            100% { transform: translateX(220%); }
-        }
+        @keyframes loadingSlide { 0% { transform: translateX(-110%); } 100% { transform: translateX(220%); } }
 
-        /* ==========================================
-           INTERFACCIA PRINCIPALE DELL'APP
-           ========================================== */
+        /* INTERFACCIA PRINCIPALE */
         .container {
-            width: 100%;
-            max-width: 1260px;
-            opacity: 0;
-            transform: translateY(12px);
+            width: 100%; max-width: 1260px; opacity: 0; transform: translateY(12px);
             transition: opacity 0.45s ease, transform 0.45s ease;
         }
-        .container.ready {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .container.ready { opacity: 1; transform: translateY(0); }
 
         header {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             padding: 16px 20px; border-radius: 16px; border: 1.5px solid rgba(34, 211, 238, 0.55);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); margin-bottom: 16px;
         }
         header h1 { margin: 0; font-size: 18px; color: var(--yellow); }
         header p { margin: 4px 0 0 0; color: var(--muted); font-size: 12.5px; }
@@ -262,62 +159,25 @@
 
         .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin: 0 0 10px 4px; letter-spacing: 0.5px; }
 
-        .slots-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        @media (min-width: 768px) {
-            .slots-grid { grid-template-columns: repeat(5, 1fr); }
-        }
+        .slots-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+        @media (min-width: 768px) { .slots-grid { grid-template-columns: repeat(5, 1fr); } }
 
         .slot-card {
-            background: var(--card);
-            border: 2px dashed var(--slot-color, var(--border));
-            border-radius: 16px;
-            padding: 14px 10px;
-            text-align: center;
-            transition: transform 0.15s ease, background 0.2s ease, border 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 125px;
+            background: var(--card); border: 2px dashed var(--slot-color, var(--border)); border-radius: 16px;
+            padding: 14px 10px; text-align: center; transition: transform 0.15s ease, background 0.2s ease, border 0.2s ease;
+            cursor: pointer; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 125px;
         }
         .slot-card:active { transform: scale(0.97); }
-        .slot-card.loaded {
-            border-style: solid;
-            background: var(--slot-bg, rgba(255,255,255,0.06));
-        }
-        .slot-card input[type="file"] {
-            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2;
-        }
+        .slot-card.loaded { border-style: solid; background: var(--slot-bg, rgba(255,255,255,0.06)); }
+        .slot-card input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
         .slot-dot { font-size: 24px; margin-bottom: 4px; }
         .slot-label-input {
-            position: relative;
-            z-index: 3;
-            background: rgba(11, 17, 32, 0.75);
-            border: 1px solid var(--slot-color, var(--border));
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 700;
-            text-align: center;
-            border-radius: 6px;
-            padding: 4px 6px;
-            width: 92%;
-            margin-bottom: 6px;
+            position: relative; z-index: 3; background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--slot-color, var(--border)); color: var(--text);
+            font-size: 12px; font-weight: 700; text-align: center; border-radius: 6px; padding: 4px 6px; width: 92%; margin-bottom: 6px;
         }
         .slot-sub { font-size: 11px; color: var(--muted); }
-        .slot-status {
-            margin-top: 6px;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--slot-color);
-            display: none;
-        }
+        .slot-status { margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--slot-color); display: none; }
 
         .excel-card {
             background: var(--card); border: 2px dashed var(--border); border-radius: 16px; padding: 16px 14px; text-align: center;
@@ -341,10 +201,10 @@
             background: var(--card); border: 1px solid var(--border); border-radius: 16px;
             padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;
         }
-        .filters-group { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: end; }
+        .filters-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; align-items: end; }
         .field { display: flex; flex-direction: column; gap: 4px; }
         .field label { font-size: 10.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
-        .field input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 9px 10px; border-radius: 8px; font-size: 15px; width: 100%; }
+        .field input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 9px 10px; border-radius: 8px; font-size: 14px; width: 100%; }
 
         .toggle-field {
             display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg); border: 1px solid var(--yellow);
@@ -352,11 +212,11 @@
         }
         .toggle-field span { font-size: 13px; font-weight: 600; color: var(--yellow); }
 
-        .action-bar { display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
         @media (min-width: 640px) { .action-bar { grid-template-columns: repeat(5, 1fr); } }
 
         button {
-            background: var(--blue); color: white; border: none; padding: 14px 16px; border-radius: 12px;
+            background: var(--blue); color: white; border: none; padding: 14px 12px; border-radius: 12px;
             font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
             transition: transform 0.12s ease, opacity 0.2s;
         }
@@ -379,14 +239,11 @@
         th { background: #0f172a; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid #263349; }
         .empty-state { padding: 30px 15px; text-align: center; color: var(--muted); font-size: 13px; }
-        
-        /* Stile riga completata nella checklist */
         tr.completed-row { opacity: 0.45; background: rgba(16, 185, 129, 0.05); text-decoration: line-through; }
     </style>
 </head>
 <body>
 
-<!-- SPLASH SCREEN CON LOGO ANIMATO -->
 <div id="appSplash">
     <div class="speed-lines">
         <div class="speed-line"></div>
@@ -416,12 +273,12 @@
             <div style="display:flex;align-items:center;gap:12px;">
                 <img src="icon-512.png" alt="Logo" style="width:46px;height:46px;border-radius:12px;border:1.5px solid #00f2fe;object-fit:cover;box-shadow:0 0 12px rgba(0,242,254,0.35);">
                 <div>
-                    <h1>Convertitore Spoke App</h1>
-                    <p>Terminale: <strong>TP784-02-Santiago</strong> • 5 Slot Colorati + Excel</p>
+                    <h1>SanAnd Truck - Spoke</h1>
+                    <p>Terminale: <strong>TP784-02-Santiago</strong> • 5 Slot + Excel</p>
                 </div>
             </div>
         </div>
-        <span class="badge">APP v12</span>
+        <span class="badge">APP v13</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
@@ -441,36 +298,36 @@
 
     <div class="controls-bar">
         <div class="filters-group">
-            <div class="field" style="display: none;">
-                <label>Filtro Area DCR</label>
+            <div class="field">
+                <label>Area DCR InPost</label>
                 <input type="text" id="filterDcr" value="2DRM, 2DRM2">
             </div>
-            <div class="field" style="display: none;">
+            <div class="field">
                 <label>Stato InPost</label>
                 <input type="text" id="filterStatus" value="Assegnato per la consegna">
             </div>
-            <div class="field" style="display: none;">
-                <label>Terminale / Autista</label>
-                <input type="text" id="filterDriver" value="TP784-02-Santiago">
+            <div class="field">
+                <label>Filtro Autista (Opzionale)</label>
+                <input type="text" id="filterDriver" value="" placeholder="Tutti (o TP784-02-Santiago)">
             </div>
             <label class="toggle-field">
                 <input type="checkbox" id="mergeSameAddress" checked>
-                <span>🟢 Unisci stessi indirizzi</span>
+                <span>🟢 Unisci indirizzi</span>
             </label>
         </div>
 
         <div class="action-bar">
-            <button class="btn-maps" id="btnMaps" onclick="openGoogleMapsRoute()" disabled>🗺️ Maps</button>
-            <button class="btn-wa" id="btnShare" onclick="sendWhatsAppReport()" disabled>📲 WhatsApp</button>
-            <button class="btn-history" id="btnHistory" onclick="loadLastHistory()" style="display:none;">📂 Ripristina Giro</button>
+            <button class="btn-wa" id="btnShare" onclick="shareSpokeExcel()" disabled>📲 WhatsApp File</button>
             <button class="btn-success" id="btnDownload" onclick="downloadSpokeExcel()" disabled>⬇️ Excel</button>
+            <button class="btn-maps" id="btnMaps" onclick="openGoogleMapsRoute()" disabled>🗺️ Maps</button>
+            <button class="btn-history" id="btnHistory" onclick="loadLastHistory()" style="display:none;">📂 Ripristina</button>
             <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
         </div>
     </div>
 
     <div class="stats-bar">
         <div class="stat-box"><div class="lbl">FERMATE SPOKE</div><div class="num" id="statTot">0</div></div>
-        <div class="stat-box"><div class="lbl">📸 PACCHI DA SLOT</div><div class="num" id="statHrp" style="color:#60a5fa">0</div></div>
+        <div class="stat-box"><div class="lbl">📸 PACCHI SLOT/HRP</div><div class="num" id="statHrp" style="color:#60a5fa">0</div></div>
         <div class="stat-box"><div class="lbl">🟡 PACCHI INPOST</div><div class="num" id="statInpost" style="color:#facc15">0</div></div>
         <div class="stat-box"><div class="lbl">🟢 MULTI / 🔴 CASH</div><div class="num" id="statSpecial" style="color:#10b981">0</div></div>
     </div>
@@ -496,16 +353,13 @@
 </div>
 
 <script>
-// Durata dell'animazione del logo all'avvio (1.6 secondi)
 window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const splash = document.getElementById('appSplash');
         const main = document.getElementById('mainContainer');
         if (splash) splash.classList.add('hide');
         if (main) main.classList.add('ready');
-    }, 1600);
-
-    // Controlla se c'è un giro salvato in cronologia
+    }, 1500);
     checkHistoryButton();
 });
 
@@ -513,7 +367,6 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
-// Configurazione dei 5 Slot Colorati
 const SLOTS_CONFIG = [
     { id: 0, emoji: "🔵", defaultName: "HRP", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.14)" },
     { id: 1, emoji: "🟡", defaultName: "INPOST", color: "#facc15", bg: "rgba(250, 204, 21, 0.14)" },
@@ -526,9 +379,8 @@ let slotRows = [[], [], [], [], []];
 let rawExcelHrpRows = [];
 let rawInpostRows = [];
 let finalSpokeRows = [];
-let completedStops = new Set(); // Per la checklist interattiva
+let completedStops = new Set();
 
-// Genera dinamicamente i 5 slot nell'interfaccia
 const slotsContainer = document.getElementById('slotsContainer');
 SLOTS_CONFIG.forEach(slot => {
     const savedName = localStorage.getItem(`spoke_slot_name_${slot.id}`) || slot.defaultName;
@@ -569,25 +421,26 @@ async function handleSlotImages(slotId, fileList) {
     progBox.style.borderColor = slotCfg.color;
     progText.style.color = slotCfg.color;
 
-    let extractedCount = 0;
-
     for (let idx = 0; idx < fileList.length; idx++) {
         const file = fileList[idx];
         progText.textContent = `${slotCfg.emoji} Lettura immagine ${idx + 1} di ${fileList.length}...`;
         progFill.style.backgroundColor = slotCfg.color;
         progFill.style.width = '10%';
 
-        const result = await Tesseract.recognize(file, 'ita', {
-            logger: m => {
-                if (m.status === 'recognizing text') {
-                    progFill.style.width = Math.round(m.progress * 100) + '%';
+        try {
+            const result = await Tesseract.recognize(file, 'ita', {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        progFill.style.width = Math.round(m.progress * 100) + '%';
+                    }
                 }
-            }
-        });
-
-        const parsedRows = parseBorderauxText(result.data.text);
-        slotRows[slotId] = slotRows[slotId].concat(parsedRows);
-        extractedCount += parsedRows.length;
+            });
+            const parsedRows = parseBorderauxText(result.data.text);
+            slotRows[slotId] = slotRows[slotId].concat(parsedRows);
+        } catch (err) {
+            console.error("Errore OCR:", err);
+            alert("Errore nella lettura dell'immagine. Verifica la connessione internet.");
+        }
     }
 
     progBox.style.display = 'none';
@@ -674,8 +527,8 @@ async function handleFiles(fileList) {
         for (const sheetName of workbook.SheetNames) {
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: "", raw: false});
             if (json.length > 0) {
-                const firstRow = json[0];
-                if ('Area DCR attuale' in firstRow || 'Destinatario - indirizzo' in firstRow || 'Status attuale' in firstRow) {
+                const sampleKeys = Object.keys(json[0]).join(" ").toLowerCase();
+                if (sampleKeys.includes('area dcr') || sampleKeys.includes('destinatario - indirizzo') || sampleKeys.includes('status attuale')) {
                     rawInpostRows = rawInpostRows.concat(json);
                     if (!inpostNames.includes(file.name)) inpostNames.push(file.name);
                 } else {
@@ -689,9 +542,9 @@ async function handleFiles(fileList) {
     const st = document.getElementById('statusFiles');
     st.style.display = 'block';
     let html = "";
-    if (hrpNames.length) html += `<div>🔵 <b>HRP Excel:</b> ${hrpNames.join(', ')}</div>`;
-    if (inpostNames.length) html += `<div>🟡 <b>InPost Excel:</b> ${inpostNames.join(', ')}</div>`;
-    st.innerHTML = html || "File caricati.";
+    if (hrpNames.length) html += `<div>🔵 <b>HRP Excel:</b> ${hrpNames.join(', ')} (${rawExcelHrpRows.length} righe)</div>`;
+    if (inpostNames.length) html += `<div>🟡 <b>InPost Excel:</b> ${inpostNames.join(', ')} (${rawInpostRows.length} righe)</div>`;
+    st.innerHTML = html || "Nessuna riga valida trovata nel file.";
     document.getElementById('dropArea').classList.add('loaded');
     processAll();
 }
@@ -791,8 +644,7 @@ function processAll() {
             if (!base) continue;
 
             addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-                base,
-                extra,
+                base, extra,
                 city: String(row['Citta Destinazione'] || "Roma").trim(),
                 prov: String(row['Provincia Destinazione'] || "RM").trim(),
                 zip: "",
@@ -813,16 +665,15 @@ function processAll() {
         const terminale = String(row['Terminale'] || row['Autista'] || "").toUpperCase();
         if (driverFilter && terminale && !terminale.includes(driverFilter)) continue;
 
-        const indRaw = row['Ind Destinazione'] || row['Indirizzo'] || "";
+        const indRaw = row['Ind Destinazione'] || row['Indirizzo'] || row['Indirizzo Destinatario'] || "";
         const { base, extra } = cleanAddress(indRaw);
         if (!base) continue;
 
         addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base,
-            extra,
-            city: String(row['Citta Destinazione'] || row['Città'] || "Roma").trim(),
+            base, extra,
+            city: String(row['Citta Destinazione'] || row['Città'] || row['Citta Destinatario'] || "Roma").trim(),
             prov: String(row['Provincia Destinazione'] || row['Provincia'] || "RM").trim(),
-            zip: formatCap(row['Cap Destinazione'] || row['CAP']),
+            zip: formatCap(row['Cap Destinazione'] || row['CAP'] || row['Cap Destinatario']),
             tel: formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono']),
             colli: parseInt(row['N Colli'] || row['Colli'] || 1, 10) || 1,
             cash: parseFloat(row['Val Contrassegno'] || row['Contrassegno'] || 0) || 0,
@@ -830,7 +681,7 @@ function processAll() {
             badgeLabel: "HRP",
             cliente: String(row['Cliente'] || "").trim(),
             dest: String(row['Den Destinazione'] || row['Destinatario'] || "").trim(),
-            barcode: String(row['Codice pacco'] || row['Segnacollo'] || "").trim()
+            barcode: String(row['Codice pacco'] || row['Segnacollo'] || row['Barcode'] || "").trim()
         });
         countSlotPackages++;
     }
@@ -850,8 +701,7 @@ function processAll() {
         const { base, extra } = cleanAddress(indRaw);
 
         addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base,
-            extra,
+            base, extra,
             city: String(row['Deposito di destino'] || row['Destinatario - città'] || "ROMA").trim(),
             prov: String(row['Destinatario - provincia'] || "RM").trim(),
             zip: formatCap(row['Destinatario - codice']),
@@ -892,7 +742,6 @@ function processAll() {
     document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
     document.getElementById('btnMaps').disabled = finalSpokeRows.length === 0;
 
-    // Salva automaticamente in cronologia locale
     if (finalSpokeRows.length > 0) {
         localStorage.setItem('sanand_last_route', JSON.stringify(finalSpokeRows));
         checkHistoryButton();
@@ -901,11 +750,10 @@ function processAll() {
     renderTable();
 }
 
-// Renderizza la tabella con le caselle di spunta (Checklist)
 function renderTable() {
     const tbody = document.getElementById('previewBody');
     if (finalSpokeRows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Carica gli screenshot negli slot sopra o i file Excel.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nessuna fermata trovata. Carica gli screenshot negli slot sopra o i file Excel.</td></tr>`;
         return;
     }
 
@@ -926,26 +774,18 @@ function renderTable() {
     }).join('');
 }
 
-// Gestisce la spunta della singola fermata
 function toggleStop(index) {
-    if (completedStops.has(index)) {
-        completedStops.delete(index);
-    } else {
-        completedStops.add(index);
-    }
+    if (completedStops.has(index)) completedStops.delete(index);
+    else completedStops.add(index);
     renderTable();
 }
 
-// Verifica se c'è una cronologia salvata per mostrare il tasto di ripristino
 function checkHistoryButton() {
     const saved = localStorage.getItem('sanand_last_route');
     const btn = document.getElementById('btnHistory');
-    if (saved && btn) {
-        btn.style.display = 'flex';
-    }
+    if (saved && btn) btn.style.display = 'flex';
 }
 
-// Ripristina l'ultimo giro salvato
 function loadLastHistory() {
     const saved = localStorage.getItem('sanand_last_route');
     if (!saved) return;
@@ -957,7 +797,6 @@ function loadLastHistory() {
         document.getElementById('btnShare').disabled = false;
         document.getElementById('btnMaps').disabled = false;
         renderTable();
-        alert("Giro precedente ripristinato con successo!");
     } catch (e) {
         console.error(e);
     }
@@ -978,46 +817,37 @@ function downloadSpokeExcel() {
     XLSX.writeFile(wb, filename);
 }
 
-// WhatsApp avanzato
-function sendWhatsAppReport() {
+async function shareSpokeExcel() {
     if (!finalSpokeRows.length) return;
+    const { wb, filename } = generateWorkbook();
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-    const today = new Date().toLocaleDateString('it-IT');
-    let message = `📦 *GIRO SPOKE - SANAND TRUCK* 📦\n`;
-    message += `📅 Data: ${today}\n`;
-    message += `📍 Terminale: TP784-02-Santiago\n`;
-    message += `🛑 Totale Fermate: *${finalSpokeRows.length}*\n`;
-    message += `----------------------------------\n\n`;
-
-    finalSpokeRows.forEach((r, i) => {
-        const statusCheck = completedStops.has(i) ? "✅ [CONSEGNATO]" : "";
-        message += `*${i + 1}. ${r["Address Line 1"]}* (${r["City"]}) ${statusCheck}\n`;
-        message += `📝 ${r["Notes"]}\n\n`;
-    });
-
-    message += `----------------------------------\n`;
-    message += `_Generato con SanAnd Truck App_`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'Giro Spoke SanAnd',
+                text: `Giro Spoke aggiornato (${finalSpokeRows.length} fermate)`
+            });
+            return;
+        } catch (err) {
+            if (err.name !== 'AbortError') console.error(err);
+            return;
+        }
+    }
+    downloadSpokeExcel();
 }
 
-// Google Maps con sequenza
 function openGoogleMapsRoute() {
     if (!finalSpokeRows.length) return;
-
-    const addresses = finalSpokeRows.map(r => encodeURIComponent(`${r["Address Line 1"]}, ${r["City"]}`));
+    const addresses = finalSpokeRows.slice(0, 10).map(r => encodeURIComponent(`${r["Address Line 1"]}, ${r["City"]}`));
     const origin = addresses[0];
     const destination = addresses[addresses.length - 1];
-    
     let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-    
     if (addresses.length > 2) {
-        const waypoints = addresses.slice(1, addresses.length - 1).join('|');
-        mapsUrl += `&waypoints=${waypoints}`;
+        mapsUrl += `&waypoints=${addresses.slice(1, addresses.length - 1).join('|')}`;
     }
-
     window.open(mapsUrl, '_blank');
 }
 
@@ -1028,7 +858,7 @@ function resetAll() {
     finalSpokeRows = [];
     completedStops.clear();
     localStorage.removeItem('sanand_last_route');
-    
+
     SLOTS_CONFIG.forEach(slot => {
         document.getElementById(`slotInput_${slot.id}`).value = "";
         const st = document.getElementById(`slotStatus_${slot.id}`);
@@ -1039,10 +869,9 @@ function resetAll() {
     document.getElementById('fileInput').value = "";
     document.getElementById('statusFiles').style.display = 'none';
     document.getElementById('dropArea').classList.remove('loaded');
-    
+
     const histBtn = document.getElementById('btnHistory');
     if (histBtn) histBtn.style.display = 'none';
-    
     processAll();
 }
 </script>
