@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Truck v16.1</title>
+    <title>SanAnd Truck v16.3</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -163,7 +163,7 @@
                 <p>Terminale: <strong>TP784-02-Santiago</strong></p>
             </div>
         </div>
-        <span class="badge">APP v16.1</span>
+        <span class="badge">APP v16.3</span>
     </header>
 
     <div class="section-title">📸 Carica Screenshot nei 5 Slot Colorati</div>
@@ -445,10 +445,13 @@ function parseSmartText(rawText) {
 
 async function handleFiles(fileList) {
     if (!fileList || fileList.length === 0) return;
-    let hrpNames = [], inpostNames = [], pdfNames = [];
+    let fileNamesList = [];
     const progBox = document.getElementById('ocrProgressBox');
     const progText = document.getElementById('ocrStatusText');
     progBox.style.display = 'block';
+
+    rawExcelHrpRows = [];
+    rawInpostRows = [];
 
     await Promise.all(Array.from(fileList).map(async (file) => {
         const fileName = file.name.toLowerCase();
@@ -467,25 +470,27 @@ async function handleFiles(fileList) {
                 }
                 const parsedFromPdf = parseSmartText(fullPdfText);
                 rawExcelHrpRows = rawExcelHrpRows.concat(parsedFromPdf);
-                pdfNames.push(file.name);
+                fileNamesList.push(file.name);
             } catch (err) {
                 console.error("Errore lettura PDF:", err);
             }
         } else {
-            progText.textContent = `Lettura file Excel/CSV: ${file.name}...`;
+            progText.textContent = `Lettura file: ${file.name}...`;
             const buffer = await file.arrayBuffer();
             const workbook = XLSX.read(new Uint8Array(buffer), {type: 'array', dense: true});
             for (const sheetName of workbook.SheetNames) {
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: "", raw: false});
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet, {defval: "", raw: false});
                 if (json.length > 0) {
-                    const sampleKeys = Object.keys(json[0]).join(" ").toLowerCase();
-                    if (sampleKeys.includes('area dcr') || sampleKeys.includes('destinatario - indirizzo') || sampleKeys.includes('status attuale')) {
-                        rawInpostRows = rawInpostRows.concat(json);
-                        if (!inpostNames.includes(file.name)) inpostNames.push(file.name);
-                    } else {
-                        rawExcelHrpRows = rawExcelHrpRows.concat(json);
-                        if (!hrpNames.includes(file.name)) hrpNames.push(file.name);
-                    }
+                    json.forEach(row => {
+                        let rowStr = Object.values(row).join(" ").toLowerCase();
+                        if (rowStr.includes('area dcr') || rowStr.includes('destinatario - indirizzo') || rowStr.includes('status attuale')) {
+                            rawInpostRows.push(row);
+                        } else {
+                            rawExcelHrpRows.push(row);
+                        }
+                    });
+                    fileNamesList.push(file.name);
                 }
             }
         }
@@ -494,11 +499,7 @@ async function handleFiles(fileList) {
     progBox.style.display = 'none';
     const st = document.getElementById('statusFiles');
     st.style.display = 'block';
-    let html = "";
-    if (hrpNames.length) html += `<div>🔵 <b>HRP:</b> ${hrpNames.join(', ')} (${rawExcelHrpRows.length} righe)</div>`;
-    if (inpostNames.length) html += `<div>🟡 <b>InPost:</b> ${inpostNames.join(', ')} (${rawInpostRows.length} righe)</div>`;
-    if (pdfNames.length) html += `<div>📄 <b>PDF:</b> ${pdfNames.join(', ')}</div>`;
-    st.innerHTML = html || "File caricati correttamente.";
+    st.innerHTML = `<div>📁 <b>File caricati:</b> ${fileNamesList.join(', ')} (${rawExcelHrpRows.length + rawInpostRows.length} righe totali)</div>`;
     document.getElementById('dropArea').classList.add('loaded');
     processAll();
 }
@@ -586,6 +587,7 @@ function processAll() {
     const groupedMap = new Map();
     const unmergedIndexRef = { val: 0 };
 
+    // 1. Slot colorati (Screenshot OCR)
     SLOTS_CONFIG.forEach(slot => {
         const customName = (document.getElementById(`slotName_${slot.id}`).value || slot.defaultName).trim().toUpperCase();
         for (const row of slotRows[slot.id]) {
@@ -611,208 +613,23 @@ function processAll() {
         }
     });
 
+    // 2. File Excel/CSV/PDF HRP
     for (const row of rawExcelHrpRows) {
-        const indRaw = row['Ind Destinazione'] || row['Indirizzo'] || row['Indirizzo Destinatario'] || "";
+        let indRaw = "";
+        for (let k in row) {
+            if (/indirizzo|via|destinazione|address|ind/i.test(k) && row[k]) {
+                indRaw = row[k];
+                break;
+            }
+        }
+        if (!indRaw) indRaw = row['Ind Destinazione'] || row['Indirizzo'] || row['Indirizzo Destinatario'] || Object.values(row)[1] || "";
+        
         const { base, extra } = cleanAddress(indRaw);
         if (!base) continue;
 
-        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base, extra,
-            city: String(row['Citta Destinazione'] || row['Città'] || row['Citta Destinatario'] || "Roma").trim(),
-            prov: String(row['Provincia Destinazione'] || row['Provincia'] || "RM").trim(),
-            zip: formatCap(row['Cap Destinazione'] || row['CAP'] || row['Cap Destinatario']),
-            tel: formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono']),
-            colli: parseInt(row['N Colli'] || row['Colli'] || 1, 10) || 1,
-            cash: parseFloat(row['Val Contrassegno'] || row['Contrassegno'] || 0) || 0,
-            badgeEmoji: "🔵",
-            badgeLabel: "HRP",
-            cliente: String(row['Cliente'] || "").trim(),
-            dest: String(row['Den Destinazione'] || row['Destinatario'] || "").trim(),
-            barcode: String(row['Codice pacco'] || row['Segnacollo'] || row['Barcode'] || "").trim()
-        });
-        countSlotPackages++;
-    }
-
-    for (const row of rawInpostRows) {
-        const indRaw = row['Destinatario - indirizzo'] || "";
-        if (!indRaw) continue;
-
-        const { base, extra } = cleanAddress(indRaw);
-        const dcr = String(row['Area DCR attuale'] || "").trim().toUpperCase();
-
-        addStopToMap(groupedMap, doMerge, unmergedIndexRef, {
-            base, extra,
-            city: String(row['Deposito di destino'] || row['Destinatario - città'] || "ROMA").trim(),
-            prov: String(row['Destinatario - provincia'] || "RM").trim(),
-            zip: formatCap(row['Destinatario - codice']),
-            tel: formatPhone(row['Destinatario - telefono']),
-            colli: 1,
-            cash: 0,
-            badgeEmoji: "🟡",
-            badgeLabel: `INPOST ${dcr || ''}`.trim(),
-            cliente: String(row['Mittente - denominazione'] || "").trim(),
-            dest: "",
-            barcode: String(row['Codice pacco'] || "").trim()
-        });
-        countInpost++;
-    }
-
-    for (const [, g] of groupedMap.entries()) {
-        let finalNotes = "";
-        if (g.tels.length > 0) finalNotes += `📱 TEL: ${g.tels.join(" / ")} ➔ `;
-        if (g.totCash > 0) {
-            finalNotes += `🔴 TOT CONTRASSEGNO €${g.totCash.toFixed(2)} ➔ `;
-            countSpec++;
-        } else if (g.totColli >= 2) {
-            finalNotes += `🟢 MULTI: ${g.totColli} PACCHI ➔ `;
-            countSpec++;
-        }
-        finalNotes += g.details.join(" | ");
-
-        finalSpokeRows.push({
-            "Address Line 1": g.base, "City": g.city, "Province": g.prov, "Zip": g.zip, "Notes": finalNotes
-        });
-    }
-
-    document.getElementById('statTot').textContent = finalSpokeRows.length;
-    document.getElementById('statHrp').textContent = countSlotPackages;
-    document.getElementById('statInpost').textContent = countInpost;
-    document.getElementById('statSpecial').textContent = countSpec;
-    document.getElementById('btnDownload').disabled = finalSpokeRows.length === 0;
-    document.getElementById('btnShare').disabled = finalSpokeRows.length === 0;
-    document.getElementById('btnMaps').disabled = finalSpokeRows.length === 0;
-
-    if (finalSpokeRows.length > 0) {
-        localStorage.setItem('sanand_last_route', JSON.stringify(finalSpokeRows));
-        checkHistoryButton();
-    }
-
-    renderTable();
-}
-
-function renderTable() {
-    const tbody = document.getElementById('previewBody');
-    if (finalSpokeRows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nessuna fermata trovata. Carica i file o gli screenshot qui sopra.</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = finalSpokeRows.map((r, i) => {
-        const isChecked = completedStops.has(i);
-        return `
-            <tr class="${isChecked ? 'completed-row' : ''}">
-                <td style="text-align:center;">
-                    <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${isChecked ? 'checked' : ''} onchange="toggleStop(${i})">
-                </td>
-                <td style="color:var(--muted)">${i + 1}</td>
-                <td style="font-weight:600">${r["Address Line 1"]}</td>
-                <td>${r["City"]}</td>
-                <td>${r["Province"]}</td>
-                <td><code>${r["Zip"]}</code></td>
-                <td>${r["Notes"]}</td>
-            </tr>`;
-    }).join('');
-}
-
-function toggleStop(index) {
-    if (completedStops.has(index)) completedStops.delete(index);
-    else completedStops.add(index);
-    renderTable();
-}
-
-function checkHistoryButton() {
-    const saved = localStorage.getItem('sanand_last_route');
-    const btn = document.getElementById('btnHistory');
-    if (saved && btn) btn.style.display = 'flex';
-}
-
-function loadLastHistory() {
-    const saved = localStorage.getItem('sanand_last_route');
-    if (!saved) return;
-    try {
-        finalSpokeRows = JSON.parse(saved);
-        completedStops.clear();
-        document.getElementById('statTot').textContent = finalSpokeRows.length;
-        document.getElementById('btnDownload').disabled = false;
-        document.getElementById('btnShare').disabled = false;
-        document.getElementById('btnMaps').disabled = false;
-        renderTable();
-    } catch (e) { console.error(e); }
-}
-
-function generateWorkbook() {
-    const ws = XLSX.utils.json_to_sheet(finalSpokeRows, { header: ["Address Line 1", "City", "Province", "Zip", "Notes"] });
-    ws['!cols'] = [{ wch: 35 }, { wch: 16 }, { wch: 8 }, { wch: 10 }, { wch: 125 }];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Giro_Spoke");
-    const today = new Date().toISOString().slice(0,10);
-    return { wb, filename: `Giro_Spoke_Santiago_${today}.xlsx` };
-}
-
-function downloadSpokeExcel() {
-    if (!finalSpokeRows.length) return;
-    const { wb, filename } = generateWorkbook();
-    XLSX.writeFile(wb, filename);
-}
-
-async function shareSpokeExcel() {
-    if (!finalSpokeRows.length) return;
-    const { wb, filename } = generateWorkbook();
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const file = new File([wbout], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-            await navigator.share({
-                files: [file],
-                title: 'Giro Spoke SanAnd',
-                text: `Giro Spoke aggiornato (${finalSpokeRows.length} fermate)`
-            });
-            return;
-        } catch (err) {
-            if (err.name !== 'AbortError') console.error(err);
-            return;
-        }
-    }
-    downloadSpokeExcel();
-}
-
-function openGoogleMapsRoute() {
-    if (!finalSpokeRows.length) return;
-    const addresses = finalSpokeRows.slice(0, 10).map(r => encodeURIComponent(`${r["Address Line 1"]}, ${r["City"]}`));
-    const origin = addresses[0];
-    const destination = addresses[addresses.length - 1];
-    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-    if (addresses.length > 2) {
-        mapsUrl += `&waypoints=${addresses.slice(1, addresses.length - 1).join('|')}`;
-    }
-    window.open(mapsUrl, '_blank');
-}
-
-function resetAll() {
-    slotRows = [[], [], [], [], []];
-    rawExcelHrpRows = [];
-    rawInpostRows = [];
-    finalSpokeRows = [];
-    completedStops.clear();
-    localStorage.removeItem('sanand_last_route');
-
-    SLOTS_CONFIG.forEach(slot => {
-        document.getElementById(`slotInput_${slot.id}`).value = "";
-        const st = document.getElementById(`slotStatus_${slot.id}`);
-        st.style.display = 'none';
-        st.textContent = "";
-        document.getElementById(`slotCard_${slot.id}`).classList.remove('loaded');
-    });
-    document.getElementById('fileInput').value = "";
-    document.getElementById('statusFiles').style.display = 'none';
-    document.getElementById('debugBox').style.display = 'none';
-    document.getElementById('dropArea').classList.remove('loaded');
-
-    const histBtn = document.getElementById('btnHistory');
-    if (histBtn) histBtn.style.display = 'none';
-    processAll();
-}
-</script>
-</body>
-</html>
+        const city = row['Citta Destinazione'] || row['Città'] || row['Citta Destinatario'] || row['city'] || "Roma";
+        const prov = row['Provincia Destinazione'] || row['Provincia'] || row['Prv'] || row['province'] || "RM";
+        const zip = formatCap(row['Cap Destinazione'] || row['CAP'] || row['Cap Destinatario'] || row['zip']);
+        const tel = formatPhone(row['Cel Destinazione'] || row['Tel Destinazione'] || row['Telefono'] || row['Cellulare'] || row['phone']);
+        const cliente = row['Cliente'] || row['Mittente'] || row['client'] || "";
+        const dest = row['Den Destin
