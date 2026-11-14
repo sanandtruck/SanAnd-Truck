@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spoke-app-v13';
+const CACHE_NAME = 'spoke-app-v16';
 const ASSETS = [
   './',
   './index.html',
