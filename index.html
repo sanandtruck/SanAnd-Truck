@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Ultra v20.2 Pro</title>
+    <title>SanAnd Ultra v20.3</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -113,19 +113,19 @@
 <div class="container">
     <header>
         <div>
-            <h1>SanAnd Ultra v20.2</h1>
+            <h1>SanAnd Ultra v20.3</h1>
             <p>Terminale: <strong>TP784-02-Santiago</strong></p>
         </div>
         <span class="badge">Pro Edition</span>
     </header>
 
-    <div class="section-title">📸 Slot Screenshot Rapidi</div>
+    <div class="section-title">📸 Slot Screenshot e Foto</div>
     <div class="slots-grid" id="slotsContainer"></div>
 
     <div class="excel-card" id="dropArea">
-        <input type="file" id="fileInput" accept=".xls,.xlsx,.csv,.pdf" multiple>
-        <h3>📁 Carica File (InPost, HRP o PDF)</h3>
-        <p>Riconoscimento automatico e pin verdi interattivi</p>
+        <input type="file" id="fileInput" accept=".xls,.xlsx,.csv,.pdf,image/*" multiple>
+        <h3>📁 Carica File o Foto (InPost, HRP, PDF o Screenshot)</h3>
+        <p>Riconoscimento automatico universale e pin verdi</p>
     </div>
 
     <div id="mapContainer">
@@ -169,7 +169,7 @@
                 </tr>
             </thead>
             <tbody id="previewBody">
-                <tr><td colspan="6" class="empty-state">Carica i file per iniziare.</td></tr>
+                <tr><td colspan="6" class="empty-state">Carica i file o gli screenshot per iniziare.</td></tr>
             </tbody>
         </table>
     </div>
@@ -277,7 +277,7 @@ async function handleSlot(slotId, files) {
     let box = document.getElementById('progressBox');
     box.style.display = 'block';
     for (let f of files) {
-        box.textContent = `Analisi OCR...`;
+        box.textContent = `Analisi OCR slot...`;
         try {
             let res = await Tesseract.recognize(f, 'ita');
             slotRows[slotId] = slotRows[slotId].concat(parseText(res.data.text || ""));
@@ -309,19 +309,25 @@ async function handleFiles(files) {
     if (!files.length) return;
     let box = document.getElementById('progressBox');
     box.style.display = 'block';
-    box.textContent = "Lettura file...";
-    rawHrp = []; rawInpost = [];
+    box.textContent = "Elaborazione file/foto...";
 
     for (let f of files) {
-        let buf = await f.arrayBuffer();
-        let wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
-        for (let name of wb.SheetNames) {
-            let json = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "" });
-            json.forEach(r => {
-                let s = Object.values(r).join(" ").toLowerCase();
-                if (s.includes('inpost') || s.includes('dcr')) rawInpost.push(r);
-                else rawHrp.push(r);
-            });
+        if (f.type.startsWith('image/')) {
+            try {
+                let res = await Tesseract.recognize(f, 'ita');
+                rawHrp = rawHrp.concat(parseText(res.data.text || "").map(x => ({ 'Ind Destinazione': x.addr, 'Citta Destinazione': x.city })));
+            } catch(e) {}
+        } else {
+            let buf = await f.arrayBuffer();
+            let wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+            for (let name of wb.SheetNames) {
+                let json = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "" });
+                json.forEach(r => {
+                    let s = Object.values(r).join(" ").toLowerCase();
+                    if (s.includes('inpost') || s.includes('dcr')) rawInpost.push(r);
+                    else rawHrp.push(r);
+                });
+            }
         }
     }
     box.style.display = 'none';
@@ -425,7 +431,7 @@ function toggleStop(idx) {
     localStorage.setItem('sanand_ultra_done', JSON.stringify(Array.from(completedStops)));
     updateUIState();
     renderTable();
-    plotMap(); // Aggiorna il colore dei pin sulla mappa
+    plotMap();
 }
 
 function moveRow(i, dir) {
@@ -475,3 +481,57 @@ async function plotMap() {
                 let marker = L.marker([lat, lon], { icon }).addTo(map)
                     .bindPopup(`<b>#${i + 1} ${r["Address"]}</b><br>${isDone ? '✅ <i>Completato</i>' : ''}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" style="color:#3b82f6;font-weight:bold;">🚀 Google Maps</a>`);
                 markers.push(marker);
+            }
+        } catch(e) {}
+        await new Promise(res => setTimeout(res, 120));
+    }
+    box.style.display = 'none';
+    if (coords.length && !userPos) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
+}
+
+function downloadExcel() {
+    if (!finalRows.length) return;
+    let ws = XLSX.utils.json_to_sheet(finalRows);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Giro_Ottimizzato");
+    XLSX.writeFile(wb, `Giro_Santiago_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function downloadPdf() {
+    if (!finalRows.length) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("SanAnd Truck - Report Giro Santiago", 14, 15);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Totale Fermate: ${finalRows.length} | Completate: ${completedStops.size} - Data: ${new Date().toLocaleDateString()}`, 14, 22);
+
+    let y = 30;
+    finalRows.forEach((r, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        let status = completedStops.has(i) ? "[FATTO]" : "[ ]";
+        doc.setFont("helvetica", "bold");
+        doc.text(`${status} #${i + 1} ${r["Address"]} (${r["City"]})`, 14, y);
+        y += 5;
+        doc.setFont("helvetica", "normal");
+        doc.text(`Note: ${r["Notes"]}`, 18, y);
+        y += 8;
+    });
+    doc.save(`Report_Giro_Santiago_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+function resetAll() {
+    if (gpsWatch) { navigator.geolocation.clearWatch(gpsWatch); gpsWatch = null; }
+    slotRows = [[], [], [], [], []];
+    rawHrp = []; rawInpost = []; finalRows = []; completedStops.clear();
+    localStorage.removeItem('sanand_ultra_route');
+    localStorage.removeItem('sanand_ultra_done');
+    if (map) { map.remove(); map = null; document.getElementById('mapContainer').style.display = 'none'; initMap(); }
+    updateUIState();
+    renderTable();
+}
+</script>
+</body>
+</html>
