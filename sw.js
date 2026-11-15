@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sanand-ultra-v20.15';
+const CACHE_NAME = 'sanand-ultra-v20.16';
 const ASSETS = [
   './',
   './index.html',
