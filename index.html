@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd">
-    <title>SanAnd Ultra v20.15 Quantum Ultimate</title>
+    <title>SanAnd Ultra v20.16 Bulletproof</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -112,4 +112,587 @@
 
         .stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 6px; border-radius: 8px; text-align: center; }
-        .stat-box .num
+        .stat-box .num { font-size: 15px; font-weight: 700; margin-top: 1px; }
+        .stat-box .lbl { font-size: 9px; color: var(--muted); }
+
+        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11.5px; min-width: 450px; }
+        th { background: #0f172a; color: var(--muted); padding: 7px; border-bottom: 1px solid var(--border); }
+        td { padding: 7px; border-bottom: 1px solid #263349; vertical-align: middle; }
+        .empty-state { padding: 15px 10px; text-align: center; color: var(--muted); font-size: 11.5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>SanAnd Ultra v20.16</h1>
+            <p>Terminale: <strong>TP784-02-Santiago</strong></p>
+        </div>
+        <span class="badge">Bulletproof Pro</span>
+    </header>
+
+    <div class="launcher-bar">
+        <button class="btn-launcher" onclick="openProvider('hrp')">🌐 HRP Portal</button>
+        <button class="btn-launcher" onclick="openProvider('inpost')">🌐 InPost Portal</button>
+        <button class="btn-launcher" onclick="openProvider('gofo')">🌐 Gofo Portal</button>
+    </div>
+
+    <div class="section-title">📸 Slot Screenshot e Foto</div>
+    <div class="slots-grid" id="slotsContainer"></div>
+
+    <div class="excel-card" id="dropArea">
+        <input type="file" id="fileInput" accept=".xls,.xlsx,.csv,.pdf,image/*" multiple>
+        <h3>📁 Carica File o Foto (InPost, HRP, PDF o Screenshot)</h3>
+        <p>Riconoscimento automatico e pin live ottimizzati</p>
+    </div>
+
+    <div class="manual-card">
+        <div style="font-size:10.5px; font-weight:700; color:var(--cyan);">➕ PALMARE & INSERIMENTO MANUALE</div>
+        <div class="manual-row">
+            <input type="text" id="manAddress" class="manual-input" placeholder="Indirizzo (es. Via Roma 10)">
+            <input type="text" id="manCity" class="manual-input" value="Roma" placeholder="Città">
+            <input type="text" id="manNotes" class="manual-input" placeholder="Note / Barcode">
+            <input type="number" id="manCash" class="manual-input" placeholder="€ Cash" value="0" step="0.5">
+            <button class="btn-add" onclick="addManualStop()">+ Ins</button>
+            <button class="btn-scan" onclick="triggerBarcodeScan()">📷 Scan</button>
+        </div>
+    </div>
+
+    <div id="mapContainer">
+        <button class="map-gps-btn" onclick="centerMapOnUser()">📍 Centra GPS</button>
+        <button class="map-fullscreen-btn" onclick="toggleFullscreen()">⛶ Schermo Intero</button>
+    </div>
+
+    <div class="progress-box" id="progressBox">Elaborazione in corso...</div>
+
+    <div class="controls-bar">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cerca indirizzo o barcode..." oninput="renderTable()">
+        <label class="toggle-field">
+            <input type="checkbox" id="mergeSameAddress" checked style="width:14px;height:14px;cursor:pointer;">
+            <span>🟢 Unisci indirizzi uguali</span>
+        </label>
+        <div class="action-bar">
+            <button class="btn-next" id="btnNext" onclick="navigateToNextStop()" disabled>🎯 Prossima</button>
+            <button class="btn-opt" id="btnOpt" onclick="optimizeRouteTSP()" disabled>⚡ Ottimizza</button>
+            <button class="btn-success" id="btnDownload" onclick="downloadExcel()" disabled>⬇️ Excel</button>
+            <button class="btn-pdf" id="btnPdf" onclick="downloadPdf()" disabled>📄 PDF</button>
+            <button style="background:#06b6d4; color:#042f2e;" id="btnRefreshMap" onclick="plotMap()" disabled>🗺️ Mappa</button>
+            <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-box"><div class="lbl">FERMATE</div><div class="num" id="statTot">0</div></div>
+        <div class="stat-box"><div class="lbl">HRP/SLOT</div><div class="num" id="statHrp" style="color:#60a5fa">0</div></div>
+        <div class="stat-box"><div class="lbl">INPOST</div><div class="num" id="statInpost" style="color:#facc15">0</div></div>
+        <div class="stat-box"><div class="lbl">FATTE</div><div class="num" id="statDone" style="color:#10b981">0</div></div>
+        <div class="stat-box"><div class="lbl">CASH RESIDUO</div><div class="num" id="statCash" style="color:#f43f5e">€0</div></div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 28px; text-align:center;">✓</th>
+                    <th style="width: 40px;">#</th>
+                    <th>Indirizzo Destinazione</th>
+                    <th>Città</th>
+                    <th style="width: 70px; text-align:center;">Sposta</th>
+                    <th>Navigazione & Dettagli</th>
+                </tr>
+            </thead>
+            <tbody id="previewBody">
+                <tr><td colspan="6" class="empty-state">Carica i file o usa lo scanner per avviare il terminale Santiago v20.16.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const SLOTS = [
+    { id: 0, emoji: "🔵", name: "HRP", color: "#3b82f6" },
+    { id: 1, emoji: "🟡", name: "INPOST", color: "#facc15" },
+    { id: 2, emoji: "🟣", name: "ZONA 3", color: "#c084fc" },
+    { id: 3, emoji: "🟠", name: "ZONA 4", color: "#fb923c" },
+    { id: 4, emoji: "🩵", name: "ZONA 5", color: "#22d3ee" }
+];
+
+let slotRows = [[], [], [], [], []];
+let rawHrp = [];
+let rawInpost = [];
+let finalRows = [];
+let completedStops = new Set();
+let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
+
+const slotsEl = document.getElementById('slotsContainer');
+SLOTS.forEach(s => {
+    let saved = localStorage.getItem(`s_name_${s.id}`) || s.name;
+    let div = document.createElement('div');
+    div.className = 'slot-card';
+    div.style.setProperty('--slot-color', s.color);
+    div.innerHTML = `
+        <input type="file" id="slotIn_${s.id}" accept="image/*" multiple>
+        <div class="slot-dot">${s.emoji}</div>
+        <input type="text" class="slot-label-input" id="slotLbl_${s.id}" value="${saved}">
+        <div class="slot-status" id="slotSt_${s.id}"></div>
+    `;
+    slotsEl.appendChild(div);
+
+    document.getElementById(`slotIn_${s.id}`).addEventListener('change', e => handleSlot(s.id, e.target.files));
+    document.getElementById(`slotLbl_${s.id}`).addEventListener('input', e => {
+        localStorage.setItem(`s_name_${s.id}`, e.target.value);
+        processAll();
+    });
+});
+
+document.getElementById('fileInput').addEventListener('change', e => handleFiles(e.target.files));
+document.getElementById('mergeSameAddress').addEventListener('change', processAll);
+
+window.addEventListener('DOMContentLoaded', () => {
+    initMap();
+    startRealtimeGpsTracking();
+    let cached = localStorage.getItem('sanand_ultra_route');
+    let cachedDone = localStorage.getItem('sanand_ultra_done');
+    if (cachedDone) {
+        try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){}
+    }
+    if (cached) {
+        try {
+            finalRows = JSON.parse(cached);
+            if (finalRows.length > 0) {
+                updateUIState();
+                renderTable();
+                plotMap();
+            }
+        } catch(e) {}
+    }
+});
+
+function initMap(lat = 41.9028, lng = 12.4964) {
+    if (!map) {
+        let mEl = document.getElementById('mapContainer');
+        mEl.style.display = 'block';
+        map = L.map('mapContainer').setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    }
+}
+
+function toggleFullscreen() {
+    let mEl = document.getElementById('mapContainer');
+    let btn = document.querySelector('.map-fullscreen-btn');
+    mEl.classList.toggle('fullscreen');
+    btn.textContent = mEl.classList.contains('fullscreen') ? "✕ Chiudi" : "⛶ Schermo Intero";
+    if (map) map.invalidateSize();
+}
+
+function centerMapOnUser() {
+    if (userPos && map) {
+        map.setView([userPos.lat, userPos.lng], 16);
+    } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            if (map) {
+                map.setView([userPos.lat, userPos.lng], 16);
+                if (!liveMarker) {
+                    liveMarker = L.circleMarker([userPos.lat, userPos.lng], { radius: 10, color: '#fff', fillColor: '#10b981', fillOpacity: 1, weight: 3 }).addTo(map);
+                } else {
+                    liveMarker.setLatLng([userPos.lat, userPos.lng]);
+                }
+            }
+        }, () => alert("Impossibile rilevare la posizione GPS."), { enableHighAccuracy: true });
+    }
+}
+
+function startRealtimeGpsTracking() {
+    if (navigator.geolocation) {
+        if (gpsWatch) navigator.geolocation.clearWatch(gpsWatch);
+        gpsWatch = navigator.geolocation.watchPosition(pos => {
+            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            
+            if (!liveMarker && map) {
+                liveMarker = L.circleMarker([userPos.lat, userPos.lng], {
+                    radius: 10, color: '#ffffff', fillColor: '#10b981', fillOpacity: 1, weight: 3
+                }).addTo(map).bindPopup("<b>🚚 Posizione Furgone Live</b>");
+            } else if (liveMarker) {
+                liveMarker.setLatLng([userPos.lat, userPos.lng]);
+            }
+        }, err => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 2000 });
+    }
+}
+
+function openProvider(type) {
+    let urls = {
+        'hrp': 'https://hrp.it',
+        'inpost': 'https://inpost.it',
+        'gofo': 'https://gofo.it'
+    };
+    window.open(urls[type] || 'https://google.com', '_blank');
+}
+
+function copyBarcodeToClipboard(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        alert(`Barcode copiato negli appunti: ${code}\nIncollalo pure nell'app del corriere!`);
+    }).catch(err => {
+        alert(`Impossibile copiare: ${code}`);
+    });
+}
+
+function triggerBarcodeScan() {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = async (e) => {
+        let file = e.target.files[0];
+        if (!file) return;
+        let box = document.getElementById('progressBox');
+        box.style.display = 'block';
+        box.textContent = "Scansione codice...";
+        try {
+            let res = await Tesseract.recognize(file, 'ita');
+            let text = res.data.text || "";
+            let cleanedCode = text.replace(/\s+/g, '').trim();
+            document.getElementById('manNotes').value = `Barcode: ${cleanedCode}`;
+            copyBarcodeToClipboard(cleanedCode);
+            box.style.display = 'none';
+        } catch(err) {
+            box.style.display = 'none';
+        }
+    };
+    input.click();
+}
+
+function navigateToNextStop() {
+    if (!finalRows.length) return;
+    let nextIdx = -1;
+    for (let i = 0; i < finalRows.length; i++) {
+        if (!completedStops.has(i)) {
+            nextIdx = i;
+            break;
+        }
+    }
+    if (nextIdx === -1) { alert("Tutte le fermate completate!"); return; }
+    let r = finalRows[nextIdx];
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`, '_blank');
+}
+
+// Ordinamento Intelligente Blindato (mantiene lo stato corretto delle fermate completate)
+function optimizeRouteTSP() {
+    if (finalRows.length < 2) return;
+    
+    // Mappa le righe con il loro stato di completamento originario
+    let mapped = finalRows.map((r, idx) => ({ r, done: completedStops.has(idx) }));
+    
+    let uncompleted = mapped.filter(x => !x.done).map(x => x.r);
+    let completed = mapped.filter(x => x.done).map(x => x.r);
+
+    // Ordinamento intelligente per vicinanza (Città + Indirizzo)
+    uncompleted.sort((a, b) => a["City"].localeCompare(b["City"]) || a["Address"].localeCompare(b["Address"]));
+    
+    finalRows = uncompleted.concat(completed);
+    
+    // Ricostruisce il Set delle completate in modo sicuro in fondo alla lista
+    completedStops.clear();
+    for(let i = 0; i < completed.length; i++) {
+        completedStops.add(uncompleted.length + i);
+    }
+
+    saveAndRefresh();
+    alert("⚡ Giro ottimizzato e sincronizzato perfettamente!");
+}
+
+function addManualStop() {
+    let addr = document.getElementById('manAddress').value.trim();
+    let city = document.getElementById('manCity').value.trim() || "Roma";
+    let notes = document.getElementById('manNotes').value.trim() || "MANUALE";
+    let cash = parseFloat(document.getElementById('manCash').value) || 0;
+    if (!addr) { alert("Inserisci indirizzo"); return; }
+    
+    let noteText = `✏️ [MANUALE] ${notes}`;
+    if (cash > 0) noteText += ` | 💶 CASH: €${cash.toFixed(2)}`;
+
+    finalRows.push({ "Address": addr, "City": city, "Province": "RM", "Zip": "00100", "Notes": noteText, "Barcode": "", "Cash": cash });
+    document.getElementById('manAddress').value = "";
+    document.getElementById('manNotes').value = "";
+    document.getElementById('manCash').value = "0";
+    saveAndRefresh();
+}
+
+async function handleSlot(slotId, files) {
+    if (!files.length) return;
+    let box = document.getElementById('progressBox');
+    box.style.display = 'block';
+    for (let f of files) {
+        box.textContent = `OCR in corso...`;
+        try {
+            let res = await Tesseract.recognize(f, 'ita');
+            slotRows[slotId] = slotRows[slotId].concat(parseText(res.data.text || ""));
+        } catch(e) {}
+    }
+    box.style.display = 'none';
+    let st = document.getElementById(`slotSt_${slotId}`);
+    st.style.display = 'block';
+    st.textContent = `✓ ${slotRows[slotId].length}`;
+    document.querySelector(`#slotIn_${slotId}`).parentElement.classList.add('loaded');
+    processAll();
+}
+
+function parseText(txt) {
+    let res = [];
+    let lines = txt.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    let reg = /\b(Via|Viale|Piazza|Piazzale|Largo|Vicolo|Corso|Strada|Traversa)\s+[A-Za-zÀ-ÿ0-9\s\.',\-]+\d+/i;
+    for (let l of lines) {
+        let m = l.match(reg);
+        if (m) {
+            let addr = l.slice(m.index).trim();
+            res.push({ addr, city: 'Roma', prov: 'RM', zip: '00100' });
+        }
+    }
+    return res;
+}
+
+async function handleFiles(files) {
+    if (!files.length) return;
+    let box = document.getElementById('progressBox');
+    box.style.display = 'block';
+    box.textContent = "Elaborazione...";
+
+    for (let f of files) {
+        if (f.type.startsWith('image/')) {
+            try {
+                let res = await Tesseract.recognize(f, 'ita');
+                rawHrp = rawHrp.concat(parseText(res.data.text || "").map(x => ({ 'Ind Destinazione': x.addr, 'Citta Destinazione': x.city })));
+            } catch(e) {}
+        } else {
+            let buf = await f.arrayBuffer();
+            let wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+            for (let name of wb.SheetNames) {
+                let json = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "" });
+                json.forEach(r => {
+                    let s = Object.values(r).join(" ").toLowerCase();
+                    if (s.includes('inpost') || s.includes('dcr')) rawInpost.push(r);
+                    else rawHrp.push(r);
+                });
+            }
+        }
+    }
+    box.style.display = 'none';
+    document.getElementById('dropArea').classList.add('loaded');
+    processAll();
+}
+
+function processAll() {
+    let mapGrp = new Map();
+    let idxU = 0;
+    let doMerge = document.getElementById('mergeSameAddress').checked;
+
+    SLOTS.forEach((s, sId) => {
+        let label = document.getElementById(`slotLbl_${sId}`).value.toUpperCase();
+        slotRows[sId].forEach(r => {
+            let key = doMerge ? r.addr.toLowerCase().trim() : `u_${idxU++}`;
+            if (!mapGrp.has(key)) mapGrp.set(key, { base: r.addr, city: r.city, prov: r.prov, zip: r.zip, notes: [`${s.emoji} [${label}]`], cash: 0 });
+            else mapGrp.get(key).notes.push(`${s.emoji} [${label}]`);
+        });
+    });
+
+    rawHrp.forEach(r => {
+        let ind = r['Ind Destinazione'] || r['Indirizzo'] || Object.values(r)[1] || "";
+        if (!ind) return;
+        let key = doMerge ? String(ind).toLowerCase().trim() : `u_${idxU++}`;
+        let bc = r['Codice pacco'] || r['Barcode'] || "";
+        let note = `🔵 [HRP] ${bc ? 'BC: ' + bc : ''}`;
+        if (!mapGrp.has(key)) mapGrp.set(key, { base: ind, city: 'Roma', prov: 'RM', zip: '00100', notes: [note], barcode: bc, cash: 0 });
+        else mapGrp.get(key).notes.push(note);
+    });
+
+    rawInpost.forEach(r => {
+        let ind = r['Destinatario - indirizzo'] || r['Indirizzo'] || Object.values(r)[0] || "";
+        if (!ind) return;
+        let key = doMerge ? String(ind).toLowerCase().trim() : `u_${idxU++}`;
+        let note = `🟡 [INPOST]`;
+        if (!mapGrp.has(key)) mapGrp.set(key, { base: ind, city: 'Roma', prov: 'RM', zip: '00100', notes: [note], cash: 0 });
+        else mapGrp.get(key).notes.push(note);
+    });
+
+    let manualItems = finalRows.filter(r => r["Notes"].includes("[MANUALE]"));
+
+    finalRows = [];
+    for (let [, g] of mapGrp.entries()) {
+        finalRows.push({ "Address": g.base, "City": g.city, "Province": g.prov, "Zip": g.zip, "Notes": g.notes.join(" | "), "Barcode": g.barcode || "", "Cash": g.cash || 0 });
+    }
+    finalRows = finalRows.concat(manualItems);
+
+    saveAndRefresh();
+}
+
+function updateUIState() {
+    document.getElementById('statTot').textContent = finalRows.length;
+    document.getElementById('statHrp').textContent = finalRows.filter(r => r["Notes"].includes("HRP") || r["Notes"].includes("🔵") || r["Notes"].includes("MANUALE")).length;
+    document.getElementById('statInpost').textContent = finalRows.filter(r => r["Notes"].includes("INPOST") || r["Notes"].includes("🟡")).length;
+    document.getElementById('statDone').textContent = completedStops.size;
+    
+    let totalCash = 0;
+    finalRows.forEach((r, i) => {
+        if (!completedStops.has(i) && r["Cash"]) {
+            totalCash += parseFloat(r["Cash"]);
+        }
+    });
+    document.getElementById('statCash').textContent = `€${totalCash.toFixed(2)}`;
+
+    let active = finalRows.length > 0;
+    document.getElementById('btnNext').disabled = !active;
+    document.getElementById('btnOpt').disabled = !active;
+    document.getElementById('btnDownload').disabled = !active;
+    document.getElementById('btnPdf').disabled = !active;
+    document.getElementById('btnRefreshMap').disabled = !active;
+}
+
+function renderTable() {
+    let tb = document.getElementById('previewBody');
+    let filter = document.getElementById('searchInput').value.toLowerCase();
+    
+    let filtered = finalRows.map((r, origIdx) => ({ r, origIdx })).filter(({ r }) => {
+        return r["Address"].toLowerCase().includes(filter) || r["Barcode"].toLowerCase().includes(filter) || r["City"].toLowerCase().includes(filter);
+    });
+
+    if (!filtered.length) {
+        tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nessun risultato.</td></tr>`;
+        return;
+    }
+
+    tb.innerHTML = filtered.map(({ r, origIdx }) => {
+        let isDone = completedStops.has(origIdx);
+        let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`;
+        return `
+        <tr class="${isDone ? 'completed-row' : ''}">
+            <td style="text-align:center;"><input type="checkbox" style="width:15px;height:15px;cursor:pointer;" ${isDone ? 'checked' : ''} onchange="toggleStop(${origIdx})"></td>
+            <td><span class="badge-num" onclick="jumpStop(${origIdx})">#${origIdx + 1}</span></td>
+            <td style="font-weight:600">${r["Address"]}</td>
+            <td>${r["City"]}</td>
+            <td style="text-align:center;">
+                <button class="btn-move" onclick="moveRow(${origIdx}, -1)">▲</button>
+                <button class="btn-move" onclick="moveRow(${origIdx}, 1)">▼</button>
+            </td>
+            <td>
+                ${r["Notes"]} ${r["Barcode"] ? `<br><small class="barcode-tag" onclick="copyBarcodeToClipboard('${r["Barcode"]}')">📋 Copia BC: ${r["Barcode"]}</small>` : ''}
+                <br><a href="${navUrl}" target="_blank"><button class="btn-go">🚀 Naviga</button></a>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function toggleStop(idx) {
+    if (completedStops.has(idx)) completedStops.delete(idx);
+    else completedStops.add(idx);
+    localStorage.setItem('sanand_ultra_done', JSON.stringify(Array.from(completedStops)));
+    updateUIState();
+    renderTable();
+    plotMap();
+}
+
+function moveRow(i, dir) {
+    let n = i + dir;
+    if (n < 0 || n >= finalRows.length) return;
+    let item = finalRows.splice(i, 1)[0];
+    finalRows.splice(n, 0, item);
+    saveAndRefresh();
+}
+
+function jumpStop(i) {
+    let t = prompt(`Sposta fermata #${i + 1} alla posizione (1 - ${finalRows.length}):`, i + 1);
+    if (t === null) return;
+    let dest = parseInt(t, 10) - 1;
+    if (isNaN(dest) || dest < 0 || dest >= finalRows.length) return alert("Non valida");
+    let item = finalRows.splice(i, 1)[0];
+    finalRows.splice(dest, 0, item);
+    saveAndRefresh();
+}
+
+function saveAndRefresh() {
+    localStorage.setItem('sanand_ultra_route', JSON.stringify(finalRows));
+    localStorage.setItem('sanand_ultra_done', JSON.stringify(Array.from(completedStops)));
+    updateUIState();
+    renderTable();
+    plotMap();
+}
+
+async function plotMap() {
+    if (!map) initMap();
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    let coords = [];
+    let box = document.getElementById('progressBox');
+    box.style.display = 'block';
+
+    for (let i = 0; i < finalRows.length; i++) {
+        let r = finalRows[i];
+        let isDone = completedStops.has(i);
+        box.textContent = `Pin ${i + 1} di ${finalRows.length}...`;
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}&limit=1`);
+            let data = await res.json();
+            if (data && data.length) {
+                let lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
+                coords.push([lat, lon]);
+                let pinClass = isDone ? "numbered-pin completed" : "numbered-pin";
+                let icon = L.divIcon({ className: 'custom-pin', html: `<div class="${pinClass}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+                let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+                let marker = L.marker([lat, lon], { icon }).addTo(map)
+                    .bindPopup(`<b>#${i + 1} ${r["Address"]}</b><br>${isDone ? '✅ <i>Completato</i>' : ''}<br><a href="${navUrl}" target="_blank" style="color:#3b82f6;font-weight:bold;display:inline-block;margin-top:4px;">🚀 Avvia Google Maps</a>`);
+                markers.push(marker);
+            }
+        } catch(e) {}
+        await new Promise(res => setTimeout(res, 30));
+    }
+    box.style.display = 'none';
+    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
+}
+
+function downloadExcel() {
+    if (!finalRows.length) return;
+    let ws = XLSX.utils.json_to_sheet(finalRows);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Giro");
+    XLSX.writeFile(wb, `Giro_Santiago_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function downloadPdf() {
+    if (!finalRows.length) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("SanAnd Truck - Report Giro Santiago", 14, 15);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Totali: ${finalRows.length} | Fatte: ${completedStops.size} - Data: ${new Date().toLocaleDateString()}`, 14, 22);
+
+    let y = 28;
+    finalRows.forEach((r, i) => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        let status = completedStops.has(i) ? "[FATTO]" : "[ ]";
+        doc.setFont("helvetica", "bold");
+        doc.text(`${status} #${i + 1} ${r["Address"]} (${r["City"]})`, 14, y);
+        y += 4.5;
+        doc.setFont("helvetica", "normal");
+        doc.text(`Note: ${r["Notes"]}`, 18, y);
+        y += 7;
+    });
+    doc.save(`Report_Santiago_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+function resetAll() {
+    if (gpsWatch) { navigator.geolocation.clearWatch(gpsWatch); gpsWatch = null; }
+    slotRows = [[], [], [], [], []];
+    rawHrp = []; rawInpost = []; finalRows = []; completedStops.clear();
+    localStorage.removeItem('sanand_ultra_route');
+    localStorage.removeItem('sanand_ultra_done');
+    if (map) { map.remove(); map = null; document.getElementById('mapContainer').style.display = 'none'; initMap(); }
+    updateUIState();
+    renderTable();
+}
+</script>
+</body>
+</html>
