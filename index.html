@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0b1120">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd Truck">
-    <title>SanAnd Truck Enterprise v24.0 Global</title>
+    <title>SanAnd Truck Enterprise v26.0</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
-            --bg: #0b1120; --card: #1e293b; --border: #334155; --text: #f8fafc;
-            --muted: #94a3b8; --blue: #3b82f6; --green: #10b981; --yellow: #facc15; --cyan: #00f2fe; --purple: #8b5cf6;
+            --bg: #000000; --card: #0f172a; --border: #1e293b; --text: #f8fafc;
+            --muted: #94a3b8; --tiffany: #00f2fe; --green: #10b981; --red: #ef4444; --purple: #8b5cf6;
         }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         input, select { user-select: text; }
@@ -25,613 +24,82 @@
         body { padding: 6px 8px 16px 8px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 1200px; }
 
-        /* Schermata Login */
+        /* Login Autista */
         #loginScreen {
             position: fixed; inset: 0; background: var(--bg); z-index: 999999;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
         .login-card {
-            background: var(--card); border: 2px solid var(--yellow); border-radius: 16px;
-            padding: 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: var(--card); border: 2px solid var(--tiffany); border-radius: 16px;
+            padding: 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
         }
-        .login-logo { font-size: 42px; margin-bottom: 8px; }
-        .login-title { font-size: 17px; font-weight: 800; color: var(--yellow); margin-bottom: 2px; }
+        .company-logo-area {
+            width: 70px; height: 70px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 28px;
+        }
+        .login-title { font-size: 17px; font-weight: 800; color: var(--tiffany); margin-bottom: 2px; }
         .login-sub { font-size: 10.5px; color: var(--muted); margin-bottom: 18px; }
-        .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; outline: none; text-align: center; }
-        .login-input:focus { border-color: var(--yellow); }
-        .btn-login { background: var(--yellow); color: #422006; font-weight: 800; width: 100%; padding: 11px; border-radius: 8px; font-size: 12.5px; border: none; cursor: pointer; }
+        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; outline: none; text-align: center; }
+        .login-input:focus { border-color: var(--tiffany); }
+        .btn-login { background: var(--tiffany); color: #000; font-weight: 800; width: 100%; padding: 11px; border-radius: 8px; font-size: 12.5px; border: none; cursor: pointer; }
 
         /* App Principale */
         #appMain { display: none; width: 100%; flex-direction: column; }
 
         header {
             display: flex; justify-content: space-between; align-items: center;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(250, 204, 21, 0.4); margin-bottom: 6px;
+            background: linear-gradient(135deg, #0f172a 0%, #000000 100%);
+            padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0, 242, 254, 0.3); margin-bottom: 6px;
         }
-        header h1 { margin: 0; font-size: 13px; color: var(--yellow); }
+        header h1 { margin: 0; font-size: 13px; color: var(--tiffany); }
         header p { margin: 2px 0 0 0; color: var(--muted); font-size: 10px; }
 
-        .manual-card { background: var(--card); border: 1.5px solid var(--cyan); border-radius: 8px; padding: 7px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 5px; }
-        .manual-row { display: grid; grid-template-columns: 1fr 1.8fr 1fr 0.8fr auto auto; gap: 4px; }
+        .manual-card { background: var(--card); border: 1.5px solid var(--tiffany); border-radius: 8px; padding: 7px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 5px; }
+        .manual-row { display: grid; grid-template-columns: 1.2fr 2fr 1fr 0.9fr auto; gap: 4px; }
         @media (max-width: 768px) { .manual-row { grid-template-columns: 1fr; } }
-        .manual-input { background: var(--bg); border: 1px solid var(--border); color: white; padding: 6px 8px; border-radius: 5px; font-size: 11px; outline: none; }
-        .manual-input:focus { border-color: var(--cyan); }
-
-        .progress-box { display: none; background: #0f172a; border: 1px solid #3b82f6; border-radius: 6px; padding: 5px; margin-bottom: 6px; text-align: center; font-size: 10.5px; font-weight: 600; color: #60a5fa; }
+        .manual-input { background: #000; border: 1px solid var(--border); color: white; padding: 6px 8px; border-radius: 5px; font-size: 11px; outline: none; }
+        .manual-input:focus { border-color: var(--tiffany); }
 
         #mapContainer {
-            width: 100%; height: 320px; background: var(--card); border: 2px solid var(--cyan);
+            width: 100%; height: 320px; background: var(--card); border: 2px solid var(--tiffany);
             border-radius: 8px; margin-bottom: 6px; position: relative; z-index: 5;
         }
         #mapContainer.fullscreen { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 99999; border-radius: 0; border: none; }
-        .map-fullscreen-btn { position: absolute; top: 6px; right: 6px; z-index: 1000; background: #0f172a; color: #f8fafc; border: 1px solid var(--cyan); padding: 3px 6px; border-radius: 5px; font-size: 9.5px; font-weight: bold; cursor: pointer; }
-        .map-gps-btn { position: absolute; top: 6px; left: 6px; z-index: 1000; background: #10b981; color: #022c22; border: none; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .map-fullscreen-btn { position: absolute; top: 6px; right: 6px; z-index: 1000; background: #000; color: #fff; border: 1px solid var(--tiffany); padding: 3px 6px; border-radius: 5px; font-size: 9.5px; font-weight: bold; cursor: pointer; }
+        .map-gps-btn { position: absolute; top: 6px; left: 6px; z-index: 1000; background: var(--tiffany); color: #000; border: none; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        .numbered-pin { background: #3b82f6; color: white; border: 2px solid #ffffff; border-radius: 50%; text-align: center; font-weight: 800; font-size: 11px; line-height: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-        .numbered-pin.completed { background: #10b981 !important; border-color: #f8fafc !important; }
+        .numbered-pin { background: var(--tiffany); color: #000; border: 2px solid #ffffff; border-radius: 50%; text-align: center; font-weight: 800; font-size: 11px; line-height: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+        .numbered-pin.completed { background: var(--green) !important; color: #fff !important; }
 
         .controls-bar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 5px; }
-        .search-box { width: 100%; padding: 6px 9px; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; color: white; font-size: 11px; outline: none; }
-        .search-box:focus { border-color: var(--cyan); }
+        .search-box { width: 100%; padding: 6px 9px; background: #000; border: 1px solid var(--border); border-radius: 5px; color: white; font-size: 11px; outline: none; }
+        .search-box:focus { border-color: var(--tiffany); }
 
         .action-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
 
-        button { background: var(--blue); color: white; border: none; padding: 7px 5px; border-radius: 5px; font-size: 10.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; }
-        button:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-add { background: #10b981; color: #022c22; font-weight: 800; }
-        .btn-cam { background: #7c3aed; color: #fff; font-weight: 800; }
-        .btn-pod { background: #7c3aed; color: #fff; font-weight: 800; padding: 4px 6px; font-size: 10px; }
-        .btn-reset { background: #475569; }
-        .btn-go { background: #06b6d4; color: #042f2e; padding: 3px 5px; font-size: 10px; border-radius: 4px; font-weight: 800; margin-top: 2px; }
+        button { background: var(--tiffany); color: #000; border: none; padding: 7px 5px; border-radius: 5px; font-size: 10.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; background: #333; color: #888; }
+        .btn-add { background: var(--green); color: #fff; font-weight: 800; }
+        .btn-pod { background: var(--purple); color: #fff; font-weight: 800; padding: 4px 6px; font-size: 10px; }
+        .btn-reset { background: #334155; color: #fff; }
+        .btn-go { background: var(--tiffany); color: #000; padding: 3px 5px; font-size: 10px; border-radius: 4px; font-weight: 800; margin-top: 2px; }
         .btn-wa { background: #25d366; color: #fff; padding: 3px 5px; font-size: 10px; border-radius: 4px; font-weight: 800; margin-top: 2px; text-decoration: none; display: inline-block; text-align: center; }
-        .badge-num { background: #3b82f6; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 10.5px; }
+        .badge-num { background: var(--tiffany); color: #000; padding: 2px 5px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 10.5px; }
         tr.completed-row { opacity: 0.4; background: rgba(16, 185, 129, 0.05); text-decoration: line-through; }
-        tr.near-stop { border-left: 4px solid var(--yellow); }
+        tr.near-stop { border-left: 4px solid var(--tiffany); }
 
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 6px; text-align: center; }
-        .stat-box .num { font-size: 14px; font-weight: 700; margin-top: 1px; }
+        .stat-box .num { font-size: 14px; font-weight: 700; margin-top: 1px; color: var(--tiffany); }
         .stat-box .lbl { font-size: 8.5px; color: var(--muted); }
 
         .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; min-width: 420px; }
-        th { background: #0f172a; color: var(--muted); padding: 6px; border-bottom: 1px solid var(--border); }
-        td { padding: 6px; border-bottom: 1px solid #263349; vertical-align: middle; }
+        th { background: #000; color: var(--muted); padding: 6px; border-bottom: 1px solid var(--border); }
+        td { padding: 6px; border-bottom: 1px solid #1a2333; vertical-align: middle; }
         .empty-state { padding: 12px 8px; text-align: center; color: var(--muted); font-size: 11px; }
 
-        /* Modale Globale POD (Doppia foto + Firma + Offline Status) */
+        /* Modale Globale POD */
         #podModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; padding: 12px; }
-        .pod-content { background: var(--card); border: 2px solid var(--cyan); border-radius: 10px; padding: 12px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 7px; text-align: center; max-height: 95vh; overflow-y: auto; }
-        .pod-preview { width: 100%; height: 110px; background: #0f172a; border: 1px dashed var(--border); border-radius: 6px; display: flex; justify-content: center; align-items: center; color: var(--muted); font-size: 10px; overflow: hidden; position: relative; }
-        .pod-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .sig-canvas { width: 100%; height: 90px; background: #ffffff; border-radius: 6px; cursor: crosshair; touch-action: none; }
-    </style>
-</head>
-<body>
-
-<!-- LOGIN AUTISTA -->
-<div id="loginScreen">
-    <div class="login-card">
-        <div class="login-logo">🚚</div>
-        <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Global Edition v24.0 (Offline-First)</div>
-        
-        <input type="text" id="driverName" class="login-input" placeholder="Nome Autista (es. Santiago)">
-        <input type="text" id="terminalId" class="login-input" placeholder="Codice Terminale (es. TP784-02)" value="TP784-02-Santiago">
-        
-        <button class="btn-login" onclick="handleLogin()">Accedi al Giro</button>
-    </div>
-</div>
-
-<!-- APP PRINCIPALE -->
-<div id="appMain" class="container">
-    <header>
-        <div>
-            <h1>SanAnd Truck Enterprise</h1>
-            <p>Driver: <span id="lblDriver" style="color:var(--cyan)">Santiago</span> | <span id="cloudStatus" style="color:#10b981">● Sync Offline</span></p>
-        </div>
-        <button onclick="handleLogout()" style="width:auto; padding:3px 6px; font-size:9px; background:#ef4444;">Esci</button>
-    </header>
-
-    <!-- Modulo Presa in Carico Semplificato con Foto -->
-    <div class="manual-card">
-        <div style="font-size:10px; font-weight:700; color:var(--cyan);">📦 PRESA IN CARICO PACCO (CODICE INTERNO SANAND)</div>
-        <div class="manual-row">
-            <input type="text" id="manCode" class="manual-input" placeholder="Cod. SanAnd (es. SAN-001)">
-            <input type="text" id="manAddress" class="manual-input" placeholder="Indirizzo (Via Roma 10)">
-            <input type="text" id="manCity" class="manual-input" value="Roma" placeholder="Città">
-            <input type="number" id="manCash" class="manual-input" placeholder="€ Cash" value="0" step="0.5">
-            <button class="btn-cam" onclick="scanLabelForAutoCode()">📷 Foto</button>
-            <button class="btn-add" onclick="addEnterpriseStop()">+ Inserisci</button>
-        </div>
-    </div>
-
-    <div id="mapContainer">
-        <button class="map-gps-btn" onclick="centerMapOnUser()">📍 Centra GPS</button>
-        <button class="map-fullscreen-btn" onclick="toggleFullscreen()">⛶ Schermo Intero</button>
-    </div>
-
-    <div class="progress-box" id="progressBox">Elaborazione in corso...</div>
-
-    <div class="controls-bar">
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cerca per codice o indirizzo..." oninput="renderTable()">
-        <div class="action-bar">
-            <button style="background:#06b6d4; color:#042f2e;" id="btnRefreshMap" onclick="plotMap()" disabled>🗺️ Aggiorna Mappa</button>
-            <button class="btn-reset" onclick="resetAll()">🔄 Svuota Giro</button>
-        </div>
-    </div>
-
-    <div class="stats-bar">
-        <div class="stat-box"><div class="lbl">TOTALI</div><div class="num" id="statTot">0</div></div>
-        <div class="stat-box"><div class="lbl">FATTE</div><div class="num" id="statDone" style="color:#10b981">0</div></div>
-        <div class="stat-box"><div class="lbl">CASH RESIDUO</div><div class="num" id="statCash" style="color:#f43f5e">€0</div></div>
-    </div>
-
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 32px; text-align:center;">POD</th>
-                    <th style="width: 40px;">#ID</th>
-                    <th>Codice Interno</th>
-                    <th>Indirizzo Destinazione</th>
-                    <th>Città</th>
-                    <th>Azioni & Cliente</th>
-                </tr>
-            </thead>
-            <tbody id="previewBody">
-                <tr><td colspan="6" class="empty-state">Nessun pacco in carico. Registra il primo pacco.</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Modale Globale POD (Doppia foto + Firma Digitale) -->
-<div id="podModal">
-    <div class="pod-content">
-        <h3 id="podTitle" style="margin:0; font-size:12.5px; color:var(--cyan);">Conferma Consegna Globale (POD)</h3>
-        
-        <div>
-            <div style="font-size:9px; font-weight:bold; margin-bottom:1px;">1️⃣ FOTO ETICHETTA</div>
-            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)">
-                <span id="text1">📷 Tocca per etichetta</span>
-            </div>
-        </div>
-
-        <div>
-            <div style="font-size:9px; font-weight:bold; margin-bottom:1px;">2️⃣ FOTO CIVICO</div>
-            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)">
-                <span id="text2">📷 Tocca per civico</span>
-            </div>
-        </div>
-
-        <div>
-            <div style="font-size:9px; font-weight:bold; margin-bottom:1px;">3️⃣ FIRMA CLIENTE (SULLO SCHERMO)</div>
-            <canvas id="sigCanvas" class="sig-canvas"></canvas>
-            <button onclick="clearSignature()" style="background:#334155; font-size:9px; padding:2px; margin-top:2px;">Pulisci Firma</button>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:3px;">
-            <button class="btn-reset" onclick="closePodModal()">Annulla</button>
-            <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
-        </div>
-    </div>
-</div>
-
-<script>
-let finalRows = [];
-let completedStops = new Set();
-let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
-let currentPodIndex = null;
-let podPhotos = { photo1: null, photo2: null, signature: null };
-let canvas, ctx, drawing = false;
-
-window.addEventListener('DOMContentLoaded', () => {
-    initSignatureCanvas();
-    let savedDriver = localStorage.getItem('sanand_driver');
-    let savedTerm = localStorage.getItem('sanand_terminal');
-    if (savedDriver && savedTerm) {
-        document.getElementById('driverName').value = savedDriver;
-        document.getElementById('terminalId').value = savedTerm;
-        handleLogin(true);
-    }
-    
-    // Gestione stato Online/Offline reale
-    window.addEventListener('online', () => document.getElementById('cloudStatus').textContent = "● Online Sync");
-    window.addEventListener('offline', () => document.getElementById('cloudStatus').textContent = "● Offline Mode");
-});
-
-function initSignatureCanvas() {
-    canvas = document.getElementById('sigCanvas');
-    ctx = canvas.getContext('2d');
-    
-    function resizeCanvas() {
-        let rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-    }
-    setTimeout(resizeCanvas, 300);
-
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', (e) => { startDrawing(e.touches[0]); e.preventDefault(); }, {passive: false});
-    canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); }, {passive: false});
-    canvas.addEventListener('touchend', stopDrawing);
-}
-
-function startDrawing(e) {
-    drawing = true;
-    ctx.beginPath();
-    let rect = canvas.getBoundingClientRect();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-}
-
-function draw(e) {
-    if (!drawing) return;
-    let rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
-
-function stopDrawing() { drawing = false; checkPodValid(); }
-function clearSignature() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    checkPodValid();
-}
-
-function handleLogin(skipPrompt = false) {
-    let dName = document.getElementById('driverName').value.trim();
-    let tId = document.getElementById('terminalId').value.trim();
-    if (!dName || !tId) { alert("Inserisci nome autista e codice terminale."); return; }
-
-    localStorage.setItem('sanand_driver', dName);
-    localStorage.setItem('sanand_terminal', tId);
-
-    document.getElementById('lblDriver').textContent = dName;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appMain').style.display = 'flex';
-
-    setTimeout(() => {
-        initMap();
-        startRealtimeGpsTracking();
-        loadStoredData();
-    }, 200);
-}
-
-function handleLogout() {
-    localStorage.removeItem('sanand_driver');
-    location.reload();
-}
-
-function loadStoredData() {
-    let cached = localStorage.getItem('sanand_v24_route');
-    let cachedDone = localStorage.getItem('sanand_v24_done');
-    if (cachedDone) {
-        try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){}
-    }
-    if (cached) {
-        try {
-            finalRows = JSON.parse(cached);
-            if (finalRows.length > 0) {
-                updateUIState();
-                renderTable();
-                plotMap();
-                return;
-            }
-        } catch(e) {}
-    }
-    finalRows = [
-        { "Code": "SAN-101", "Address": "Via del Corso 15", "City": "Roma", "Cash": 20.0, "Photo1": null, "Photo2": null, "Sig": null }
-    ];
-    saveAndRefresh();
-}
-
-function scanLabelForAutoCode() {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = async (e) => {
-        let file = e.target.files[0];
-        if (!file) return;
-        let box = document.getElementById('progressBox');
-        box.style.display = 'block';
-        box.textContent = "Generazione codice interno SanAnd da foto...";
-        try {
-            let res = await Tesseract.recognize(file, 'ita');
-            let text = res.data.text || "";
-            document.getElementById('manCode').value = `SAN-${Math.floor(100 + Math.random() * 900)}`;
-            let lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
-            let reg = /\b(Via|Viale|Piazza|Piazzale|Largo|Vicolo|Corso)\s+[A-Za-zÀ-ÿ0-9\s\.',\-]+\d+/i;
-            for (let l of lines) {
-                let m = l.match(reg);
-                if (m) { document.getElementById('manAddress').value = l.slice(m.index).trim(); break; }
-            }
-            box.style.display = 'none';
-        } catch(err) {
-            box.style.display = 'none';
-            document.getElementById('manCode').value = `SAN-${Math.floor(100 + Math.random() * 900)}`;
-        }
-    };
-    input.click();
-}
-
-function initMap(lat = 41.9028, lng = 12.4964) {
-    if (!map) {
-        let mEl = document.getElementById('mapContainer');
-        mEl.style.display = 'block';
-        map = L.map('mapContainer').setView([lat, lng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    }
-}
-
-function toggleFullscreen() {
-    let mEl = document.getElementById('mapContainer');
-    let btn = document.querySelector('.map-fullscreen-btn');
-    mEl.classList.toggle('fullscreen');
-    btn.textContent = mEl.classList.contains('fullscreen') ? "✕ Chiudi" : "⛶ Schermo Intero";
-    if (map) map.invalidateSize();
-}
-
-function centerMapOnUser() {
-    if (userPos && map) {
-        map.setView([userPos.lat, userPos.lng], 16);
-    } else if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            if (map) {
-                map.setView([userPos.lat, userPos.lng], 16);
-                if (!liveMarker) {
-                    liveMarker = L.circleMarker([userPos.lat, userPos.lng], { radius: 10, color: '#fff', fillColor: '#10b981', fillOpacity: 1, weight: 3 }).addTo(map);
-                } else {
-                    liveMarker.setLatLng([userPos.lat, userPos.lng]);
-                }
-            }
-        }, () => alert("Posizione GPS non disponibile."), { enableHighAccuracy: true });
-    }
-}
-
-// Geofencing & Smart Proximity (Controllo distanza in tempo reale)
-function startRealtimeGpsTracking() {
-    if (navigator.geolocation) {
-        if (gpsWatch) navigator.geolocation.clearWatch(gpsWatch);
-        gpsWatch = navigator.geolocation.watchPosition(pos => {
-            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            if (!liveMarker && map) {
-                liveMarker = L.circleMarker([userPos.lat, userPos.lng], {
-                    radius: 10, color: '#ffffff', fillColor: '#10b981', fillOpacity: 1, weight: 3
-                }).addTo(map).bindPopup("<b>🚚 Furgone Live</b>");
-            } else if (liveMarker) {
-                liveMarker.setLatLng([userPos.lat, userPos.lng]);
-            }
-            checkGeofenceProximity();
-        }, err => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 2000 });
-    }
-}
-
-function checkGeofenceProximity() {
-    if (!userPos || !window.stopCoords) return;
-    // Controlla se il furgone è a meno di 30 metri da una fermata attiva
-    finalRows.forEach((r, idx) => {
-        if (!completedStops.has(idx) && window.stopCoords[idx]) {
-            let dist = getDistanceFromLatLonInMeters(userPos.lat, userPos.lng, window.stopCoords[idx].lat, window.stopCoords[idx].lon);
-            let rowEl = document.getElementById(`row_${idx}`);
-            if (rowEl) {
-                if (dist <= 30) rowEl.classList.add('near-stop');
-                else rowEl.classList.remove('near-stop');
-            }
-        }
-    });
-}
-
-function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-    let R = 6371000;
-    let dLat = deg2rad(lat2-lat1);
-    let dLon = deg2rad(lon2-lon1);
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-function deg2rad(deg) { return deg * (Math.PI/180); }
-
-function addEnterpriseStop() {
-    let code = document.getElementById('manCode').value.trim() || `SAN-${Math.floor(100 + Math.random() * 900)}`;
-    let address = document.getElementById('manAddress').value.trim();
-    let city = document.getElementById('manCity').value.trim() || "Roma";
-    let cash = parseFloat(document.getElementById('manCash').value) || 0;
-
-    if (!address) { alert("Inserisci un indirizzo valido."); return; }
-
-    finalRows.push({ "Code": code, "Address": address, "City": city, "Cash": cash, "Photo1": null, "Photo2": null, "Sig": null });
-    document.getElementById('manCode').value = "";
-    document.getElementById('manAddress').value = "";
-    document.getElementById('manCash').value = "0";
-    saveAndRefresh();
-}
-
-function openPodModal(idx) {
-    currentPodIndex = idx;
-    podPhotos = { photo1: finalRows[idx].Photo1, photo2: finalRows[idx].Photo2, signature: finalRows[idx].Sig };
-    document.getElementById('podTitle').textContent = `Consegna: ${finalRows[idx].Code}`;
-    updatePodPreviews();
-    clearSignature();
-    if (podPhotos.signature) {
-        let img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0);
-        img.src = podPhotos.signature;
-    }
-    document.getElementById('podModal').style.display = 'flex';
-}
-
-function closePodModal() {
-    document.getElementById('podModal').style.display = 'none';
-    currentPodIndex = null;
-}
-
-function capturePodPhoto(photoNum) {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = (e) => {
-        let file = e.target.files[0];
-        if (!file) return;
-        let reader = new FileReader();
-        reader.onload = (event) => {
-            if (photoNum === 1) podPhotos.photo1 = event.target.result;
-            else podPhotos.photo2 = event.target.result;
-            updatePodPreviews();
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
-}
-
-function updatePodPreviews() {
-    let b1 = document.getElementById('previewBox1');
-    let b2 = document.getElementById('previewBox2');
-    
-    if (podPhotos.photo1) b1.innerHTML = `<img src="${podPhotos.photo1}">`;
-    else b1.innerHTML = `<span>📷 Tocca per etichetta</span>`;
-
-    if (podPhotos.photo2) b2.innerHTML = `<img src="${podPhotos.photo2}">`;
-    else b2.innerHTML = `<span>📷 Tocca per civico</span>`;
-
-    checkPodValid();
-}
-
-function checkPodValid() {
-    let isSigNotEmpty = !isCanvasBlank(canvas);
-    let isValid = podPhotos.photo1 && podPhotos.photo2 && isSigNotEmpty;
-    document.getElementById('btnConfirmPod').disabled = !isValid;
-}
-
-function isCanvasBlank(cnv) {
-    const blank = document.createElement('canvas');
-    blank.width = cnv.width; blank.height = cnv.height;
-    return cnv.toDataURL() === blank.toDataURL();
-}
-
-function savePodDelivery() {
-    if (currentPodIndex === null) return;
-    finalRows[currentPodIndex].Photo1 = podPhotos.photo1;
-    finalRows[currentPodIndex].Photo2 = podPhotos.photo2;
-    finalRows[currentPodIndex].Sig = canvas.toDataURL();
-    
-    completedStops.add(currentPodIndex);
-    closePodModal();
-    saveAndRefresh();
-    alert("✅ Consegna registrata con doppia foto, firma e GPS offline!");
-}
-
-function updateUIState() {
-    document.getElementById('statTot').textContent = finalRows.length;
-    document.getElementById('statDone').textContent = completedStops.size;
-    
-    let totalCash = 0;
-    finalRows.forEach((r, i) => {
-        if (!completedStops.has(i) && r["Cash"]) totalCash += parseFloat(r["Cash"]);
-    });
-    document.getElementById('statCash').textContent = `€${totalCash.toFixed(2)}`;
-    document.getElementById('btnRefreshMap').disabled = finalRows.length === 0;
-}
-
-function renderTable() {
-    let tb = document.getElementById('previewBody');
-    let filter = document.getElementById('searchInput').value.toLowerCase();
-    
-    let filtered = finalRows.map((r, origIdx) => ({ r, origIdx })).filter(({ r }) => {
-        return r["Address"].toLowerCase().includes(filter) || r["Code"].toLowerCase().includes(filter) || r["City"].toLowerCase().includes(filter);
-    });
-
-    if (!filtered.length) {
-        tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nessun pacco trovato.</td></tr>`;
-        return;
-    }
-
-    tb.innerHTML = filtered.map(({ r, origIdx }) => {
-        let isDone = completedStops.has(origIdx);
-        let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`;
-        let hasPhotos = r["Photo1"] && r["Photo2"] && r["Sig"];
-        let waText = encodeURIComponent(`Buongiorno, sono il corriere SanAnd Truck per la consegna del pacco ${r["Code"]}. Sono in arrivo al vostro indirizzo.`);
-        let waUrl = `https://wa.me/?text=${waText}`;
-
-        return `
-        <tr id="row_${origIdx}" class="${isDone ? 'completed-row' : ''}">
-            <td style="text-align:center;">
-                <button class="btn-pod" onclick="openPodModal(${origIdx})" style="background:${hasPhotos ? '#10b981' : '#7c3aed'}">
-                    ${hasPhotos ? '📸 OK' : '📷 Foto'}
-                </button>
-            </td>
-            <td><span class="badge-num">#${origIdx + 1}</span></td>
-            <td><span style="color:var(--cyan); font-weight:bold;">${r["Code"]}</span></td>
-            <td style="font-weight:600">${r["Address"]}</td>
-            <td>${r["City"]}</td>
-            <td>
-                ${r["Cash"] > 0 ? `<small style="color:#f43f5e;font-weight:bold;">💶 €${r["Cash"].toFixed(2)}</small><br>` : ''}
-                <a href="${navUrl}" target="_blank"><button class="btn-go">🚀 Naviga</button></a>
-                <a href="${waUrl}" target="_blank"><button class="btn-wa">💬 Avvisa</button></a>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function saveAndRefresh() {
-    localStorage.setItem('sanand_v24_route', JSON.stringify(finalRows));
-    localStorage.setItem('sanand_v24_done', JSON.stringify(Array.from(completedStops)));
-    updateUIState();
-    renderTable();
-    plotMap();
-}
-
-window.stopCoords = {};
-async function plotMap() {
-    if (!map) initMap();
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    let coords = [];
-    let box = document.getElementById('progressBox');
-    box.style.display = 'block';
-
-    for (let i = 0; i < finalRows.length; i++) {
-        let r = finalRows[i];
-        let isDone = completedStops.has(i);
-        box.textContent = `Caricamento pin ${i + 1} di ${finalRows.length}...`;
-        try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}&limit=1`);
-            let data = await res.json();
-            if (data && data.length) {
-                let lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
-                coords.push([lat, lon]);
-                window.stopCoords[i] = { lat, lon };
-                let pinClass = isDone ? "numbered-pin completed" : "numbered-pin";
-                let icon = L.divIcon({ className: 'custom-pin', html: `<div class="${pinClass}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-                let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-                let marker = L.marker([lat, lon], { icon }).addTo(map)
-                    .bindPopup(`<b>#${i + 1} [${r["Code"]}] ${r["Address"]}</b><br>${isDone ? '✅ <i>Consegnato</i>' : '<b style="color:red">Da consegnare</b>'}<br><a href="${navUrl}" target="_blank" style="color:#3b82f6;font-weight:bold;display:inline-block;margin-top:4px;">🚀 Google Maps</a>`);
-                markers.push(marker);
-            }
-        } catch(e) {}
-        await new Promise(res => setTimeout(res, 25));
-    }
-    box.style.display = 'none';
-    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
-}
-
-function resetAll() {
-    if (confirm("Vuoi svuotare tutto il giro corrente?")) {
-        finalRows = []; completedStops.clear(); window.stopCoords = {};
-        localStorage.removeItem('sanand_v24_route');
-        localStorage.removeItem('sanand_v24_done');
-        if (map) { map.remove(); map = null; document.getElementById('mapContainer').style.display = 'none'; initMap(); }
-        updateUIState();
-        renderTable();
-    }
-}
-</script>
-</body>
-</html>
+        .pod-content { background: var(--card); border: 2px solid var(--tiffany); border-radius: 10px; padding: 12px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 7px; text-align: center; max-height: 95vh; overflow-y: auto; }
+        .pod-preview {
