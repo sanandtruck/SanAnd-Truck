@@ -2,13 +2,13 @@ import os
 import io
 import pandas as pd
 import requests
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 
-app = FastAPI(title="SanAnd Truck Logistics Backend")
+app = FastAPI(title="SanAnd Truck Logistics Backend - Secure Admin")
 
-# Configurazione CORS per permettere l'accesso da web app e smartphone
+# Configurazione CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,18 +19,26 @@ app.add_middleware(
 
 # Connessione al database PostgreSQL/PostGIS su Supabase
 DATABASE_URL = os.getenv("DATABASE_URL")
+ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY", "SanAndAdminSecret2026") # La tua password segreta predefinita
+
 engine = create_engine(DATABASE_URL) if DATABASE_URL else None
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "message": "SanAnd Truck Backend attivo 24/7!"}
+    return {"status": "online", "message": "SanAnd Truck Backend sicuro attivo 24/7!"}
 
 @app.post("/api/upload-orders")
-async def upload_orders(file: UploadFile = File(...)):
+async def upload_orders(file: UploadFile = File(...), x_admin_token: str = Header(default="")):
     """
-    Legge file Excel (.xlsx) o CSV, riconosce le colonne,
-    effettua la geocodifica GPS e salva gli ordini su Supabase.
+    Caricamento file Excel/CSV protetto: accessibile SOLO all'amministratore con token corretto.
     """
+    # Controllo di sicurezza amministratore
+    if x_admin_token != ADMIN_SECRET_KEY:
+        raise HTTPException(
+            status_code=403, 
+            detail="Accesso negato: Area riservata esclusivamente all'amministratore di SanAnd Truck."
+        )
+        
     if not engine:
         raise HTTPException(status_code=500, detail="Database non configurato (DATABASE_URL mancante)")
     
@@ -47,7 +55,6 @@ async def upload_orders(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nella lettura del file: {str(e)}")
     
-    # Normalizzazione intestazioni colonne
     df.columns = [str(c).strip().lower() for c in df.columns]
     
     imported_count = 0
@@ -63,8 +70,7 @@ async def upload_orders(file: UploadFile = File(...)):
             if not address or address == 'nan':
                 continue
                 
-            # Geocodifica automatica via Nominatim (OpenStreetMap)
-            lat, lon = 45.4642, 9.1900 # Default coordinate (Milano)
+            lat, lon = 45.4642, 9.1900 
             try:
                 geo_url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(address)}&format=json&limit=1"
                 headers = {'User-Agent': 'SanAndTruckLogistics/1.0'}
@@ -76,7 +82,6 @@ async def upload_orders(file: UploadFile = File(...)):
             except Exception:
                 pass
             
-            # Salvataggio su database PostGIS
             try:
                 sql = text("""
                     INSERT INTO orders (tracking_code, customer_name, customer_phone, delivery_address, delivery_coordinates, status)
