@@ -7,11 +7,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SanAnd Truck">
-    <title>SanAnd Truck Master Edition v29.0</title>
+    <title>SanAnd Truck v30.0 Lightning</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-512.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -77,7 +76,7 @@
         .search-box { width: 100%; padding: 6px 9px; background: #000; border: 1px solid var(--border); border-radius: 5px; color: white; font-size: 11px; outline: none; }
         .search-box:focus { border-color: var(--tiffany); }
 
-        .action-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .action-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 
         button { background: var(--tiffany); color: #000; border: none; padding: 7px 5px; border-radius: 5px; font-size: 10px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; }
         button:disabled { opacity: 0.4; cursor: not-allowed; background: #333; color: #888; }
@@ -87,7 +86,6 @@
         .btn-anomaly { background: var(--orange); color: #fff; font-weight: 800; padding: 4px 6px; font-size: 9.5px; }
         .btn-reset { background: #334155; color: #fff; }
         .btn-opt { background: #38bdf8; color: #000; font-weight: 800; }
-        .btn-pdf { background: var(--red); color: #fff; font-weight: 800; }
         .btn-sos { background: var(--red); color: #fff; font-weight: 800; }
         .btn-go { background: var(--tiffany); color: #000; padding: 3px 5px; font-size: 9.5px; border-radius: 4px; font-weight: 800; margin-top: 2px; }
         .btn-wa { background: #25d366; color: #fff; padding: 3px 5px; font-size: 9.5px; border-radius: 4px; font-weight: 800; margin-top: 2px; text-decoration: none; display: inline-block; text-align: center; }
@@ -122,7 +120,7 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Master Edition v29.0</div>
+        <div class="login-sub">Lightning Edition v30.0</div>
         
         <input type="text" id="driverName" class="login-input" placeholder="Nome Autista (es. Santiago)">
         <input type="text" id="terminalId" class="login-input" placeholder="Codice Terminale (es. TP784-02)" value="TP784-02-Santiago">
@@ -163,7 +161,6 @@
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cerca per codice o indirizzo..." oninput="renderTable()">
         <div class="action-bar">
             <button class="btn-opt" onclick="optimizeRouteTSP()">⚡ Ottimizza</button>
-            <button class="btn-pdf" onclick="generateTurnPdfReport()">📄 Report PDF</button>
             <button class="btn-sos" onclick="triggerEmergencySos()">🚨 SOS</button>
             <button class="btn-reset" onclick="resetAll()">🔄 Svuota</button>
         </div>
@@ -217,4 +214,32 @@
         <div>
             <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">3️⃣ FIRMA CLIENTE</div>
             <canvas id="sigCanvas" class="sig-canvas"></canvas>
-            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:8.5px; padding:2px;">Pulisci
+            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:8.5px; padding:2px;">Pulisci Firma</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:3px;">
+            <button class="btn-reset" onclick="closePodModal()">Annulla</button>
+            <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let finalRows = [];
+let completedStops = new Set();
+let anomalies = new Set();
+let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
+let currentPodIndex = null;
+let podPhotos = { photo1: null, photo2: null, signature: null };
+let canvas, ctx, drawing = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+    let savedDriver = localStorage.getItem('sanand_driver');
+    let savedTerm = localStorage.getItem('sanand_terminal');
+    if (savedDriver && savedTerm) {
+        document.getElementById('driverName').value = savedDriver;
+        document.getElementById('terminalId').value = savedTerm;
+        // Non forziamo il login immediato pesante, lasciamo l'utente libero
+    }
+    window.addEventListener('online', () => document.getElementById('cloudStatus').textContent = "● Online Sync");
+    window.addEventListener('offline', () => document.getElementById('cloudStatus').textContent = "●
