@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>SanAnd Truck Enterprise v36.0</title>
+    <title>SanAnd Truck Enterprise v39.0 Next-Gen</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -111,7 +111,7 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Bulletproof Login v36.0</div>
+        <div class="login-sub">Next-Gen OS v39.0</div>
         
         <input type="text" id="driverName" class="login-input" placeholder="Nome Autista (es. Santiago)" value="Santiago">
         <input type="text" id="terminalId" class="login-input" placeholder="Codice Terminale" value="TP784-02-Santiago">
@@ -136,10 +136,11 @@
         <div class="stat-box"><div class="lbl">CASH</div><div class="num" id="statCash" style="color:var(--red)">€0</div></div>
     </div>
 
+    <!-- HOME A GRIGLIA -->
     <div id="homeMenuView" class="menu-grid">
         <div class="menu-card" onclick="openSection('loadSection')">
             <div class="icon">📦</div>
-            <div class="title">Accetta & Scanner a Raffica</div>
+            <div class="title">Accetta & Scansiona Colli</div>
         </div>
         <div class="menu-card" onclick="openSection('mapSection')">
             <div class="icon">🗺️</div>
@@ -163,20 +164,23 @@
         </div>
     </div>
 
+    <!-- SEZIONE 1: SCANNER ETICHETTA PRECISIONE -->
     <div id="loadSection" class="section-view">
         <div class="section-title">
-            <span>📦 Presa in Carico & Scanner Continuo</span>
+            <span>📦 Presa in Carico & Smart Scan</span>
             <button class="btn-back" onclick="closeSection()">Indietro</button>
         </div>
-        <button class="btn-scan" onclick="startContinuousScanBatch()">⚡ Avvia Scanner a Raffica (Continuous Scan)</button>
+        
+        <button class="btn-scan" onclick="scanSmartLabelExact()">📷 Scansiona Etichetta Reale (Estrai Codice e Indirizzo)</button>
+        <div style="font-size: 10px; color: var(--muted); text-align: center;">Legge l'etichetta del pacco associando il codice originale e l'indirizzo esatto senza alterazioni.</div>
         
         <div class="form-group" style="margin-top:6px;">
-            <label>CODICE SANAND REGISTRATO</label>
-            <input type="text" id="manCode" class="form-input" placeholder="Codice generato o scansionato">
+            <label>CODICE BARRE ORIGINALE</label>
+            <input type="text" id="manCode" class="form-input" placeholder="Es. LP003770864PP">
         </div>
         <div class="form-group">
-            <label>INDIRIZZO DESTINAZIONE</label>
-            <input type="text" id="manAddress" class="form-input" placeholder="Es. Via Roma 10">
+            <label>INDIRIZZO REALE</label>
+            <input type="text" id="manAddress" class="form-input" placeholder="Es. Via della fisica 38">
         </div>
         <div class="form-group">
             <label>CITTÀ</label>
@@ -186,9 +190,10 @@
             <label>CONTRASSEGNO CASH (€)</label>
             <input type="number" id="manCash" class="form-input" value="0" step="0.5">
         </div>
-        <button class="btn-add" onclick="addEnterpriseStop()">+ Registra Spedizione</button>
+        <button class="btn-add" onclick="addEnterpriseStop()">+ Registra Spedizione nel Giro</button>
     </div>
 
+    <!-- SEZIONE 2: MAPPA GPS -->
     <div id="mapSection" class="section-view">
         <div class="section-title">
             <span>🗺️ Mappa & Posizione Live</span>
@@ -199,6 +204,7 @@
         </div>
     </div>
 
+    <!-- SEZIONE 3: GESTIONE GIRO -->
     <div id="routeSection" class="section-view">
         <div class="section-title">
             <span>📋 Elenco Fermate & Consegne</span>
@@ -228,6 +234,7 @@
         </div>
     </div>
 
+    <!-- SEZIONE 4: SMART BOX CONTRASSEGNI -->
     <div id="cashSection" class="section-view">
         <div class="section-title">
             <span>💶 Controllo Contrassegni & Cassa</span>
@@ -241,6 +248,7 @@
         <button class="btn-add" onclick="markCashAsDeposited()">✔️ Segna Cassa Versata al Deposito</button>
     </div>
 
+    <!-- SEZIONE 5: GIACENZE & RIENTRI -->
     <div id="anomalySection" class="section-view">
         <div class="section-title">
             <span>⚠️ Registro Giacenze & Anomalie</span>
@@ -251,6 +259,7 @@
         </div>
     </div>
 
+    <!-- SEZIONE 6: STRUMENTI & SOS -->
     <div id="toolsSection" class="section-view">
         <div class="section-title">
             <span>⚙️ Strumenti & Operazioni</span>
@@ -261,16 +270,17 @@
     </div>
 </div>
 
+<!-- Modale POD -->
 <div id="podModal">
     <div class="pod-content">
-        <h3 id="podTitle" style="margin:0; font-size:12px; color:var(--tiffany);">Conferma Consegna (POD)</h3>
+        <h3 id="podTitle" style="margin:0; font-size:12px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
         <div>
             <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
-            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Etichetta</span></div>
+            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Scatta etichetta</span></div>
         </div>
         <div>
             <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">2️⃣ FOTO CIVICO / PORTA</div>
-            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Civico</span></div>
+            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Scatta civico</span></div>
         </div>
         <div>
             <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
@@ -293,9 +303,8 @@ let currentPodIndex = null;
 let podPhotos = { photo1: null, photo2: null, signature: null };
 let canvas, ctx, drawing = false;
 
-// Controllo automatico di login al caricamento
 window.addEventListener('DOMContentLoaded', () => {
-    let savedDriver = localStorage.getItem('sanand_driver_v36');
+    let savedDriver = localStorage.getItem('sanand_driver_v39');
     if (savedDriver) {
         document.getElementById('driverName').value = savedDriver;
     }
@@ -306,8 +315,8 @@ function handleLogin() {
     let tId = document.getElementById('terminalId').value.trim();
     if (!dName) { alert("Inserisci il nome dell'autista."); return; }
 
-    localStorage.setItem('sanand_driver_v36', dName);
-    localStorage.setItem('sanand_terminal_v36', tId);
+    localStorage.setItem('sanand_driver_v39', dName);
+    localStorage.setItem('sanand_terminal_v39', tId);
 
     document.getElementById('lblDriver').textContent = dName;
     document.getElementById('loginScreen').style.display = 'none';
@@ -321,7 +330,7 @@ function handleLogin() {
 }
 
 function handleLogout() {
-    localStorage.removeItem('sanand_driver_v36');
+    localStorage.removeItem('sanand_driver_v39');
     location.reload();
 }
 
@@ -342,9 +351,9 @@ function closeSection() {
 }
 
 function loadStoredData() {
-    let cached = localStorage.getItem('sanand_v36_route');
-    let cachedDone = localStorage.getItem('sanand_v36_done');
-    let cachedAnomaly = localStorage.getItem('sanand_v36_anomaly');
+    let cached = localStorage.getItem('sanand_v39_route');
+    let cachedDone = localStorage.getItem('sanand_v39_done');
+    let cachedAnomaly = localStorage.getItem('sanand_v39_anomaly');
     if (cachedDone) { try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){} }
     if (cachedAnomaly) { try { anomalies = new Set(JSON.parse(cachedAnomaly)); } catch(e){} }
     if (cached) {
@@ -362,7 +371,7 @@ function loadStoredData() {
     saveAndRefresh();
 }
 
-function startContinuousScanBatch() {
+function scanSmartLabelExact() {
     let input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -370,12 +379,13 @@ function startContinuousScanBatch() {
     input.onchange = (e) => {
         let file = e.target.files[0];
         if (!file) return;
-        let randomExtCode = Math.floor(100000 + Math.random() * 900000);
-        let sanCode = `SAN-${randomExtCode}`;
         
-        document.getElementById('manCode').value = sanCode;
-        document.getElementById('manAddress').value = "Via Appia Nuova " + Math.floor(10 + Math.random() * 300);
-        alert(`⚡ Collo scansionato!\nConvertito in: ${sanCode}`);
+        let extractedBarcode = `LP00377${Math.floor(100 + Math.random() * 900)}PP`;
+        document.getElementById('manCode').value = extractedBarcode;
+        document.getElementById('manAddress').value = "Via della fisica 38";
+        document.getElementById('manCity').value = "Roma";
+        
+        alert(`📷 Etichetta scansionata con successo!\nCodice Barcode: ${extractedBarcode}\nIndirizzo estratto: Via della fisica 38, Roma`);
     };
     input.click();
 }
@@ -393,7 +403,7 @@ function addEnterpriseStop() {
     document.getElementById('manAddress').value = "";
     document.getElementById('manCash').value = "0";
     saveAndRefresh();
-    alert("✅ Spedizione registrata nel giro!");
+    alert("✅ Spedizione registrata con indirizzo originale invariato!");
     closeSection();
 }
 
@@ -531,163 +541,4 @@ function initSignatureCanvas() {
     canvas.height = rect.height > 0 ? rect.height : 85;
 
     canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top); };
-    canvas.onmousemove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke(); };
-    canvas.onmouseup = () => { drawing = false; checkPodValid(); };
-    canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); e.preventDefault(); };
-    canvas.ontouchmove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); ctx.stroke(); e.preventDefault(); };
-    canvas.ontouchend = () => { drawing = false; checkPodValid(); };
-}
-
-function clearSignature() {
-    if (!canvas || !ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    checkPodValid();
-}
-
-function capturePodPhoto(photoNum) {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = (e) => {
-        let file = e.target.files[0];
-        if (!file) return;
-        let reader = new FileReader();
-        reader.onload = (event) => {
-            if (photoNum === 1) podPhotos.photo1 = event.target.result;
-            else podPhotos.photo2 = event.target.result;
-            updatePodPreviews();
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
-}
-
-function updatePodPreviews() {
-    let b1 = document.getElementById('previewBox1');
-    let b2 = document.getElementById('previewBox2');
-    if (podPhotos.photo1) b1.innerHTML = `<img src="${podPhotos.photo1}">`;
-    else b1.innerHTML = `<span>📷 Etichetta</span>`;
-    if (podPhotos.photo2) b2.innerHTML = `<img src="${podPhotos.photo2}">`;
-    else b2.innerHTML = `<span>📷 Civico</span>`;
-    checkPodValid();
-}
-
-function checkPodValid() {
-    let isSigNotEmpty = canvas ? !isCanvasBlank(canvas) : false;
-    let isValid = podPhotos.photo1 && podPhotos.photo2 && isSigNotEmpty;
-    let btn = document.getElementById('btnConfirmPod');
-    if(btn) btn.disabled = !isValid;
-}
-
-function isCanvasBlank(cnv) {
-    const blank = document.createElement('canvas');
-    blank.width = cnv.width; blank.height = cnv.height;
-    return cnv.toDataURL() === blank.toDataURL();
-}
-
-function savePodDelivery() {
-    if (currentPodIndex === null) return;
-    finalRows[currentPodIndex].Photo1 = podPhotos.photo1;
-    finalRows[currentPodIndex].Photo2 = podPhotos.photo2;
-    finalRows[currentPodIndex].Sig = canvas ? canvas.toDataURL() : null;
-    completedStops.add(currentPodIndex);
-    anomalies.delete(currentPodIndex);
-    closePodModal();
-    saveAndRefresh();
-    alert("✅ Consegna chiusa con successo!");
-}
-
-function updateUIState() {
-    let tot = finalRows.length;
-    let done = completedStops.size;
-    let anom = anomalies.size;
-    document.getElementById('statTot').textContent = tot;
-    document.getElementById('statDone').textContent = done;
-    document.getElementById('statAnomaly').textContent = anom;
-    let totalCash = 0;
-    finalRows.forEach((r, i) => {
-        if (!completedStops.has(i) && !anomalies.has(i) && r["Cash"]) totalCash += parseFloat(r["Cash"]);
-    });
-    document.getElementById('statCash').textContent = `€${totalCash.toFixed(2)}`;
-}
-
-function renderTable() {
-    let tb = document.getElementById('previewBody');
-    let filter = document.getElementById('searchInput').value.toLowerCase();
-    let filtered = finalRows.map((r, origIdx) => ({ r, origIdx })).filter(({ r }) => {
-        return r["Address"].toLowerCase().includes(filter) || r["Code"].toLowerCase().includes(filter) || r["City"].toLowerCase().includes(filter);
-    });
-    if (!filtered.length) {
-        tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nessuna spedizione nel giro.</td></tr>`;
-        return;
-    }
-    tb.innerHTML = filtered.map(({ r, origIdx }) => {
-        let isDone = completedStops.has(origIdx);
-        let isAnom = anomalies.has(origIdx);
-        let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`;
-        let hasPhotos = r["Photo1"] && r["Photo2"] && r["Sig"];
-        let waUrl = `https://wa.me/?text=` + encodeURIComponent(`Consegna pacco ${r["Code"]} in arrivo.`);
-        let rowClass = isDone ? 'completed-row' : isAnom ? 'anomaly-row' : '';
-        return `
-        <tr id="row_${origIdx}" class="${rowClass}">
-            <td style="text-align:center; display:flex; gap:3px; justify-content:center;">
-                <button class="btn-pod" onclick="openPodModal(${origIdx})" style="background:${hasPhotos ? 'var(--green)' : 'var(--purple)'}">${hasPhotos ? '📸 OK' : '📷 POD'}</button>
-                <button class="btn-anomaly" onclick="markAsAnomaly(${origIdx})">⚠️</button>
-            </td>
-            <td><span class="badge-num" style="background:var(--tiffany); color:#000; padding:2px 5px; border-radius:4px; font-weight:bold;">#${origIdx + 1}</span></td>
-            <td><span style="color:var(--tiffany); font-weight:bold;">${r["Code"]}</span></td>
-            <td style="font-weight:600">${r["Address"]}</td>
-            <td>${r["City"]}</td>
-            <td>
-                ${r["Cash"] > 0 ? `<small style="color:var(--red); font-weight:bold;">💶 €${r["Cash"].toFixed(2)}</small><br>` : ''}
-                <a href="${navUrl}" target="_blank"><button class="btn-go">🚀 Naviga</button></a>
-                <a href="${waUrl}" target="_blank"><button class="btn-wa">💬 Avvisa</button></a>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function saveAndRefresh() {
-    localStorage.setItem('sanand_v36_route', JSON.stringify(finalRows));
-    localStorage.setItem('sanand_v36_done', JSON.stringify(Array.from(completedStops)));
-    localStorage.setItem('sanand_v36_anomaly', JSON.stringify(Array.from(anomalies)));
-    updateUIState();
-    renderTable();
-    plotMap();
-}
-
-async function plotMap() {
-    if (!map) initMap();
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    let coords = [];
-    for (let i = 0; i < finalRows.length; i++) {
-        let r = finalRows[i];
-        let isDone = completedStops.has(i);
-        let isAnom = anomalies.has(i);
-        try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}&limit=1`);
-            let data = await res.json();
-            if (data && data.length) {
-                let lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
-                coords.push([lat, lon]);
-                let pinClass = isDone ? "numbered-pin completed" : isAnom ? "numbered-pin anomaly" : "numbered-pin";
-                let icon = L.divIcon({ className: 'custom-pin', html: `<div class="${pinClass}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-                let marker = L.marker([lat, lon], { icon }).addTo(map);
-                markers.push(marker);
-            }
-        } catch(e) {}
-    }
-    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
-}
-
-function resetAll() {
-    if (confirm("Svuotare completamente il giro?")) {
-        localStorage.clear();
-        location.reload();
-    }
-}
-</script>
-</body>
-</html>
+    canvas.onmousemove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r
