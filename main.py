@@ -6,9 +6,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 
-app = FastAPI(title="SanAnd Truck Logistics Backend")
+app = FastAPI(title="SanAnd Truck Logistics Backend - Multi-Vendor")
 
-# Configurazione CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,18 +16,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Connessione al database PostgreSQL/PostGIS su Supabase
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL) if DATABASE_URL else None
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "message": "SanAnd Truck Backend attivo 24/7!"}
+    return {"status": "online", "message": "SanAnd Truck Multi-Vendor Backend attivo 24/7!"}
 
 @app.post("/api/upload-orders")
 async def upload_orders(file: UploadFile = File(...)):
     """
-    Caricamento file Excel o CSV diretto e immediato, senza bisogno di chiavi o token.
+    Riconosce e importa automaticamente i file di spedizione sia di HRP che di InPost,
+    geolocalizzando gli indirizzi e salvandoli nel database Supabase centralizzato.
     """
     if not engine:
         raise HTTPException(status_code=500, detail="Database non configurato (DATABASE_URL mancante)")
@@ -53,14 +52,30 @@ async def upload_orders(file: UploadFile = File(...)):
     
     with engine.begin() as conn:
         for idx, row in df.iterrows():
-            tracking = str(row.get('tracking') or row.get('codice') or row.get('tracking_code') or f"TRK-{idx}")
-            customer = str(row.get('cliente') or row.get('customer') or row.get('nome') or "Cliente Sconosciuto")
-            address = str(row.get('indirizzo') or row.get('address') or row.get('destinazione') or "")
-            phone = str(row.get('telefono') or row.get('phone') or "")
-            
+            # Controllo automatico del formato (InPost vs HRP)
+            if 'codice pacco' in df.columns or 'destinatario - indirizzo' in df.columns:
+                # Tracciato INPOST
+                tracking = str(row.get('codice pacco') or f"INPOST-{idx}")
+                customer = str(row.get('mittente - denominazione') or "InPost")
+                address = str(row.get('destinazione - indirizzo') or '')
+                phone = str(row.get('destinazione - telefono') or '')
+            else:
+                # Tracciato HRP (o generico precedente)
+                tracking = str(row.get('barcode') or row.get('tracking') or f"HRP-{idx}")
+                customer = str(row.get('den_destinatario') or row.get('cliente') or "HRP Customer")
+                
+                addr = str(row.get('ind_destinatario') or row.get('address line 1') or '')
+                city = str(row.get('citta_destinatario') or row.get('city') or '')
+                cap = str(row.get('cap_destinatario') or row.get('zip') or '')
+                address_parts = [p for p in [addr, city, cap] if p and p != 'nan']
+                address = ", ".join(address_parts)
+                
+                phone = str(row.get('cel_destinatario') or row.get('tel_destinatario') or '')
+
             if not address or address == 'nan':
                 continue
                 
+            # Geocodifica automatica via OpenStreetMap (Nominatim)
             lat, lon = 45.4642, 9.1900 
             try:
                 geo_url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(address)}&format=json&limit=1"
@@ -73,11 +88,15 @@ async def upload_orders(file: UploadFile = File(...)):
             except Exception:
                 pass
             
+            # Salvataggio nel database centralizzato Supabase
             try:
                 sql = text("""
                     INSERT INTO orders (tracking_code, customer_name, customer_phone, delivery_address, delivery_coordinates, status)
                     VALUES (:tracking, :customer, :phone, :address, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), 'PENDING')
-                    ON CONFLICT (tracking_code) DO NOTHING;
+                    ON CONFLICT (tracking_code) DO UPDATE 
+                    SET customer_name = EXCLUDED.customer_name,
+                        customer_phone = EXCLUDED.customer_phone,
+                        delivery_address = EXCLUDED.delivery_address;
                 """)
                 conn.execute(sql, {
                     "tracking": tracking,
@@ -103,7 +122,7 @@ def get_orders():
         return []
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT id, tracking_code, customer_name, delivery_address, status FROM orders ORDER BY created_at DESC LIMIT 50"))
+            result = conn.execute(text("SELECT id, tracking_code, customer_name, delivery_address, status FROM orders ORDER BY created_at DESC LIMIT 100"))
             orders = [dict(row._mapping) for row in result]
             return orders
     except Exception as e:
