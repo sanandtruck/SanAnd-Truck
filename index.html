@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>SanAnd Truck Enterprise v51.0</title>
+    <title>SanAnd Truck Enterprise v52.0</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -20,34 +20,36 @@
 
         #loginScreen {
             position: fixed; inset: 0; background: var(--bg); z-index: 999999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px;
             overflow-y: auto;
         }
         .login-card {
             background: var(--card); border: 2px solid var(--tiffany); border-radius: 16px;
-            padding: 16px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
-            display: flex; flex-direction: column; gap: 8px; margin: auto;
+            padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+            display: flex; flex-direction: column; gap: 8px; position: relative;
         }
         .company-logo-area {
-            width: 50px; height: 50px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 20px;
+            width: 55px; height: 55px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 22px;
         }
         .login-title { font-size: 16px; font-weight: 800; color: var(--tiffany); margin-bottom: 2px; }
         .login-sub { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
         
-        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 12px; outline: none; text-align: center; }
+        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 11px; border-radius: 8px; font-size: 12.5px; outline: none; text-align: center; }
         .login-input:focus { border-color: var(--tiffany); }
         
-        .terminal-list {
-            max-height: 110px; overflow-y: auto; background: #000; border: 1px solid var(--border); border-radius: 8px;
-            display: flex; flex-direction: column; text-align: left;
+        /* Box a comparsa identico alla seconda immagine del cliente */
+        .terminal-dropdown {
+            position: absolute; top: 135px; left: 18px; right: 18px;
+            max-height: 180px; overflow-y: auto; background: #0f172a; border: 2px solid var(--tiffany); border-radius: 8px;
+            display: none; flex-direction: column; text-align: left; z-index: 10000; box-shadow: 0 10px 25px rgba(0,0,0,0.9);
         }
         .terminal-item {
-            padding: 7px 10px; font-size: 11px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text);
+            padding: 10px 12px; font-size: 12px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text); background: #000;
         }
-        .terminal-item:hover, .terminal-item.selected { background: rgba(0, 242, 254, 0.2); color: var(--tiffany); font-weight: bold; }
+        .terminal-item:hover, .terminal-item.selected { background: rgba(0, 242, 254, 0.25); color: var(--tiffany); font-weight: bold; }
 
-        .btn-login { background: var(--tiffany); color: #000; font-weight: 800; width: 100%; padding: 11px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; margin-top: 2px; }
+        .btn-login { background: var(--tiffany); color: #000; font-weight: 800; width: 100%; padding: 12px; border-radius: 8px; font-size: 12.5px; border: none; cursor: pointer; margin-top: 4px; }
 
         #appMain { display: none; width: 100%; flex-direction: column; gap: 8px; }
         header {
@@ -123,11 +125,11 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Laser Zebra Fleet v51.0</div>
+        <div class="login-sub">Master Fleet OS v52.0</div>
         
-        <input type="text" id="terminalSearch" class="login-input" placeholder="🔍 Cerca il tuo nome o terminale..." oninput="filterTerminals()" onclick="filterTerminals()">
+        <input type="text" id="terminalSearch" class="login-input" placeholder="🔍 Cerca o seleziona terminale..." onfocus="showTerminalDropdown()" oninput="filterTerminals()">
         
-        <div id="terminalList" class="terminal-list"></div>
+        <div id="terminalDropdown" class="terminal-dropdown"></div>
         
         <input type="password" id="loginPin" class="login-input" placeholder="🔑 Inserisci PIN (es. 0000)" maxlength="4">
         
@@ -304,4 +306,331 @@
         </div>
         <button class="btn-scan" onclick="generateDailyReport()" style="background:var(--gold); color:#000;">📊 Genera Report Giornaliero (PDF/WhatsApp)</button>
         <button style="background:var(--red); color:#fff;" onclick="triggerEmergencySos()">🚨 Segnala Emergenza SOS Strada</button>
-        <button style="background:#334155; color:#fff;" onclick="handleLogout()">
+        <button style="background:#334155; color:#fff;" onclick="handleLogout()">🚪 Cambia Terminale / Logout</button>
+    </div>
+</div>
+
+<!-- Modale POD -->
+<div id="podModal">
+    <div class="pod-content">
+        <h3 id="podTitle" style="margin:0; font-size:13px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
+            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Scatta etichetta</span></div>
+        </div>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">2️⃣ FOTO CIVICO / PORTA</div>
+            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Scatta civico</span></div>
+        </div>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
+            <canvas id="sigCanvas" class="sig-canvas"></canvas>
+            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:9px; padding:3px;">Pulisci Firma</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:4px;">
+            <button class="btn-back" style="width:100%" onclick="closePodModal()">Annulla</button>
+            <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modale Causali Giacenze Rapide -->
+<div id="anomalyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:12px;">
+    <div style="background:var(--card); border:2px solid var(--orange); border-radius:10px; padding:16px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:9px; text-align:center;">
+        <h3 style="margin:0; font-size:14px; color:var(--orange);">⚠️ Seleziona Motivo Giacenza</h3>
+        <button onclick="confirmAnomalyReason('Cliente Assente / Citofono Chiuso')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">1. Cliente Assente / Citofono Chiuso</button>
+        <button onclick="confirmAnomalyReason('Indirizzo Errato / Incompleto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">2. Indirizzo Errato / Incompleto</button>
+        <button onclick="confirmAnomalyReason('Destinatario Rifiutato')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">3. Destinatario Rifiutato</button>
+        <button onclick="confirmAnomalyReason('Chiuso per Ferie / Attività Chiusa')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">4. Chiuso per Ferie / Attività Chiusa</button>
+        <button onclick="confirmAnomalyReason('Destinatario Sconosciuto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">5. Destinatario Sconosciuto</button>
+        <button class="btn-back" onclick="closeAnomalyModal()" style="margin-top:6px; width:100%;">Annulla</button>
+    </div>
+</div>
+
+<script>
+const terminalList = [
+    "TP784-01 - Andres",
+    "TP784-02 - Santiago",
+    "TP784-03 - Alcala",
+    "TP784-04 - Massimiliano",
+    "TP784-05 - Gregory",
+    "TP784-06 - Oscar",
+    "TP784-07 - Morese",
+    "TP784-08 - Puma",
+    "TP784-09 - Alessandro",
+    "TP784-10 - Marazzi",
+    "TP784-11 - Motenalla",
+    "TP784-12 - Seby",
+    "TP784-13 - Stella",
+    "TP784-14 - Amaya",
+    "TP784-15 - Sanchez",
+    "TP784-16 - Modonesi",
+    "TP784-17 - Costin",
+    "TP784-20 - Kevin",
+    "TP784-21 - Alberto",
+    "TP784-23 - Fernando",
+    "TP784-24 - Marcangeli",
+    "TP784-25 - RobertoM",
+    "TP784-26 - FabrizioM",
+    "TP784-27 - Fabrizio",
+    "TP784-28 - Ait",
+    "TP784-31 - Venuti",
+    "TP784-34 - Tamilia",
+    "TP784-35 - Silvia",
+    "TP784-36 - William"
+];
+
+let selectedTerminal = "";
+let isMasterUser = false;
+let finalRows = [];
+let completedStops = new Set();
+let anomalies = new Set();
+let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
+let currentPodIndex = null;
+let targetAnomalyIndex = null;
+let podPhotos = { photo1: null, photo2: null, signature: null };
+let canvas, ctx, drawing = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+    renderTerminalList(terminalList);
+    
+    // Controllo Sessione Persistente (Rimani Connesso)
+    let savedTerminal = localStorage.getItem('sanand_authorized_terminal');
+    let savedMaster = localStorage.getItem('sanand_is_master');
+    if (savedTerminal) {
+        selectedTerminal = savedTerminal;
+        isMasterUser = (savedMaster === 'true');
+        document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
+        
+        let loginEl = document.getElementById('loginScreen');
+        if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
+        
+        let mainEl = document.getElementById('appMain');
+        if (mainEl) { mainEl.style.display = 'flex'; }
+
+        setTimeout(() => {
+            initMap();
+            startRealtimeGpsTracking();
+            loadStoredData();
+        }, 50);
+    }
+    
+    // Chiusura dropdown al click esterno
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#terminalSearch') && !e.target.closest('#terminalDropdown')) {
+            hideTerminalDropdown();
+        }
+    });
+});
+
+function renderTerminalList(items) {
+    let listEl = document.getElementById('terminalDropdown');
+    if (!items.length) {
+        listEl.innerHTML = `<div style="padding:10px; text-align:center; color:var(--muted); font-size:11px;">Nessun terminale trovato</div>`;
+        return;
+    }
+    listEl.innerHTML = items.map(item => `
+        <div class="terminal-item ${selectedTerminal === item ? 'selected' : ''}" onclick="selectTerminal('${item}')">
+            ${item}
+        </div>
+    `).join('');
+}
+
+function showTerminalDropdown() {
+    let dd = document.getElementById('terminalDropdown');
+    dd.style.display = 'flex';
+    filterTerminals();
+}
+
+function hideTerminalDropdown() {
+    let dd = document.getElementById('terminalDropdown');
+    if(dd) dd.style.display = 'none';
+}
+
+function filterTerminals() {
+    let query = document.getElementById('terminalSearch').value.toLowerCase();
+    let filtered = terminalList.filter(t => t.toLowerCase().includes(query));
+    renderTerminalList(filtered);
+    let dd = document.getElementById('terminalDropdown');
+    dd.style.display = 'flex';
+}
+
+function selectTerminal(item) {
+    selectedTerminal = item;
+    document.getElementById('terminalSearch').value = item;
+    hideTerminalDropdown();
+}
+
+function handleLogin() {
+    let pinInput = document.getElementById('loginPin').value.trim();
+    let inputVal = document.getElementById('terminalSearch').value.trim();
+    
+    if (!selectedTerminal && inputVal) {
+        let match = terminalList.find(t => t.toLowerCase().includes(inputVal.toLowerCase()));
+        if (match) selectedTerminal = match;
+        else selectedTerminal = inputVal;
+    }
+
+    if (!selectedTerminal) {
+        alert("Seleziona o cerca il tuo terminale dall'elenco.");
+        return;
+    }
+
+    isMasterUser = (selectedTerminal.includes("TP784-01 - Andres") || selectedTerminal.includes("TP784-02 - Santiago"));
+    
+    let requiredPin = isMasterUser ? "1234" : "0000";
+    if (pinInput !== requiredPin && pinInput !== "1234" && pinInput !== "0000") {
+        alert("❌ PIN errato! Per gli autisti il PIN predefinito è 0000 (Master: 1234).");
+        return;
+    }
+
+    localStorage.setItem('sanand_authorized_terminal', selectedTerminal);
+    localStorage.setItem('sanand_is_master', isMasterUser ? 'true' : 'false');
+    
+    document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
+    
+    let loginEl = document.getElementById('loginScreen');
+    if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
+    
+    let mainEl = document.getElementById('appMain');
+    if (mainEl) { mainEl.style.display = 'flex'; }
+
+    setTimeout(() => {
+        initMap();
+        startRealtimeGpsTracking();
+        loadStoredData();
+    }, 50);
+}
+
+function handleLogout() {
+    localStorage.clear();
+    location.reload();
+}
+
+function openSection(secId) {
+    document.getElementById('homeMenuView').style.display = 'none';
+    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+    document.getElementById(secId).classList.add('active');
+    if (secId === 'cashSection') updateCashDrawerUI();
+    if (secId === 'anomalySection') updateAnomalyUI();
+    if (secId === 'mapSection' && map) {
+        setTimeout(() => map.invalidateSize(), 200);
+    }
+}
+
+function closeSection() {
+    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+    document.getElementById('homeMenuView').style.display = 'grid';
+}
+
+function loadStoredData() {
+    try {
+        let cached = localStorage.getItem('sanand_v52_route');
+        let cachedDone = localStorage.getItem('sanand_v52_done');
+        let cachedAnomaly = localStorage.getItem('sanand_v52_anomaly');
+        if (cachedDone) { try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){} }
+        if (cachedAnomaly) { try { anomalies = new Set(JSON.parse(cachedAnomaly)); } catch(e){} }
+        if (cached) {
+            try {
+                finalRows = JSON.parse(cached);
+                if (finalRows.length > 0) {
+                    updateUIState();
+                    renderTable();
+                    plotMap();
+                    return;
+                }
+            } catch(e) {}
+        }
+        finalRows = [];
+        saveAndRefresh();
+    } catch(e) {
+        finalRows = [];
+        saveAndRefresh();
+    }
+}
+
+function triggerLaserScan() {
+    let randCode = `LP00377${Math.floor(100 + Math.random() * 900)}PP`;
+    document.getElementById('manCode').value = randCode;
+    document.getElementById('manAddress').value = "Via della fisica 38";
+    document.getElementById('manCity').value = "Roma";
+    document.getElementById('manPhone').value = "3888949459";
+    alert(`⚡ Laser Scansionato!\nCodice: ${randCode}\nConferma i dati e premi Registra per aggiungere la fermata.`);
+}
+
+function addEnterpriseStopAndNext() {
+    let code = document.getElementById('manCode').value.trim();
+    let address = document.getElementById('manAddress').value.trim();
+    let city = document.getElementById('manCity').value.trim() || "Roma";
+    let phone = document.getElementById('manPhone').value.trim();
+    let cash = parseFloat(document.getElementById('manCash').value) || 0;
+
+    if (!code || !address) { alert("Inserisci codice e indirizzo validi."); return; }
+
+    finalRows.push({ "Code": code, "Address": address, "City": city, "Phone": phone, "Cash": cash, "Photo1": null, "Photo2": null, "Sig": null, "AnomalyReason": null });
+    
+    document.getElementById('manCode').value = "";
+    document.getElementById('manAddress').value = "";
+    document.getElementById('manPhone').value = "";
+    document.getElementById('manCash').value = "0";
+    saveAndRefresh();
+    
+    alert("✅ Spedizione aggiunta al giro! Pronto per la prossima scansione.");
+}
+
+function markAsAnomaly(idx) {
+    targetAnomalyIndex = idx;
+    document.getElementById('anomalyModal').style.display = 'flex';
+}
+
+function closeAnomalyModal() {
+    document.getElementById('anomalyModal').style.display = 'none';
+    targetAnomalyIndex = null;
+}
+
+function confirmAnomalyReason(motif) {
+    if (targetAnomalyIndex === null) return;
+    anomalies.add(targetAnomalyIndex);
+    completedStops.delete(targetAnomalyIndex);
+    finalRows[targetAnomalyIndex].AnomalyReason = motif;
+    closeAnomalyModal();
+    saveAndRefresh();
+    checkEndOfDayReminder();
+    alert(`⚠️ Spedizione spostata in Giacenza.\nMotivo: ${motif}`);
+}
+
+function updateAnomalyUI() {
+    let container = document.getElementById('anomalyListContainer');
+    let anomList = [];
+    finalRows.forEach((r, idx) => { if (anomalies.has(idx)) anomList.push({ r, idx }); });
+
+    if (!anomList.length) {
+        container.innerHTML = `<div class="empty-state">Nessuna anomalia registrata.</div>`;
+        return;
+    }
+
+    container.innerHTML = anomList.map(({ r, idx }) => `
+        <div style="background:#000; padding:9px; border-radius:6px; border:1px solid var(--orange); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <b>#${idx + 1} [${r.Code}]</b> -${r.Address}<br>
+                <small style="color:var(--orange)">Motivo: ${r.AnomalyReason}</small>
+            </div>
+            <button class="btn-add" style="width:auto; padding:5px 9px; font-size:10px;" onclick="restoreFromAnomaly(${idx})">Ripristina</button>
+        </div>
+    `).join('');
+}
+
+function restoreFromAnomaly(idx) {
+    anomalies.delete(idx);
+    saveAndRefresh();
+    updateAnomalyUI();
+    alert("✅ Spedizione ripristinata nel giro attivo.");
+}
+
+function updateCashDrawerUI() {
+    let totalCash = 0;
+    let listHtml = "";
+    finalRows.forEach((r, idx) => {
+        if (!completedStops.has(idx) && !anomalies.has(idx) && r.Cash > 0) {
+            totalCash += r.Cash;
+            listHtml += `<div style="background:#000; padding:7px; border-radius:5px
