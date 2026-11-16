@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>SanAnd Truck Enterprise v46.0</title>
+    <title>SanAnd Truck Enterprise v49.0</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --bg: #000000; --card: #0f172a; --border: #1e293b; --text: #f8fafc;
-            --muted: #94a3b8; --tiffany: #00f2fe; --green: #10b981; --red: #ef4444; --purple: #8b5cf6; --orange: #f97316;
+            --muted: #94a3b8; --tiffany: #00f2fe; --green: #10b981; --red: #ef4444; --purple: #8b5cf6; --orange: #f97316; --gold: #f59e0b;
         }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         input, select { user-select: text; }
@@ -20,29 +20,29 @@
 
         #loginScreen {
             position: fixed; inset: 0; background: var(--bg); z-index: 999999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px;
         }
         .login-card {
             background: var(--card); border: 2px solid var(--tiffany); border-radius: 16px;
-            padding: 20px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+            padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
             max-height: 95vh; display: flex; flex-direction: column; gap: 8px;
         }
         .company-logo-area {
-            width: 60px; height: 60px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 24px;
+            width: 55px; height: 55px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 22px;
         }
         .login-title { font-size: 16px; font-weight: 800; color: var(--tiffany); margin-bottom: 2px; }
-        .login-sub { font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+        .login-sub { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
         
-        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 9px; border-radius: 8px; font-size: 12px; outline: none; text-align: center; }
+        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 12px; outline: none; text-align: center; }
         .login-input:focus { border-color: var(--tiffany); }
         
         .terminal-list {
-            max-height: 180px; overflow-y: auto; background: #000; border: 1px solid var(--border); border-radius: 8px;
+            max-height: 130px; overflow-y: auto; background: #000; border: 1px solid var(--border); border-radius: 8px;
             display: flex; flex-direction: column; text-align: left;
         }
         .terminal-item {
-            padding: 9px 10px; font-size: 11px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text);
+            padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text);
         }
         .terminal-item:hover, .terminal-item.selected { background: rgba(0, 242, 254, 0.2); color: var(--tiffany); font-weight: bold; }
 
@@ -90,8 +90,9 @@
         .btn-scan { background: var(--purple); color: #fff; font-weight: bold; }
         .btn-pod { background: var(--purple); color: #fff; padding: 5px 8px; font-size: 10px; }
         .btn-anomaly { background: var(--orange); color: #fff; padding: 5px 8px; font-size: 10px; }
-        .btn-go { background: var(--tiffany); color: #000; padding: 4px 8px; font-size: 10px; border-radius: 4px; }
-        .btn-wa { background: #25d366; color: #fff; padding: 4px 8px; font-size: 10px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-go { background: var(--tiffany); color: #000; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; }
+        .btn-call { background: #3b82f6; color: #fff; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-wa { background: #25d366; color: #fff; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
 
         .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
         .stat-box { background: var(--card); border: 1px solid var(--border); padding: 6px; border-radius: 8px; text-align: center; }
@@ -99,7 +100,7 @@
         .stat-box .lbl { font-size: 8px; color: var(--muted); }
 
         .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; max-height: 300px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; min-width: 420px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; min-width: 450px; }
         th { background: #000; color: var(--muted); padding: 7px; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); }
         td { padding: 7px; border-bottom: 1px solid #1a2333; vertical-align: middle; }
         .empty-state { padding: 15px; text-align: center; color: var(--muted); font-size: 11px; }
@@ -119,11 +120,13 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Clean Enterprise v46.0</div>
+        <div class="login-sub">Master Fleet OS v49.0</div>
         
-        <input type="text" id="terminalSearch" class="login-input" placeholder="🔍 Cerca il tuo nome o terminale..." oninput="filterTerminals()">
+        <input type="text" id="terminalSearch" class="login-input" placeholder="🔍 Cerca il tuo nome o terminale..." oninput="filterTerminals()" onclick="filterTerminals()">
         
         <div id="terminalList" class="terminal-list"></div>
+        
+        <input type="password" id="loginPin" class="login-input" placeholder="🔑 Inserisci PIN (es. 0000)" maxlength="4">
         
         <button class="btn-login" onclick="handleLogin()">Accedi al Sistema</button>
     </div>
@@ -169,7 +172,7 @@
         </div>
         <div class="menu-card" onclick="openSection('toolsSection')">
             <div class="icon">⚙️</div>
-            <div class="title">Strumenti & SOS</div>
+            <div class="title">Strumenti & Master SOS</div>
         </div>
     </div>
 
@@ -193,165 +196,9 @@
             <input type="text" id="manCity" class="form-input" value="Roma">
         </div>
         <div class="form-group">
+            <label>TELEFONO CLIENTE</label>
+            <input type="text" id="manPhone" class="form-input" placeholder="Es. 3888949459">
+        </div>
+        <div class="form-group">
             <label>CONTRASSEGNO CASH (€)</label>
-            <input type="number" id="manCash" class="form-input" value="0" step="0.5">
-        </div>
-        <button class="btn-add" onclick="addEnterpriseStop()">+ Registra Spedizione nel Giro</button>
-    </div>
-
-    <!-- SEZIONE 2 -->
-    <div id="mapSection" class="section-view">
-        <div class="section-title">
-            <span>🗺️ Mappa & Posizione Live</span>
-            <button class="btn-back" onclick="closeSection()">Indietro</button>
-        </div>
-        <div id="mapContainer">
-            <button class="map-gps-btn" onclick="centerMapOnUser()">📍 Centra GPS</button>
-        </div>
-    </div>
-
-    <!-- SEZIONE 3 -->
-    <div id="routeSection" class="section-view">
-        <div class="section-title">
-            <span>📋 Elenco Fermate & Consegne</span>
-            <button class="btn-back" onclick="closeSection()">Indietro</button>
-        </div>
-        <input type="text" id="searchInput" class="form-input" placeholder="🔍 Cerca per codice o indirizzo..." oninput="renderTable()">
-        <div style="display:flex; gap:6px;">
-            <button class="btn-login" onclick="optimizeRouteTSP()">⚡ Ottimizza Percorso</button>
-            <button class="btn-anomaly" onclick="resetAll()">🔄 Svuota Giro</button>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 55px; text-align:center;">POD</th>
-                        <th style="width: 30px;">#</th>
-                        <th>Codice</th>
-                        <th>Indirizzo</th>
-                        <th>Città</th>
-                        <th>Navigazione</th>
-                    </tr>
-                </thead>
-                <tbody id="previewBody">
-                    <tr><td colspan="6" class="empty-state">Nessuna spedizione nel giro.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- SEZIONE 4 -->
-    <div id="cashSection" class="section-view">
-        <div class="section-title">
-            <span>💶 Controllo Contrassegni & Cassa</span>
-            <button class="btn-back" onclick="closeSection()">Indietro</button>
-        </div>
-        <div style="background:#000; padding:10px; border-radius:6px; border:1px solid var(--tiffany); text-align:center;">
-            <div style="font-size:10px; color:var(--muted);">INCASSO TOTALE DA VERSARE</div>
-            <div id="cashDrawerTotal" style="font-size:22px; font-weight:bold; color:var(--red);">€0.00</div>
-        </div>
-        <div id="cashListContainer" style="display:flex; flex-direction:column; gap:4px; max-height:180px; overflow-y:auto; font-size:11px;"></div>
-        <button class="btn-add" onclick="markCashAsDeposited()">✔️ Segna Cassa Versata al Deposito</button>
-    </div>
-
-    <!-- SEZIONE 5 -->
-    <div id="anomalySection" class="section-view">
-        <div class="section-title">
-            <span>⚠️ Registro Giacenze & Anomalie</span>
-            <button class="btn-back" onclick="closeSection()">Indietro</button>
-        </div>
-        <div id="anomalyListContainer" style="display:flex; flex-direction:column; gap:5px; max-height:220px; overflow-y:auto; font-size:11px;">
-            <div class="empty-state">Nessuna anomalia registrata in questo turno.</div>
-        </div>
-    </div>
-
-    <!-- SEZIONE 6 -->
-    <div id="toolsSection" class="section-view">
-        <div class="section-title">
-            <span>⚙️ Strumenti & Operazioni</span>
-            <button class="btn-back" onclick="closeSection()">Indietro</button>
-        </div>
-        <button style="background:var(--red); color:#fff;" onclick="triggerEmergencySos()">🚨 Segnala Emergenza SOS Strada</button>
-        <button style="background:#334155; color:#fff;" onclick="handleLogout()">🚪 Cambia Autista / Logout</button>
-    </div>
-</div>
-
-<!-- Modale POD -->
-<div id="podModal">
-    <div class="pod-content">
-        <h3 id="podTitle" style="margin:0; font-size:12px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
-        <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
-            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Scatta etichetta</span></div>
-        </div>
-        <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">2️⃣ FOTO CIVICO / PORTA</div>
-            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Scatta civico</span></div>
-        </div>
-        <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
-            <canvas id="sigCanvas" class="sig-canvas"></canvas>
-            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:8.5px; padding:2px;">Pulisci</button>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:3px;">
-            <button class="btn-back" style="width:100%" onclick="closePodModal()">Annulla</button>
-            <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
-        </div>
-    </div>
-</div>
-
-<script>
-const terminalList = [
-    "TP784-01 - Andres",
-    "TP784-02 - Santiago",
-    "TP784-03 - Alcala",
-    "TP784-04 - Massimiliano",
-    "TP784-05 - Gregory",
-    "TP784-06 - Oscar",
-    "TP784-07 - Morese",
-    "TP784-08 - Puma",
-    "TP784-09 - Alessandro",
-    "TP784-10 - Marazzi",
-    "TP784-11 - Motenalla",
-    "TP784-12 - Seby",
-    "TP784-13 - Stella",
-    "TP784-14 - Amaya",
-    "TP784-15 - Sanchez",
-    "TP784-16 - Modonesi",
-    "TP784-17 - Costin",
-    "TP784-20 - Kevin",
-    "TP784-21 - Alberto",
-    "TP784-23 - Fernando",
-    "TP784-24 - Marcangeli",
-    "TP784-25 - RobertoM",
-    "TP784-26 - FabrizioM",
-    "TP784-27 - Fabrizio",
-    "TP784-28 - Ait",
-    "TP784-31 - Venuti",
-    "TP784-34 - Tamilia",
-    "TP784-35 - Silvia",
-    "TP784-36 - William"
-];
-
-let selectedTerminal = "";
-let finalRows = [];
-let completedStops = new Set();
-let anomalies = new Set();
-let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
-let currentPodIndex = null;
-let podPhotos = { photo1: null, photo2: null, signature: null };
-let canvas, ctx, drawing = false;
-
-window.addEventListener('DOMContentLoaded', () => {
-    renderTerminalList(terminalList);
-    let saved = localStorage.getItem('sanand_authorized_terminal');
-    if (saved) {
-        selectedTerminal = saved;
-        document.getElementById('terminalSearch').value = saved;
-    }
-});
-
-function renderTerminalList(items) {
-    let listEl = document.getElementById('terminalList');
-    if (!items.length) {
-        listEl.innerHTML = `<div style="padding:10px; text-align:center;
+            <input
