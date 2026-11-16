@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>SanAnd Truck Enterprise v53.0</title>
+    <title>SanAnd Truck Enterprise v54.0</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -113,7 +113,7 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Select Fleet OS v53.0</div>
+        <div class="login-sub">Select Fleet OS v54.0</div>
         
         <select id="terminalSelect" class="login-select">
             <option value="">-- Seleziona il tuo Terminale --</option>
@@ -219,4 +219,643 @@
     <!-- SEZIONE 1: SCANNER RAPIDO CONTINUO -->
     <div id="loadSection" class="section-view">
         <div class="section-title">
-            <span>📦 Presa in Car
+            <span>📦 Presa in Carico & Laser Scanner</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        
+        <button class="btn-scan" onclick="triggerLaserScan()">⚡ Simula Pistola Laser / Scansiona Subito</button>
+        <div style="font-size: 10.5px; color: var(--tiffany); text-align: center; font-weight: bold;">(Clicca il pulsante per aggiungere un nuovo pacco in sequenza rapida)</div>
+        
+        <div class="form-group" style="margin-top:6px;">
+            <label>CODICE BARRE ORIGINALE</label>
+            <input type="text" id="manCode" class="form-input" placeholder="Es. LP003770864PP">
+        </div>
+        <div class="form-group">
+            <label>INDIRIZZO REALE</label>
+            <input type="text" id="manAddress" class="form-input" placeholder="Es. Via della fisica 38">
+        </div>
+        <div class="form-group">
+            <label>CITTÀ</label>
+            <input type="text" id="manCity" class="form-input" value="Roma">
+        </div>
+        <div class="form-group">
+            <label>TELEFONO CLIENTE</label>
+            <input type="text" id="manPhone" class="form-input" placeholder="Es. 3888949459">
+        </div>
+        <div class="form-group">
+            <label>CONTRASSEGNO CASH (€)</label>
+            <input type="number" id="manCash" class="form-input" value="0" step="0.5">
+        </div>
+        <button class="btn-add" onclick="addEnterpriseStopAndNext()">+ Registra & Passa al Successivo ⚡</button>
+    </div>
+
+    <!-- SEZIONE 2: MAPPA GPS -->
+    <div id="mapSection" class="section-view">
+        <div class="section-title">
+            <span>🗺️ Mappa & Posizione Live</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        <div id="mapContainer">
+            <button class="map-gps-btn" onclick="centerMapOnUser()">📍 Centra GPS</button>
+        </div>
+    </div>
+
+    <!-- SEZIONE 3: GESTIONE GIRO -->
+    <div id="routeSection" class="section-view">
+        <div class="section-title">
+            <span>📋 Elenco Fermate & Consegne</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        <input type="text" id="searchInput" class="form-input" placeholder="🔍 Cerca per codice o indirizzo..." oninput="renderTable()">
+        <div style="display:flex; gap:8px;">
+            <button class="btn-login" onclick="optimizeRouteTSP()">⚡ Ottimizza Percorso</button>
+            <button class="btn-anomaly" onclick="resetAll()">🔄 Svuota Giro</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px; text-align:center;">POD</th>
+                        <th style="width: 35px;">#</th>
+                        <th>Codice</th>
+                        <th>Indirizzo</th>
+                        <th>Città</th>
+                        <th>Contatti & Navigazione</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody">
+                    <tr><td colspan="6" class="empty-state">Nessuna spedizione nel giro.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SEZIONE 4: SMART BOX CONTRASSEGNI -->
+    <div id="cashSection" class="section-view">
+        <div class="section-title">
+            <span>💶 Controllo Contrassegni & Cassa</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        <div style="background:#000; padding:12px; border-radius:6px; border:1px solid var(--tiffany); text-align:center;">
+            <div style="font-size:10.5px; color:var(--muted);">INCASSO TOTALE DA VERSARE</div>
+            <div id="cashDrawerTotal" style="font-size:24px; font-weight:bold; color:var(--red);">€0.00</div>
+        </div>
+        <div id="cashListContainer" style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; font-size:11.5px;"></div>
+        <button class="btn-add" onclick="markCashAsDeposited()">✔️ Segna Cassa Versata al Deposito</button>
+    </div>
+
+    <!-- SEZIONE 5: GIACENZE & RIENTRI -->
+    <div id="anomalySection" class="section-view">
+        <div class="section-title">
+            <span>⚠️ Registro Giacenze & Anomalie</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        <div id="anomalyListContainer" style="display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; font-size:11.5px;">
+            <div class="empty-state">Nessuna anomalia registrata in questo turno.</div>
+        </div>
+    </div>
+
+    <!-- SEZIONE 6: STRUMENTI & MASTER TOOLS -->
+    <div id="toolsSection" class="section-view">
+        <div class="section-title">
+            <span>⚙️ Strumenti & Master Control</span>
+            <button class="btn-back" onclick="closeSection()">Indietro</button>
+        </div>
+        <button class="btn-scan" onclick="generateDailyReport()" style="background:var(--gold); color:#000;">📊 Genera Report Giornaliero (PDF/WhatsApp)</button>
+        <button style="background:var(--red); color:#fff;" onclick="triggerEmergencySos()">🚨 Segnala Emergenza SOS Strada</button>
+        <button style="background:#334155; color:#fff;" onclick="handleLogout()">🚪 Cambia Terminale / Logout</button>
+    </div>
+</div>
+
+<!-- Modale POD -->
+<div id="podModal">
+    <div class="pod-content">
+        <h3 id="podTitle" style="margin:0; font-size:13px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
+            <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Scatta etichetta</span></div>
+        </div>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">2️⃣ FOTO CIVICO / PORTA</div>
+            <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Scatta civico</span></div>
+        </div>
+        <div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
+            <canvas id="sigCanvas" class="sig-canvas"></canvas>
+            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:9px; padding:3px;">Pulisci Firma</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:4px;">
+            <button class="btn-back" style="width:100%" onclick="closePodModal()">Annulla</button>
+            <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modale Causali Giacenze Rapide -->
+<div id="anomalyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:12px;">
+    <div style="background:var(--card); border:2px solid var(--orange); border-radius:10px; padding:16px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:9px; text-align:center;">
+        <h3 style="margin:0; font-size:14px; color:var(--orange);">⚠️ Seleziona Motivo Giacenza</h3>
+        <button onclick="confirmAnomalyReason('Cliente Assente / Citofono Chiuso')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">1. Cliente Assente / Citofono Chiuso</button>
+        <button onclick="confirmAnomalyReason('Indirizzo Errato / Incompleto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">2. Indirizzo Errato / Incompleto</button>
+        <button onclick="confirmAnomalyReason('Destinatario Rifiutato')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">3. Destinatario Rifiutato</button>
+        <button onclick="confirmAnomalyReason('Chiuso per Ferie / Attività Chiusa')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">4. Chiuso per Ferie / Attività Chiusa</button>
+        <button onclick="confirmAnomalyReason('Destinatario Sconosciuto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">5. Destinatario Sconosciuto</button>
+        <button class="btn-back" onclick="closeAnomalyModal()" style="margin-top:6px; width:100%;">Annulla</button>
+    </div>
+</div>
+
+<script>
+let selectedTerminal = "";
+let isMasterUser = false;
+let finalRows = [];
+let completedStops = new Set();
+let anomalies = new Set();
+let map = null, markers = [], gpsWatch = null, liveMarker = null, userPos = null;
+let currentPodIndex = null;
+let targetAnomalyIndex = null;
+let podPhotos = { photo1: null, photo2: null, signature: null };
+let canvas, ctx, drawing = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+    let savedTerminal = localStorage.getItem('sanand_authorized_terminal');
+    let savedMaster = localStorage.getItem('sanand_is_master');
+    if (savedTerminal) {
+        selectedTerminal = savedTerminal;
+        isMasterUser = (savedMaster === 'true');
+        document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
+        
+        let loginEl = document.getElementById('loginScreen');
+        if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
+        
+        let mainEl = document.getElementById('appMain');
+        if (mainEl) { mainEl.style.display = 'flex'; }
+
+        setTimeout(() => {
+            initMap();
+            startRealtimeGpsTracking();
+            loadStoredData();
+        }, 50);
+    }
+});
+
+function handleLogin() {
+    let selectEl = document.getElementById('terminalSelect');
+    let pinInput = document.getElementById('loginPin').value.trim();
+    selectedTerminal = selectEl.value;
+
+    if (!selectedTerminal) {
+        alert("Seleziona il tuo terminale dall'elenco.");
+        return;
+    }
+
+    isMasterUser = (selectedTerminal.includes("TP784-01 - Andres") || selectedTerminal.includes("TP784-02 - Santiago"));
+    
+    let requiredPin = isMasterUser ? "1234" : "0000";
+    if (pinInput !== requiredPin && pinInput !== "1234" && pinInput !== "0000") {
+        alert("❌ PIN errato! Per gli autisti il PIN predefinito è 0000 (Master: 1234).");
+        return;
+    }
+
+    localStorage.setItem('sanand_authorized_terminal', selectedTerminal);
+    localStorage.setItem('sanand_is_master', isMasterUser ? 'true' : 'false');
+    
+    document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
+    
+    let loginEl = document.getElementById('loginScreen');
+    if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
+    
+    let mainEl = document.getElementById('appMain');
+    if (mainEl) { mainEl.style.display = 'flex'; }
+
+    setTimeout(() => {
+        initMap();
+        startRealtimeGpsTracking();
+        loadStoredData();
+    }, 50);
+}
+
+function handleLogout() {
+    localStorage.clear();
+    location.reload();
+}
+
+function openSection(secId) {
+    document.getElementById('homeMenuView').style.display = 'none';
+    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+    document.getElementById(secId).classList.add('active');
+    if (secId === 'cashSection') updateCashDrawerUI();
+    if (secId === 'anomalySection') updateAnomalyUI();
+    if (secId === 'mapSection' && map) {
+        setTimeout(() => map.invalidateSize(), 200);
+    }
+}
+
+function closeSection() {
+    document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+    document.getElementById('homeMenuView').style.display = 'grid';
+}
+
+function loadStoredData() {
+    try {
+        let cached = localStorage.getItem('sanand_v54_route');
+        let cachedDone = localStorage.getItem('sanand_v54_done');
+        let cachedAnomaly = localStorage.getItem('sanand_v54_anomaly');
+        if (cachedDone) { try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){} }
+        if (cachedAnomaly) { try { anomalies = new Set(JSON.parse(cachedAnomaly)); } catch(e){} }
+        if (cached) {
+            try {
+                finalRows = JSON.parse(cached);
+                if (finalRows.length > 0) {
+                    updateUIState();
+                    renderTable();
+                    plotMap();
+                    return;
+                }
+            } catch(e) {}
+        }
+        finalRows = [];
+        saveAndRefresh();
+    } catch(e) {
+        finalRows = [];
+        saveAndRefresh();
+    }
+}
+
+function triggerLaserScan() {
+    let randCode = `LP00377${Math.floor(100 + Math.random() * 900)}PP`;
+    document.getElementById('manCode').value = randCode;
+    document.getElementById('manAddress').value = "Via della fisica 38";
+    document.getElementById('manCity').value = "Roma";
+    document.getElementById('manPhone').value = "3888949459";
+    alert(`⚡ Laser Scansionato!\nCodice: ${randCode}\nConferma i dati e premi Registra per aggiungere la fermata.`);
+}
+
+function addEnterpriseStopAndNext() {
+    let code = document.getElementById('manCode').value.trim();
+    let address = document.getElementById('manAddress').value.trim();
+    let city = document.getElementById('manCity').value.trim() || "Roma";
+    let phone = document.getElementById('manPhone').value.trim();
+    let cash = parseFloat(document.getElementById('manCash').value) || 0;
+
+    if (!code || !address) { alert("Inserisci codice e indirizzo validi."); return; }
+
+    finalRows.push({ "Code": code, "Address": address, "City": city, "Phone": phone, "Cash": cash, "Photo1": null, "Photo2": null, "Sig": null, "AnomalyReason": null });
+    
+    document.getElementById('manCode').value = "";
+    document.getElementById('manAddress').value = "";
+    document.getElementById('manPhone').value = "";
+    document.getElementById('manCash').value = "0";
+    saveAndRefresh();
+    
+    alert("✅ Spedizione aggiunta al giro! Pronto per la prossima scansione.");
+}
+
+function markAsAnomaly(idx) {
+    targetAnomalyIndex = idx;
+    document.getElementById('anomalyModal').style.display = 'flex';
+}
+
+function closeAnomalyModal() {
+    document.getElementById('anomalyModal').style.display = 'none';
+    targetAnomalyIndex = null;
+}
+
+function confirmAnomalyReason(motif) {
+    if (targetAnomalyIndex === null) return;
+    anomalies.add(targetAnomalyIndex);
+    completedStops.delete(targetAnomalyIndex);
+    finalRows[targetAnomalyIndex].AnomalyReason = motif;
+    closeAnomalyModal();
+    saveAndRefresh();
+    checkEndOfDayReminder();
+    alert(`⚠️ Spedizione spostata in Giacenza.\nMotivo: ${motif}`);
+}
+
+function updateAnomalyUI() {
+    let container = document.getElementById('anomalyListContainer');
+    let anomList = [];
+    finalRows.forEach((r, idx) => { if (anomalies.has(idx)) anomList.push({ r, idx }); });
+
+    if (!anomList.length) {
+        container.innerHTML = `<div class="empty-state">Nessuna anomalia registrata.</div>`;
+        return;
+    }
+
+    container.innerHTML = anomList.map(({ r, idx }) => `
+        <div style="background:#000; padding:9px; border-radius:6px; border:1px solid var(--orange); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <b>#${idx + 1} [${r.Code}]</b> - ${r.Address}<br>
+                <small style="color:var(--orange)">Motivo: ${r.AnomalyReason}</small>
+            </div>
+            <button class="btn-add" style="width:auto; padding:5px 9px; font-size:10px;" onclick="restoreFromAnomaly(${idx})">Ripristina</button>
+        </div>
+    `).join('');
+}
+
+function restoreFromAnomaly(idx) {
+    anomalies.delete(idx);
+    saveAndRefresh();
+    updateAnomalyUI();
+    alert("✅ Spedizione ripristinata nel giro attivo.");
+}
+
+function updateCashDrawerUI() {
+    let totalCash = 0;
+    let listHtml = "";
+    finalRows.forEach((r, idx) => {
+        if (!completedStops.has(idx) && !anomalies.has(idx) && r.Cash > 0) {
+            totalCash += r.Cash;
+            listHtml += `<div style="background:#000; padding:7px; border-radius:5px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span>#${idx+1} [${r.Code}] ${r.Address}</span><b style="color:var(--red);">€${r.Cash.toFixed(2)}</b></div>`;
+        }
+    });
+    document.getElementById('cashDrawerTotal').textContent = `€${totalCash.toFixed(2)}`;
+    document.getElementById('cashListContainer').innerHTML = listHtml || `<div class="empty-state">Nessun contrassegno cash residuo.</div>`;
+}
+
+function markCashAsDeposited() {
+    alert("✔️ Cassa registrata come versata al deposito centrale!");
+}
+
+function generateDailyReport() {
+    let tot = finalRows.length;
+    let done = completedStops.size;
+    let anom = anomalies.size;
+    let cashTot = 0;
+    finalRows.forEach((r, i) => { if(completedStops.has(i) && r.Cash) cashTot += r.Cash; });
+
+    let reportText = `📊 *REPORT GIORNALIERO SANAND TRUCK* 📊\n` +
+                     `Terminal: ${selectedTerminal}\n` +
+                     `---------------------------\n` +
+                     `📦 Totale Spedizioni: ${tot}\n` +
+                     `✅ Consegnate OK: ${done}\n` +
+                     `⚠️ Giacenze / Anomalie: ${anom}\n` +
+                     `💶 Cash Incassato: €${cashTot.toFixed(2)}\n` +
+                     `---------------------------\n` +
+                     `Fine giornata registrata con successo.`;
+
+    if (navigator.share) {
+        navigator.share({ title: 'Report SanAnd', text: reportText }).catch(() => {});
+    } else {
+        prompt("Copia il report giornaliero:", reportText);
+    }
+}
+
+function triggerEmergencySos() {
+    alert(`🚨 SOS INVIATO AL CENTRALE DAL TERMINALE!`);
+}
+
+function initMap(lat = 41.9028, lng = 12.4964) {
+    if (!map) {
+        map = L.map('mapContainer').setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    }
+}
+
+function startRealtimeGpsTracking() {
+    if (navigator.geolocation) {
+        if (gpsWatch) navigator.geolocation.clearWatch(gpsWatch);
+        gpsWatch = navigator.geolocation.watchPosition(pos => {
+            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            if (!liveMarker && map) {
+                liveMarker = L.circleMarker([userPos.lat, userPos.lng], { radius: 10, color: '#fff', fillColor: '#00f2fe', fillOpacity: 1, weight: 3 }).addTo(map);
+            } else if (liveMarker) {
+                liveMarker.setLatLng([userPos.lat, userPos.lng]);
+            }
+        }, err => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 2000 });
+    }
+}
+
+function centerMapOnUser() {
+    if (userPos && map) {
+        map.setView([userPos.lat, userPos.lng], 16);
+    } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            if (map) map.setView([userPos.lat, userPos.lng], 16);
+        }, () => alert("GPS non disponibile."), { enableHighAccuracy: true });
+    }
+}
+
+function optimizeRouteTSP() {
+    if (finalRows.length < 2) return;
+    let mapped = finalRows.map((r, idx) => ({ r, done: completedStops.has(idx), anom: anomalies.has(idx) }));
+    let active = mapped.filter(x => !x.done && !x.anom).map(x => x.r);
+    let rest = mapped.filter(x => x.done || x.anom);
+    active.sort((a, b) => a["City"].localeCompare(b["City"]) || a["Address"].localeCompare(b["Address"]));
+    finalRows = active.concat(rest.map(x => x.r));
+    completedStops.clear();
+    anomalies.clear();
+    saveAndRefresh();
+    alert("⚡ Percorso ottimizzato!");
+}
+
+function openPodModal(idx) {
+    currentPodIndex = idx;
+    podPhotos = { photo1: finalRows[idx].Photo1, photo2: finalRows[idx].Photo2, signature: finalRows[idx].Sig };
+    document.getElementById('podTitle').textContent = `Consegna: ${finalRows[idx].Code}`;
+    updatePodPreviews();
+    document.getElementById('podModal').style.display = 'flex';
+    setTimeout(() => {
+        initSignatureCanvas();
+        if (podPhotos.signature) {
+            let img = new Image();
+            img.onload = () => { if(ctx) ctx.drawImage(img, 0, 0); };
+            img.src = podPhotos.signature;
+        }
+    }, 100);
+}
+
+function closePodModal() {
+    document.getElementById('podModal').style.display = 'none';
+    currentPodIndex = null;
+}
+
+function initSignatureCanvas() {
+    canvas = document.getElementById('sigCanvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    let rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width > 0 ? rect.width : 320;
+    canvas.height = rect.height > 0 ? rect.height : 90;
+
+    canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top); };
+    canvas.onmousemove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke(); };
+    canvas.onmouseup = () => { drawing = false; checkPodValid(); };
+    canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); e.preventDefault(); };
+    canvas.ontouchmove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); ctx.stroke(); e.preventDefault(); };
+    canvas.ontouchend = () => { drawing = false; checkPodValid(); };
+}
+
+function clearSignature() {
+    if (!canvas || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    checkPodValid();
+}
+
+function capturePodPhoto(photoNum) {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (e) => {
+        let file = e.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = (event) => {
+            if (photoNum === 1) podPhotos.photo1 = event.target.result;
+            else podPhotos.photo2 = event.target.result;
+            updatePodPreviews();
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+}
+
+function updatePodPreviews() {
+    let b1 = document.getElementById('previewBox1');
+    let b2 = document.getElementById('previewBox2');
+    if (podPhotos.photo1) b1.innerHTML = `<img src="${podPhotos.photo1}">`;
+    else b1.innerHTML = `<span>📷 Scatta etichetta</span>`;
+    if (podPhotos.photo2) b2.innerHTML = `<img src="${podPhotos.photo2}">`;
+    else b2.innerHTML = `<span>📷 Scatta civico</span>`;
+    checkPodValid();
+}
+
+function checkPodValid() {
+    let isSigNotEmpty = canvas ? !isCanvasBlank(canvas) : false;
+    let isValid = podPhotos.photo1 && podPhotos.photo2 && isSigNotEmpty;
+    let btn = document.getElementById('btnConfirmPod');
+    if(btn) btn.disabled = !isValid;
+}
+
+function isCanvasBlank(cnv) {
+    const blank = document.createElement('canvas');
+    blank.width = cnv.width; blank.height = cnv.height;
+    return cnv.toDataURL() === blank.toDataURL();
+}
+
+function savePodDelivery() {
+    if (currentPodIndex === null) return;
+    finalRows[currentPodIndex].Photo1 = podPhotos.photo1;
+    finalRows[currentPodIndex].Photo2 = podPhotos.photo2;
+    finalRows[currentPodIndex].Sig = canvas ? canvas.toDataURL() : null;
+    completedStops.add(currentPodIndex);
+    anomalies.delete(currentPodIndex);
+    closePodModal();
+    saveAndRefresh();
+    checkEndOfDayReminder();
+    alert("✅ Consegna chiusa con successo!");
+}
+
+function checkEndOfDayReminder() {
+    if (finalRows.length > 0 && (completedStops.size + anomalies.size) === finalRows.length) {
+        setTimeout(() => {
+            alert("🌙 OTTIMO LAVORO!\nHai completato tutte le consegne e le giacenze del turno.\nRicordati di effettuare il fine giro e il versamento della cassa prima di rientrare in deposito!");
+        }, 500);
+    }
+}
+
+function updateUIState() {
+    let tot = finalRows.length;
+    let done = completedStops.size;
+    let anom = anomalies.size;
+    document.getElementById('statTot').textContent = tot;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statAnomaly').textContent = anom;
+    let totalCash = 0;
+    finalRows.forEach((r, i) => {
+        if (!completedStops.has(i) && !anomalies.has(i) && r["Cash"]) totalCash += parseFloat(r["Cash"]);
+    });
+    document.getElementById('statCash').textContent = `€${totalCash.toFixed(2)}`;
+}
+
+function renderTable() {
+    let tb = document.getElementById('previewBody');
+    let filter = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = finalRows.map((r, origIdx) => ({ r, origIdx })).filter(({ r }) => {
+        return r["Address"].toLowerCase().includes(filter) || r["Code"].toLowerCase().includes(filter) || r["City"].toLowerCase().includes(filter);
+    });
+    if (!filtered.length) {
+        tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nessuna spedizione nel giro.</td></tr>`;
+        return;
+    }
+    tb.innerHTML = filtered.map(({ r, origIdx }) => {
+        let isDone = completedStops.has(origIdx);
+        let isAnom = anomalies.has(origIdx);
+        let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`;
+        let hasPhotos = r["Photo1"] && r["Photo2"] && r["Sig"];
+        let phoneNum = r["Phone"] || "";
+        
+        let callBtn = phoneNum ? `<a href="tel:${phoneNum}"><button class="btn-call">📞 Chiama</button></a>` : '';
+        let waUrl = phoneNum ? `https://wa.me/${phoneNum}?text=` + encodeURIComponent(`Buongiorno, sono il corriere SanAnd Truck, ho una spedizione (${r["Code"]}) in arrivo per Lei in ${r["Address"]}.`) : `https://wa.me/?text=` + encodeURIComponent(`Consegna pacco ${r["Code"]} in arrivo.`);
+        let waBtn = `<a href="${waUrl}" target="_blank"><button class="btn-wa">💬 WhatsApp</button></a>`;
+        
+        let rowClass = isDone ? 'completed-row' : isAnom ? 'anomaly-row' : '';
+        return `
+        <tr id="row_${origIdx}" class="${rowClass}">
+            <td style="text-align:center; display:flex; gap:3px; justify-content:center;">
+                <button class="btn-pod" onclick="openPodModal(${origIdx})" style="background:${hasPhotos ? 'var(--green)' : 'var(--purple)'}">${hasPhotos ? '📸 OK' : '📷 POD'}</button>
+                <button class="btn-anomaly" onclick="markAsAnomaly(${origIdx})">⚠️</button>
+            </td>
+            <td><span class="badge-num" style="background:var(--tiffany); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold;">#${origIdx + 1}</span></td>
+            <td><span style="color:var(--tiffany); font-weight:bold;">${r["Code"]}</span></td>
+            <td style="font-weight:600">${r["Address"]}</td>
+            <td>${r["City"]}</td>
+            <td>
+                ${phoneNum ? `<small style="color:var(--muted)">📞 ${phoneNum}</small><br>` : ''}
+                ${r["Cash"] > 0 ? `<small style="color:var(--red); font-weight:bold;">💶 €${r["Cash"].toFixed(2)}</small><br>` : ''}
+                <div style="display:flex; gap:4px; margin-top:4px;">
+                    <a href="${navUrl}" target="_blank" style="flex:1;"><button class="btn-go" style="width:100%">🚀 Naviga</button></a>
+                    ${callBtn}
+                    ${waBtn}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function saveAndRefresh() {
+    try {
+        localStorage.setItem('sanand_v54_route', JSON.stringify(finalRows));
+        localStorage.setItem('sanand_v54_done', JSON.stringify(Array.from(completedStops)));
+        localStorage.setItem('sanand_v54_anomaly', JSON.stringify(Array.from(anomalies)));
+    } catch(e) {}
+    updateUIState();
+    renderTable();
+    plotMap();
+}
+
+async function plotMap() {
+    if (!map) initMap();
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    let coords = [];
+    for (let i = 0; i < finalRows.length; i++) {
+        let r = finalRows[i];
+        let isDone = completedStops.has(i);
+        let isAnom = anomalies.has(i);
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}&limit=1`);
+            let data = await res.json();
+            if (data && data.length) {
+                let lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
+                coords.push([lat, lon]);
+                let pinClass = isDone ? "numbered-pin completed" : isAnom ? "numbered-pin anomaly" : "numbered-pin";
+                let icon = L.divIcon({ className: 'custom-pin', html: `<div class="${pinClass}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+                let marker = L.marker([lat, lon], { icon }).addTo(map);
+                markers.push(marker);
+            }
+        } catch(e) {}
+    }
+    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
+}
+
+function resetAll() {
+    if (confirm("Svuotare completamente il giro?")) {
+        try { localStorage.clear(); } catch(e){}
+        location.reload();
+    }
+}
+</script>
+</body>
+</html>
