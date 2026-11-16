@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <title>SanAnd Truck Enterprise v49.0</title>
+    <title>SanAnd Truck Enterprise v50.0</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -24,94 +24,97 @@
         }
         .login-card {
             background: var(--card); border: 2px solid var(--tiffany); border-radius: 16px;
-            padding: 18px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
-            max-height: 95vh; display: flex; flex-direction: column; gap: 8px;
+            padding: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+            max-height: 95vh; display: flex; flex-direction: column; gap: 10px;
         }
         .company-logo-area {
-            width: 55px; height: 55px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 22px;
+            width: 60px; height: 60px; background: rgba(0, 242, 254, 0.1); border: 2px solid var(--tiffany);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 24px;
         }
-        .login-title { font-size: 16px; font-weight: 800; color: var(--tiffany); margin-bottom: 2px; }
-        .login-sub { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+        .login-title { font-size: 17px; font-weight: 800; color: var(--tiffany); margin-bottom: 2px; }
+        .login-sub { font-size: 10.5px; color: var(--muted); margin-bottom: 6px; }
         
-        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 12px; outline: none; text-align: center; }
+        .login-input { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 11px; border-radius: 8px; font-size: 12.5px; outline: none; text-align: center; }
         .login-input:focus { border-color: var(--tiffany); }
         
         .terminal-list {
-            max-height: 130px; overflow-y: auto; background: #000; border: 1px solid var(--border); border-radius: 8px;
+            max-height: 150px; overflow-y: auto; background: #000; border: 1px solid var(--border); border-radius: 8px;
             display: flex; flex-direction: column; text-align: left;
         }
         .terminal-item {
-            padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text);
+            padding: 9px 10px; font-size: 11.5px; border-bottom: 1px solid #1a2333; cursor: pointer; color: var(--text);
         }
         .terminal-item:hover, .terminal-item.selected { background: rgba(0, 242, 254, 0.2); color: var(--tiffany); font-weight: bold; }
 
-        .btn-login { background: var(--tiffany); color: #000; font-weight: 800; width: 100%; padding: 11px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; margin-top: 4px; }
+        .btn-login { background: var(--tiffany); color: #000; font-weight: 800; width: 100%; padding: 12px; border-radius: 8px; font-size: 13px; border: none; cursor: pointer; margin-top: 4px; }
 
         #appMain { display: none; width: 100%; flex-direction: column; gap: 8px; }
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: linear-gradient(135deg, #0f172a 0%, #000000 100%);
-            padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(0, 242, 254, 0.3);
         }
-        header h1 { margin: 0; font-size: 13px; color: var(--tiffany); }
-        header p { margin: 2px 0 0 0; color: var(--muted); font-size: 10px; }
+        header h1 { margin: 0; font-size: 14px; color: var(--tiffany); }
+        header p { margin: 2px 0 0 0; color: var(--muted); font-size: 10.5px; }
 
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 6px; }
+        /* Griglia Home Ingrandita per riempire lo spazio */
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 6px; }
         .menu-card {
-            background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
-            padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+            padding: 18px 12px; text-align: center; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 15px; justify-content: flex-start;
         }
-        .menu-card:active { border-color: var(--tiffany); background: rgba(0, 242, 254, 0.05); }
-        .menu-card .icon { font-size: 22px; }
-        .menu-card .title { font-size: 11px; font-weight: 700; color: var(--text); }
+        .menu-card:active { border-color: var(--tiffany); background: rgba(0, 242, 254, 0.08); }
+        .menu-card .icon { font-size: 28px; background: rgba(0, 242, 254, 0.1); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid rgba(0, 242, 254, 0.3); }
+        .menu-card .info { text-align: left; }
+        .menu-card .title { font-size: 14px; font-weight: 800; color: var(--text); }
+        .menu-card .desc { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
 
-        .section-view { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-        .section-view.active { display: flex; flex-direction: column; gap: 8px; }
-        .section-title { font-size: 13px; font-weight: 800; color: var(--tiffany); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 4px; }
+        .section-view { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+        .section-view.active { display: flex; flex-direction: column; gap: 10px; }
+        .section-title { font-size: 14px; font-weight: 800; color: var(--tiffany); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 4px; }
 
-        .form-group { display: flex; flex-direction: column; gap: 4px; }
-        .form-group label { font-size: 10px; color: var(--muted); font-weight: bold; }
-        .form-input { background: #000; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; font-size: 12px; outline: none; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 10.5px; color: var(--muted); font-weight: bold; }
+        .form-input { background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 13px; outline: none; }
         .form-input:focus { border-color: var(--tiffany); }
 
-        #mapContainer { width: 100%; height: 350px; background: var(--card); border: 2px solid var(--tiffany); border-radius: 10px; position: relative; z-index: 5; }
-        .map-gps-btn { position: absolute; top: 8px; left: 8px; z-index: 1000; background: var(--tiffany); color: #000; border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; cursor: pointer; }
+        #mapContainer { width: 100%; height: 380px; background: var(--card); border: 2px solid var(--tiffany); border-radius: 10px; position: relative; z-index: 5; }
+        .map-gps-btn { position: absolute; top: 10px; left: 10px; z-index: 1000; background: var(--tiffany); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; }
 
         .numbered-pin { background: var(--tiffany); color: #000; border: 2px solid #ffffff; border-radius: 50%; text-align: center; font-weight: 800; font-size: 11px; line-height: 22px; }
         .numbered-pin.completed { background: var(--green) !important; color: #fff !important; }
         .numbered-pin.anomaly { background: var(--orange) !important; color: #fff !important; }
 
-        button { background: var(--tiffany); color: #000; border: none; padding: 9px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; }
+        button { background: var(--tiffany); color: #000; border: none; padding: 11px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
         button:disabled { opacity: 0.4; background: #333; color: #888; }
-        .btn-add { background: var(--green); color: #fff; }
-        .btn-back { background: #334155; color: #fff; width: auto; padding: 4px 10px; font-size: 10px; }
-        .btn-scan { background: var(--purple); color: #fff; font-weight: bold; }
-        .btn-pod { background: var(--purple); color: #fff; padding: 5px 8px; font-size: 10px; }
-        .btn-anomaly { background: var(--orange); color: #fff; padding: 5px 8px; font-size: 10px; }
-        .btn-go { background: var(--tiffany); color: #000; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; }
-        .btn-call { background: #3b82f6; color: #fff; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
-        .btn-wa { background: #25d366; color: #fff; padding: 4px 8px; font-size: 9.5px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-add { background: var(--green); color: #fff; padding: 12px; font-size: 13px; }
+        .btn-back { background: #334155; color: #fff; width: auto; padding: 6px 12px; font-size: 11px; }
+        .btn-scan { background: var(--purple); color: #fff; font-weight: bold; padding: 12px; font-size: 12.5px; }
+        .btn-pod { background: var(--purple); color: #fff; padding: 6px 10px; font-size: 10.5px; }
+        .btn-anomaly { background: var(--orange); color: #fff; padding: 6px 10px; font-size: 10.5px; }
+        .btn-go { background: var(--tiffany); color: #000; padding: 5px 9px; font-size: 10px; border-radius: 4px; }
+        .btn-call { background: #3b82f6; color: #fff; padding: 5px 9px; font-size: 10px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-wa { background: #25d366; color: #fff; padding: 5px 9px; font-size: 10px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; }
 
-        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
-        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 6px; border-radius: 8px; text-align: center; }
-        .stat-box .num { font-size: 14px; font-weight: 700; color: var(--tiffany); }
-        .stat-box .lbl { font-size: 8px; color: var(--muted); }
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 8px; border-radius: 8px; text-align: center; }
+        .stat-box .num { font-size: 15px; font-weight: 700; color: var(--tiffany); }
+        .stat-box .lbl { font-size: 8.5px; color: var(--muted); }
 
-        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; max-height: 300px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; min-width: 450px; }
-        th { background: #000; color: var(--muted); padding: 7px; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); }
-        td { padding: 7px; border-bottom: 1px solid #1a2333; vertical-align: middle; }
-        .empty-state { padding: 15px; text-align: center; color: var(--muted); font-size: 11px; }
+        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; max-height: 320px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11.5px; min-width: 480px; }
+        th { background: #000; color: var(--muted); padding: 8px; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); }
+        td { padding: 8px; border-bottom: 1px solid #1a2333; vertical-align: middle; }
+        .empty-state { padding: 20px; text-align: center; color: var(--muted); font-size: 12px; }
         tr.completed-row { opacity: 0.4; background: rgba(16, 185, 129, 0.05); text-decoration: line-through; }
         tr.anomaly-row { background: rgba(249, 115, 22, 0.1); border-left: 4px solid var(--orange); }
 
         #podModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center; padding: 12px; }
-        .pod-content { background: var(--card); border: 2px solid var(--tiffany); border-radius: 10px; padding: 12px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 8px; text-align: center; max-height: 95vh; overflow-y: auto; }
-        .pod-preview { width: 100%; height: 110px; background: #000; border: 1px dashed var(--border); border-radius: 6px; display: flex; justify-content: center; align-items: center; color: var(--muted); font-size: 10px; overflow: hidden; position: relative; }
+        .pod-content { background: var(--card); border: 2px solid var(--tiffany); border-radius: 10px; padding: 14px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; text-align: center; max-height: 95vh; overflow-y: auto; }
+        .pod-preview { width: 100%; height: 120px; background: #000; border: 1px dashed var(--border); border-radius: 6px; display: flex; justify-content: center; align-items: center; color: var(--muted); font-size: 11px; overflow: hidden; position: relative; }
         .pod-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .sig-canvas { width: 100%; height: 85px; background: #ffffff; border-radius: 6px; cursor: crosshair; touch-action: none; }
+        .sig-canvas { width: 100%; height: 90px; background: #ffffff; border-radius: 6px; cursor: crosshair; touch-action: none; }
     </style>
 </head>
 <body>
@@ -120,7 +123,7 @@
     <div class="login-card">
         <div class="company-logo-area">🚚</div>
         <div class="login-title">SanAnd Truck Enterprise</div>
-        <div class="login-sub">Master Fleet OS v49.0</div>
+        <div class="login-sub">Laser Zebra Fleet v50.0</div>
         
         <input type="text" id="terminalSearch" class="login-input" placeholder="🔍 Cerca il tuo nome o terminale..." oninput="filterTerminals()" onclick="filterTerminals()">
         
@@ -138,7 +141,7 @@
             <h1>SanAnd Truck Enterprise</h1>
             <p>Terminal: <span id="lblDriver" style="color:var(--tiffany)">-</span> | <span style="color:var(--green)">● Online</span></p>
         </div>
-        <button onclick="handleLogout()" style="width:auto; padding:4px 8px; font-size:9.5px; background:var(--red); color:#fff;">Esci</button>
+        <button onclick="handleLogout()" style="width:auto; padding:5px 10px; font-size:10px; background:var(--red); color:#fff;">Esci</button>
     </header>
 
     <div class="stats-bar">
@@ -148,41 +151,62 @@
         <div class="stat-box"><div class="lbl">CASH</div><div class="num" id="statCash" style="color:var(--red)">€0</div></div>
     </div>
 
-    <!-- HOME A GRIGLIA -->
+    <!-- HOME A GRIGLIA INGRANDITA -->
     <div id="homeMenuView" class="menu-grid">
         <div class="menu-card" onclick="openSection('loadSection')">
             <div class="icon">📦</div>
-            <div class="title">Accetta & Scansiona Colli</div>
+            <div class="info">
+                <div class="title">Accetta & Scansiona Colli</div>
+                <div class="desc">Modalità pistola laser continua per inserimento rapido</div>
+            </div>
         </div>
         <div class="menu-card" onclick="openSection('mapSection')">
             <div class="icon">🗺️</div>
-            <div class="title">Area di Lavoro & Mappa</div>
+            <div class="info">
+                <div class="title">Area di Lavoro & Mappa GPS</div>
+                <div class="desc">Visualizzazione pin fermate e posizione in tempo reale</div>
+            </div>
         </div>
         <div class="menu-card" onclick="openSection('routeSection')">
             <div class="icon">⚡</div>
-            <div class="title">Gestione Giro & Lista</div>
+            <div class="info">
+                <div class="title">Gestione Giro & Lista</div>
+                <div class="desc">Ottimizzazione percorso, ricerca e chiusura POD</div>
+            </div>
         </div>
         <div class="menu-card" onclick="openSection('cashSection')">
             <div class="icon">💶</div>
-            <div class="title">Smart Box Contrassegni</div>
+            <div class="info">
+                <div class="title">Smart Box Contrassegni</div>
+                <div class="desc">Controllo incassi cash e versamenti cassa</div>
+            </div>
         </div>
         <div class="menu-card" onclick="openSection('anomalySection')">
             <div class="icon">⚠️</div>
-            <div class="title">Giacenze & Rientri</div>
+            <div class="info">
+                <div class="title">Giacenze & Rientri</div>
+                <div class="desc">Registro rapido anomalie e gestione giacenze</div>
+            </div>
         </div>
         <div class="menu-card" onclick="openSection('toolsSection')">
             <div class="icon">⚙️</div>
-            <div class="title">Strumenti & Master SOS</div>
+            <div class="info">
+                <div class="title">Strumenti & Master Control</div>
+                <div class="desc">Report giornaliero, SOS emergenza e logout</div>
+            </div>
         </div>
     </div>
 
-    <!-- SEZIONE 1 -->
+    <!-- SEZIONE 1: SCANNER RAPIDO CONTINUO -->
     <div id="loadSection" class="section-view">
         <div class="section-title">
-            <span>📦 Presa in Carico & Smart Scan</span>
+            <span>📦 Presa in Carico & Laser Scanner</span>
             <button class="btn-back" onclick="closeSection()">Indietro</button>
         </div>
-        <button class="btn-scan" onclick="scanSmartLabelExact()">📷 Scansiona Etichetta Reale</button>
+        
+        <button class="btn-scan" onclick="triggerLaserScan()">⚡ Simula Pistola Laser / Scansiona Subito</button>
+        <div style="font-size: 10.5px; color: var(--tiffany); text-align: center; font-weight: bold;">(Clicca il pulsante per aggiungere un nuovo pacco in sequenza rapida)</div>
+        
         <div class="form-group" style="margin-top:6px;">
             <label>CODICE BARRE ORIGINALE</label>
             <input type="text" id="manCode" class="form-input" placeholder="Es. LP003770864PP">
@@ -203,10 +227,10 @@
             <label>CONTRASSEGNO CASH (€)</label>
             <input type="number" id="manCash" class="form-input" value="0" step="0.5">
         </div>
-        <button class="btn-add" onclick="addEnterpriseStop()">+ Registra Spedizione nel Giro</button>
+        <button class="btn-add" onclick="addEnterpriseStopAndNext()">+ Registra & Passa al Successivo ⚡</button>
     </div>
 
-    <!-- SEZIONE 2 -->
+    <!-- SEZIONE 2: MAPPA GPS -->
     <div id="mapSection" class="section-view">
         <div class="section-title">
             <span>🗺️ Mappa & Posizione Live</span>
@@ -217,14 +241,14 @@
         </div>
     </div>
 
-    <!-- SEZIONE 3 -->
+    <!-- SEZIONE 3: GESTIONE GIRO -->
     <div id="routeSection" class="section-view">
         <div class="section-title">
             <span>📋 Elenco Fermate & Consegne</span>
             <button class="btn-back" onclick="closeSection()">Indietro</button>
         </div>
         <input type="text" id="searchInput" class="form-input" placeholder="🔍 Cerca per codice o indirizzo..." oninput="renderTable()">
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:8px;">
             <button class="btn-login" onclick="optimizeRouteTSP()">⚡ Ottimizza Percorso</button>
             <button class="btn-anomaly" onclick="resetAll()">🔄 Svuota Giro</button>
         </div>
@@ -232,8 +256,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 55px; text-align:center;">POD</th>
-                        <th style="width: 30px;">#</th>
+                        <th style="width: 60px; text-align:center;">POD</th>
+                        <th style="width: 35px;">#</th>
                         <th>Codice</th>
                         <th>Indirizzo</th>
                         <th>Città</th>
@@ -247,27 +271,27 @@
         </div>
     </div>
 
-    <!-- SEZIONE 4 -->
+    <!-- SEZIONE 4: SMART BOX CONTRASSEGNI -->
     <div id="cashSection" class="section-view">
         <div class="section-title">
             <span>💶 Controllo Contrassegni & Cassa</span>
             <button class="btn-back" onclick="closeSection()">Indietro</button>
         </div>
-        <div style="background:#000; padding:10px; border-radius:6px; border:1px solid var(--tiffany); text-align:center;">
-            <div style="font-size:10px; color:var(--muted);">INCASSO TOTALE DA VERSARE</div>
-            <div id="cashDrawerTotal" style="font-size:22px; font-weight:bold; color:var(--red);">€0.00</div>
+        <div style="background:#000; padding:12px; border-radius:6px; border:1px solid var(--tiffany); text-align:center;">
+            <div style="font-size:10.5px; color:var(--muted);">INCASSO TOTALE DA VERSARE</div>
+            <div id="cashDrawerTotal" style="font-size:24px; font-weight:bold; color:var(--red);">€0.00</div>
         </div>
-        <div id="cashListContainer" style="display:flex; flex-direction:column; gap:4px; max-height:180px; overflow-y:auto; font-size:11px;"></div>
+        <div id="cashListContainer" style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; font-size:11.5px;"></div>
         <button class="btn-add" onclick="markCashAsDeposited()">✔️ Segna Cassa Versata al Deposito</button>
     </div>
 
-    <!-- SEZIONE 5 -->
+    <!-- SEZIONE 5: GIACENZE & RIENTRI -->
     <div id="anomalySection" class="section-view">
         <div class="section-title">
             <span>⚠️ Registro Giacenze & Anomalie</span>
             <button class="btn-back" onclick="closeSection()">Indietro</button>
         </div>
-        <div id="anomalyListContainer" style="display:flex; flex-direction:column; gap:5px; max-height:220px; overflow-y:auto; font-size:11px;">
+        <div id="anomalyListContainer" style="display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; font-size:11.5px;">
             <div class="empty-state">Nessuna anomalia registrata in questo turno.</div>
         </div>
     </div>
@@ -287,21 +311,21 @@
 <!-- Modale POD -->
 <div id="podModal">
     <div class="pod-content">
-        <h3 id="podTitle" style="margin:0; font-size:12px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
+        <h3 id="podTitle" style="margin:0; font-size:13px; color:var(--tiffany);">Chiusura Consegna (POD & Foto)</h3>
         <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">1️⃣ FOTO ETICHETTA SUL PACCO</div>
             <div class="pod-preview" id="previewBox1" onclick="capturePodPhoto(1)"><span id="text1">📷 Scatta etichetta</span></div>
         </div>
         <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">2️⃣ FOTO CIVICO / PORTA</div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">2️⃣ FOTO CIVICO / PORTA</div>
             <div class="pod-preview" id="previewBox2" onclick="capturePodPhoto(2)"><span id="text2">📷 Scatta civico</span></div>
         </div>
         <div>
-            <div style="font-size:8.5px; font-weight:bold; margin-bottom:1px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
+            <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">3️⃣ FIRMA ELETTRONICA RICEVENTE</div>
             <canvas id="sigCanvas" class="sig-canvas"></canvas>
-            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:8.5px; padding:2px;">Pulisci</button>
+            <button onclick="clearSignature()" style="background:#334155; color:#fff; font-size:9px; padding:3px;">Pulisci Firma</button>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:3px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:4px;">
             <button class="btn-back" style="width:100%" onclick="closePodModal()">Annulla</button>
             <button class="btn-add" id="btnConfirmPod" onclick="savePodDelivery()" disabled>✔️ Chiudi Consegna</button>
         </div>
@@ -310,14 +334,14 @@
 
 <!-- Modale Causali Giacenze Rapide -->
 <div id="anomalyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:12px;">
-    <div style="background:var(--card); border:2px solid var(--orange); border-radius:10px; padding:15px; width:100%; max-width:350px; display:flex; flex-direction:column; gap:8px; text-align:center;">
-        <h3 style="margin:0; font-size:13px; color:var(--orange);">⚠️ Seleziona Motivo Giacenza</h3>
-        <button onclick="confirmAnomalyReason('Cliente Assente / Citofono Chiuso')" style="background:#000; color:#fff; border:1px solid var(--orange);">1. Cliente Assente / Citofono Chiuso</button>
-        <button onclick="confirmAnomalyReason('Indirizzo Errato / Incompleto')" style="background:#000; color:#fff; border:1px solid var(--orange);">2. Indirizzo Errato / Incompleto</button>
-        <button onclick="confirmAnomalyReason('Destinatario Rifiutato')" style="background:#000; color:#fff; border:1px solid var(--orange);">3. Destinatario Rifiutato</button>
-        <button onclick="confirmAnomalyReason('Chiuso per Ferie / Attività Chiusa')" style="background:#000; color:#fff; border:1px solid var(--orange);">4. Chiuso per Ferie / Attività Chiusa</button>
-        <button onclick="confirmAnomalyReason('Destinatario Sconosciuto')" style="background:#000; color:#fff; border:1px solid var(--orange);">5. Destinatario Sconosciuto</button>
-        <button class="btn-back" onclick="closeAnomalyModal()" style="margin-top:5px; width:100%;">Annulla</button>
+    <div style="background:var(--card); border:2px solid var(--orange); border-radius:10px; padding:16px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:9px; text-align:center;">
+        <h3 style="margin:0; font-size:14px; color:var(--orange);">⚠️ Seleziona Motivo Giacenza</h3>
+        <button onclick="confirmAnomalyReason('Cliente Assente / Citofono Chiuso')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">1. Cliente Assente / Citofono Chiuso</button>
+        <button onclick="confirmAnomalyReason('Indirizzo Errato / Incompleto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">2. Indirizzo Errato / Incompleto</button>
+        <button onclick="confirmAnomalyReason('Destinatario Rifiutato')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">3. Destinatario Rifiutato</button>
+        <button onclick="confirmAnomalyReason('Chiuso per Ferie / Attività Chiusa')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">4. Chiuso per Ferie / Attività Chiusa</button>
+        <button onclick="confirmAnomalyReason('Destinatario Sconosciuto')" style="background:#000; color:#fff; border:1px solid var(--orange); padding:12px;">5. Destinatario Sconosciuto</button>
+        <button class="btn-back" onclick="closeAnomalyModal()" style="margin-top:6px; width:100%;">Annulla</button>
     </div>
 </div>
 
@@ -367,17 +391,33 @@ let canvas, ctx, drawing = false;
 
 window.addEventListener('DOMContentLoaded', () => {
     renderTerminalList(terminalList);
-    let saved = localStorage.getItem('sanand_authorized_terminal');
-    if (saved) {
-        selectedTerminal = saved;
-        document.getElementById('terminalSearch').value = saved;
+    
+    // Controllo Sessione Persistente (Rimani Connesso)
+    let savedTerminal = localStorage.getItem('sanand_authorized_terminal');
+    let savedMaster = localStorage.getItem('sanand_is_master');
+    if (savedTerminal) {
+        selectedTerminal = savedTerminal;
+        isMasterUser = (savedMaster === 'true');
+        document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
+        
+        let loginEl = document.getElementById('loginScreen');
+        if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
+        
+        let mainEl = document.getElementById('appMain');
+        if (mainEl) { mainEl.style.display = 'flex'; }
+
+        setTimeout(() => {
+            initMap();
+            startRealtimeGpsTracking();
+            loadStoredData();
+        }, 50);
     }
 });
 
 function renderTerminalList(items) {
     let listEl = document.getElementById('terminalList');
     if (!items.length) {
-        listEl.innerHTML = `<div style="padding:8px; text-align:center; color:var(--muted); font-size:10px;">Nessun terminale trovato</div>`;
+        listEl.innerHTML = `<div style="padding:8px; text-align:center; color:var(--muted); font-size:11px;">Nessun terminale trovato</div>`;
         return;
     }
     listEl.innerHTML = items.map(item => `
@@ -414,7 +454,6 @@ function handleLogin() {
         return;
     }
 
-    // Controllo Master Proprietari (Andres o Santiago) con PIN Master o PIN standard
     isMasterUser = (selectedTerminal.includes("TP784-01 - Andres") || selectedTerminal.includes("TP784-02 - Santiago"));
     
     let requiredPin = isMasterUser ? "1234" : "0000";
@@ -424,18 +463,15 @@ function handleLogin() {
     }
 
     localStorage.setItem('sanand_authorized_terminal', selectedTerminal);
+    localStorage.setItem('sanand_is_master', isMasterUser ? 'true' : 'false');
+    
     document.getElementById('lblDriver').textContent = selectedTerminal + (isMasterUser ? " 👑 [MASTER]" : "");
     
     let loginEl = document.getElementById('loginScreen');
-    if (loginEl) {
-        loginEl.style.display = 'none';
-        loginEl.remove();
-    }
+    if (loginEl) { loginEl.style.display = 'none'; loginEl.remove(); }
     
     let mainEl = document.getElementById('appMain');
-    if (mainEl) {
-        mainEl.style.display = 'flex';
-    }
+    if (mainEl) { mainEl.style.display = 'flex'; }
 
     setTimeout(() => {
         initMap();
@@ -467,9 +503,9 @@ function closeSection() {
 
 function loadStoredData() {
     try {
-        let cached = localStorage.getItem('sanand_v49_route');
-        let cachedDone = localStorage.getItem('sanand_v49_done');
-        let cachedAnomaly = localStorage.getItem('sanand_v49_anomaly');
+        let cached = localStorage.getItem('sanand_v50_route');
+        let cachedDone = localStorage.getItem('sanand_v50_done');
+        let cachedAnomaly = localStorage.getItem('sanand_v50_anomaly');
         if (cachedDone) { try { completedStops = new Set(JSON.parse(cachedDone)); } catch(e){} }
         if (cachedAnomaly) { try { anomalies = new Set(JSON.parse(cachedAnomaly)); } catch(e){} }
         if (cached) {
@@ -491,25 +527,17 @@ function loadStoredData() {
     }
 }
 
-function scanSmartLabelExact() {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = (e) => {
-        let file = e.target.files[0];
-        if (!file) return;
-        let extractedBarcode = `LP00377${Math.floor(100 + Math.random() * 900)}PP`;
-        document.getElementById('manCode').value = extractedBarcode;
-        document.getElementById('manAddress').value = "Via della fisica 38";
-        document.getElementById('manCity').value = "Roma";
-        document.getElementById('manPhone').value = "3888949459";
-        alert(`📷 Etichetta scansionata!\nCodice: ${extractedBarcode}\nIndirizzo: Via della fisica 38, Roma\nTelefono: 3888949459`);
-    };
-    input.click();
+// Simulazione Pistola Laser Zebra (Senza Foto, immediato)
+function triggerLaserScan() {
+    let randCode = `LP00377${Math.floor(100 + Math.random() * 900)}PP`;
+    document.getElementById('manCode').value = randCode;
+    document.getElementById('manAddress').value = "Via della fisica 38";
+    document.getElementById('manCity').value = "Roma";
+    document.getElementById('manPhone').value = "3888949459";
+    alert(`⚡ Laser Scansionato!\nCodice: ${randCode}\nInserisci o conferma i dati e premi Registra per aggiungere la fermata.`);
 }
 
-function addEnterpriseStop() {
+function addEnterpriseStopAndNext() {
     let code = document.getElementById('manCode').value.trim();
     let address = document.getElementById('manAddress').value.trim();
     let city = document.getElementById('manCity').value.trim() || "Roma";
@@ -519,16 +547,17 @@ function addEnterpriseStop() {
     if (!code || !address) { alert("Inserisci codice e indirizzo validi."); return; }
 
     finalRows.push({ "Code": code, "Address": address, "City": city, "Phone": phone, "Cash": cash, "Photo1": null, "Photo2": null, "Sig": null, "AnomalyReason": null });
+    
+    // Pulisce i campi ma resta pronto per la prossima scansione immediata
     document.getElementById('manCode').value = "";
     document.getElementById('manAddress').value = "";
     document.getElementById('manPhone').value = "";
     document.getElementById('manCash').value = "0";
     saveAndRefresh();
-    alert("✅ Spedizione registrata nel giro!");
-    closeSection();
+    
+    alert("✅ Spedizione aggiunta al giro! Pronto per la prossima scansione.");
 }
 
-// Giacenze con causali rapide touch
 function markAsAnomaly(idx) {
     targetAnomalyIndex = idx;
     document.getElementById('anomalyModal').style.display = 'flex';
@@ -546,6 +575,7 @@ function confirmAnomalyReason(motif) {
     finalRows[targetAnomalyIndex].AnomalyReason = motif;
     closeAnomalyModal();
     saveAndRefresh();
+    checkEndOfDayReminder();
     alert(`⚠️ Spedizione spostata in Giacenza.\nMotivo: ${motif}`);
 }
 
@@ -560,12 +590,12 @@ function updateAnomalyUI() {
     }
 
     container.innerHTML = anomList.map(({ r, idx }) => `
-        <div style="background:#000; padding:8px; border-radius:6px; border:1px solid var(--orange); display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:#000; padding:9px; border-radius:6px; border:1px solid var(--orange); display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <b>#${idx + 1} [${r.Code}]</b> - ${r.Address}<br>
                 <small style="color:var(--orange)">Motivo: ${r.AnomalyReason}</small>
             </div>
-            <button class="btn-add" style="width:auto; padding:4px 8px; font-size:9px;" onclick="restoreFromAnomaly(${idx})">Ripristina</button>
+            <button class="btn-add" style="width:auto; padding:5px 9px; font-size:10px;" onclick="restoreFromAnomaly(${idx})">Ripristina</button>
         </div>
     `).join('');
 }
@@ -583,7 +613,7 @@ function updateCashDrawerUI() {
     finalRows.forEach((r, idx) => {
         if (!completedStops.has(idx) && !anomalies.has(idx) && r.Cash > 0) {
             totalCash += r.Cash;
-            listHtml += `<div style="background:#000; padding:6px; border-radius:5px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span>#${idx+1} [${r.Code}] ${r.Address}</span><b style="color:var(--red);">€${r.Cash.toFixed(2)}</b></div>`;
+            listHtml += `<div style="background:#000; padding:7px; border-radius:5px; border:1px solid var(--border); display:flex; justify-content:space-between;"><span>#${idx+1} [${r.Code}] ${r.Address}</span><b style="color:var(--red);">€${r.Cash.toFixed(2)}</b></div>`;
         }
     });
     document.getElementById('cashDrawerTotal').textContent = `€${totalCash.toFixed(2)}`;
@@ -594,7 +624,6 @@ function markCashAsDeposited() {
     alert("✔️ Cassa registrata come versata al deposito centrale!");
 }
 
-// Report Giornaliero Master
 function generateDailyReport() {
     let tot = finalRows.length;
     let done = completedStops.size;
@@ -610,7 +639,7 @@ function generateDailyReport() {
                      `⚠️ Giacenze / Anomalie: ${anom}\n` +
                      `💶 Cash Incassato: €${cashTot.toFixed(2)}\n` +
                      `---------------------------\n` +
-                     `Generato dal sistema Master Enterprise OS.`;
+                     `Fine giornata registrata con successo.`;
 
     if (navigator.share) {
         navigator.share({ title: 'Report SanAnd', text: reportText }).catch(() => {});
@@ -695,7 +724,7 @@ function initSignatureCanvas() {
     ctx = canvas.getContext('2d');
     let rect = canvas.getBoundingClientRect();
     canvas.width = rect.width > 0 ? rect.width : 320;
-    canvas.height = rect.height > 0 ? rect.height : 85;
+    canvas.height = rect.height > 0 ? rect.height : 90;
 
     canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top); };
     canvas.onmousemove = (e) => { if (!drawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke(); };
@@ -717,155 +746,4 @@ function capturePodPhoto(photoNum) {
     input.accept = 'image/*';
     input.capture = 'environment';
     input.onchange = (e) => {
-        let file = e.target.files[0];
-        if (!file) return;
-        let reader = new FileReader();
-        reader.onload = (event) => {
-            if (photoNum === 1) podPhotos.photo1 = event.target.result;
-            else podPhotos.photo2 = event.target.result;
-            updatePodPreviews();
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
-}
-
-function updatePodPreviews() {
-    let b1 = document.getElementById('previewBox1');
-    let b2 = document.getElementById('previewBox2');
-    if (podPhotos.photo1) b1.innerHTML = `<img src="${podPhotos.photo1}">`;
-    else b1.innerHTML = `<span>📷 Scatta etichetta</span>`;
-    if (podPhotos.photo2) b2.innerHTML = `<img src="${podPhotos.photo2}">`;
-    else b2.innerHTML = `<span>📷 Scatta civico</span>`;
-    checkPodValid();
-}
-
-function checkPodValid() {
-    let isSigNotEmpty = canvas ? !isCanvasBlank(canvas) : false;
-    let isValid = podPhotos.photo1 && podPhotos.photo2 && isSigNotEmpty;
-    let btn = document.getElementById('btnConfirmPod');
-    if(btn) btn.disabled = !isValid;
-}
-
-function isCanvasBlank(cnv) {
-    const blank = document.createElement('canvas');
-    blank.width = cnv.width; blank.height = cnv.height;
-    return cnv.toDataURL() === blank.toDataURL();
-}
-
-function savePodDelivery() {
-    if (currentPodIndex === null) return;
-    finalRows[currentPodIndex].Photo1 = podPhotos.photo1;
-    finalRows[currentPodIndex].Photo2 = podPhotos.photo2;
-    finalRows[currentPodIndex].Sig = canvas ? canvas.toDataURL() : null;
-    completedStops.add(currentPodIndex);
-    anomalies.delete(currentPodIndex);
-    closePodModal();
-    saveAndRefresh();
-    alert("✅ Consegna chiusa con successo!");
-}
-
-function updateUIState() {
-    let tot = finalRows.length;
-    let done = completedStops.size;
-    let anom = anomalies.size;
-    document.getElementById('statTot').textContent = tot;
-    document.getElementById('statDone').textContent = done;
-    document.getElementById('statAnomaly').textContent = anom;
-    let totalCash = 0;
-    finalRows.forEach((r, i) => {
-        if (!completedStops.has(i) && !anomalies.has(i) && r["Cash"]) totalCash += parseFloat(r["Cash"]);
-    });
-    document.getElementById('statCash').textContent = `€${totalCash.toFixed(2)}`;
-}
-
-function renderTable() {
-    let tb = document.getElementById('previewBody');
-    let filter = document.getElementById('searchInput').value.toLowerCase();
-    let filtered = finalRows.map((r, origIdx) => ({ r, origIdx })).filter(({ r }) => {
-        return r["Address"].toLowerCase().includes(filter) || r["Code"].toLowerCase().includes(filter) || r["City"].toLowerCase().includes(filter);
-    });
-    if (!filtered.length) {
-        tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nessuna spedizione nel giro.</td></tr>`;
-        return;
-    }
-    tb.innerHTML = filtered.map(({ r, origIdx }) => {
-        let isDone = completedStops.has(origIdx);
-        let isAnom = anomalies.has(origIdx);
-        let navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}`;
-        let hasPhotos = r["Photo1"] && r["Photo2"] && r["Sig"];
-        let phoneNum = r["Phone"] || "";
-        
-        let callBtn = phoneNum ? `<a href="tel:${phoneNum}"><button class="btn-call">📞 Chiama</button></a>` : '';
-        let waUrl = phoneNum ? `https://wa.me/${phoneNum}?text=` + encodeURIComponent(`Buongiorno, sono il corriere SanAnd Truck, ho una spedizione (${r["Code"]}) in arrivo per Lei in ${r["Address"]}.`) : `https://wa.me/?text=` + encodeURIComponent(`Consegna pacco ${r["Code"]} in arrivo.`);
-        let waBtn = `<a href="${waUrl}" target="_blank"><button class="btn-wa">💬 WhatsApp</button></a>`;
-        
-        let rowClass = isDone ? 'completed-row' : isAnom ? 'anomaly-row' : '';
-        return `
-        <tr id="row_${origIdx}" class="${rowClass}">
-            <td style="text-align:center; display:flex; gap:3px; justify-content:center;">
-                <button class="btn-pod" onclick="openPodModal(${origIdx})" style="background:${hasPhotos ? 'var(--green)' : 'var(--purple)'}">${hasPhotos ? '📸 OK' : '📷 POD'}</button>
-                <button class="btn-anomaly" onclick="markAsAnomaly(${origIdx})">⚠️</button>
-            </td>
-            <td><span class="badge-num" style="background:var(--tiffany); color:#000; padding:2px 5px; border-radius:4px; font-weight:bold;">#${origIdx + 1}</span></td>
-            <td><span style="color:var(--tiffany); font-weight:bold;">${r["Code"]}</span></td>
-            <td style="font-weight:600">${r["Address"]}</td>
-            <td>${r["City"]}</td>
-            <td>
-                ${phoneNum ? `<small style="color:var(--muted)">📞 ${phoneNum}</small><br>` : ''}
-                ${r["Cash"] > 0 ? `<small style="color:var(--red); font-weight:bold;">💶 €${r["Cash"].toFixed(2)}</small><br>` : ''}
-                <div style="display:flex; gap:3px; margin-top:3px;">
-                    <a href="${navUrl}" target="_blank" style="flex:1;"><button class="btn-go" style="width:100%">🚀 Navig</button></a>
-                    ${callBtn}
-                    ${waBtn}
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function saveAndRefresh() {
-    try {
-        localStorage.setItem('sanand_v49_route', JSON.stringify(finalRows));
-        localStorage.setItem('sanand_v49_done', JSON.stringify(Array.from(completedStops)));
-        localStorage.setItem('sanand_v49_anomaly', JSON.stringify(Array.from(anomalies)));
-    } catch(e) {}
-    updateUIState();
-    renderTable();
-    plotMap();
-}
-
-async function plotMap() {
-    if (!map) initMap();
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    let coords = [];
-    for (let i = 0; i < finalRows.length; i++) {
-        let r = finalRows[i];
-        let isDone = completedStops.has(i);
-        let isAnom = anomalies.has(i);
-        try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(r["Address"] + ", " + r["City"] + ", Italy")}&limit=1`);
-            let data = await res.json();
-            if (data && data.length) {
-                let lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
-                coords.push([lat, lon]);
-                let pinClass = isDone ? "numbered-pin completed" : isAnom ? "numbered-pin anomaly" : "numbered-pin";
-                let icon = L.divIcon({ className: 'custom-pin', html: `<div class="${pinClass}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-                let marker = L.marker([lat, lon], { icon }).addTo(map);
-                markers.push(marker);
-            }
-        } catch(e) {}
-    }
-    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
-}
-
-function resetAll() {
-    if (confirm("Svuotare completamente il giro?")) {
-        try { localStorage.clear(); } catch(e){}
-        location.reload();
-    }
-}
-</script>
-</body>
-</html>
+        let file = e.target.files
