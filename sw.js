@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sanand-truck-v53.0';
+const CACHE_NAME = 'sanand-truck-v54.0';
 const ASSETS = [
   './',
   './index.html',
