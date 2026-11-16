@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sanand-truck-v45.0';
+const CACHE_NAME = 'sanand-truck-v46.0';
 const ASSETS = [
   './',
   './index.html',
@@ -22,5 +22,9 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then(res => res || fetch(res ? res : e.request)));
+  e.respondWith(
+    caches.match(e.request).then((cachedResponse) => {
+      return cachedResponse || fetch(e.request).catch(() => caches.match('./index.html'));
+    })
+  );
 });
