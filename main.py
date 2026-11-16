@@ -2,11 +2,11 @@ import os
 import io
 import pandas as pd
 import requests
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 
-app = FastAPI(title="SanAnd Truck Logistics Backend - Secure Admin")
+app = FastAPI(title="SanAnd Truck Logistics Backend")
 
 # Configurazione CORS
 app.add_middleware(
@@ -19,26 +19,17 @@ app.add_middleware(
 
 # Connessione al database PostgreSQL/PostGIS su Supabase
 DATABASE_URL = os.getenv("DATABASE_URL")
-ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY", "SanAndAdminSecret2026") # La tua password segreta predefinita
-
 engine = create_engine(DATABASE_URL) if DATABASE_URL else None
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "message": "SanAnd Truck Backend sicuro attivo 24/7!"}
+    return {"status": "online", "message": "SanAnd Truck Backend attivo 24/7!"}
 
 @app.post("/api/upload-orders")
-async def upload_orders(file: UploadFile = File(...), x_admin_token: str = Header(default="")):
+async def upload_orders(file: UploadFile = File(...)):
     """
-    Caricamento file Excel/CSV protetto: accessibile SOLO all'amministratore con token corretto.
+    Caricamento file Excel o CSV diretto e immediato, senza bisogno di chiavi o token.
     """
-    # Controllo di sicurezza amministratore
-    if x_admin_token != ADMIN_SECRET_KEY:
-        raise HTTPException(
-            status_code=403, 
-            detail="Accesso negato: Area riservata esclusivamente all'amministratore di SanAnd Truck."
-        )
-        
     if not engine:
         raise HTTPException(status_code=500, detail="Database non configurato (DATABASE_URL mancante)")
     
