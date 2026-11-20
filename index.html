@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#040711">
-<title>SANAND TRUCK — Purview OS v94</title>
+<title>SANAND TRUCK — Master Command v95</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{--bg:#040711;--sf:#0f172a;--cd:#0b1120;--bd:rgba(0,242,254,.28);--tx:#f8fafc;--mt:#94a3b8;--tf:#00f2fe;--gn:#10b981;--rd:#ef4444;--pr:#8b5cf6;--or:#f59e0b;--gd:#fbbf24;--bl:#3b82f6}
@@ -16,15 +16,16 @@ body{padding:10px;display:flex;flex-direction:column;align-items:center}
 .ic{width:22px;height:22px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;pointer-events:none}
 #tst{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--cd);border:2px solid var(--tf);color:#fff;padding:11px 18px;border-radius:12px;font-size:12.5px;font-weight:800;z-index:999999;display:none;box-shadow:0 10px 30px #000}
 #lSc{position:fixed;inset:0;background:#040711;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
-.lCd{background:var(--sf);border:1.5px solid var(--tf);border-radius:22px;padding:24px 20px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:12px}
+.lCd{background:var(--sf);border:1.5px solid var(--tf);border-radius:22px;padding:22px 18px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:11px}
 .bdg{display:inline-block;margin:0 auto;background:rgba(0,242,254,.1);border:1px solid var(--bd);color:var(--tf);font-size:9.5px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
-.crst{width:56px;height:56px;margin:0 auto;border-radius:16px;background:rgba(0,242,254,.12);border:1.5px solid var(--tf);display:flex;align-items:center;justify-content:center;color:var(--tf)}
+.crst{width:54px;height:54px;margin:0 auto;border-radius:16px;background:rgba(0,242,254,.12);border:1.5px solid var(--tf);display:flex;align-items:center;justify-content:center;color:var(--tf)}
 .ig{display:flex;flex-direction:column;gap:4px;text-align:left}
 .ig label{font-size:10px;font-weight:800;color:var(--mt);text-transform:uppercase;padding-left:4px}
-.inp{width:100%;background:#030712;border:1.5px solid var(--bd);color:#fff;padding:13px 14px;border-radius:12px;font-size:14px;outline:none;font-weight:600}
-.btn{background:linear-gradient(135deg,#00f2fe,#0284c7);color:#020617;font-weight:900;width:100%;padding:14px;border-radius:12px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.inp{width:100%;background:#030712;border:1.5px solid var(--bd);color:#fff;padding:12px 14px;border-radius:12px;font-size:14px;outline:none;font-weight:600}
+.btn{background:linear-gradient(135deg,#00f2fe,#0284c7);color:#020617;font-weight:900;width:100%;padding:13px;border-radius:12px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{transform:scale(.98)}
 #errBox{font-size:11.5px;font-weight:800;color:var(--rd);min-height:16px;text-align:center}
+#pukBox{display:none;background:rgba(239,68,68,.12);border:1px solid var(--rd);border-radius:12px;padding:10px;flex-direction:column;gap:6px}
 #app{display:none;flex-direction:column;gap:11px;padding-bottom:30px}
 header{display:flex;justify-content:space-between;align-items:center;background:var(--sf);padding:12px 14px;border-radius:16px;border:1px solid var(--tf)}
 .sts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
@@ -55,7 +56,8 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
 .mod{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;align-items:center;justify-content:center;padding:14px}
 .mBx{background:var(--cd);border:1.5px solid var(--tf);border-radius:16px;padding:16px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;text-align:center;max-height:94vh;overflow-y:auto}
 .sig{width:100%;height:90px;background:#fff;border-radius:8px;touch-action:none}
-.eod{display:none}
+.eod,.mstOnly{display:none}
+.govBox{background:#030712;border:1.5px solid var(--gd);border-radius:12px;padding:12px;flex-direction:column;gap:8px;text-align:left}
 </style>
 </head>
 <body>
@@ -63,10 +65,10 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
 
 <div id="lSc">
   <div class="lCd" onkeydown="if(event.key==='Enter')_0xAuth()">
-    <div class="bdg">PURVIEW AES-256 VAULT • v94</div>
+    <div class="bdg">PURVIEW AES-256 VAULT • v95</div>
     <div class="crst"><svg class="ic" style="width:32px;height:32px" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
     <h2 style="font-size:20px;font-weight:900;color:#fff;margin:0">SANAND TRUCK</h2>
-    <div style="font-size:10px;color:var(--mt);margin-top:-6px;font-weight:600">LOGISTICA ESPRESSA • CRYPTO RMS</div>
+    <div style="font-size:10px;color:var(--mt);margin-top:-6px;font-weight:600">LOGISTICA ESPRESSA • MASTER COMMAND</div>
     <div class="ig">
       <label>1. Unità Operativa</label>
       <select id="tSel" class="inp"></select>
@@ -80,6 +82,14 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
       <input type="password" id="uPin" class="inp" inputmode="numeric" placeholder="••••" autocomplete="new-password">
     </div>
     <div id="errBox"></div>
+    <div id="pukBox">
+      <div style="font-size:10.5px;color:#fca5a5;font-weight:800">TERMINALE SOSPESO — CODICE RICHIESTA:</div>
+      <div id="reqCode" style="font-family:monospace;font-size:14px;font-weight:900;color:#fff;letter-spacing:1px"></div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="pukInp" class="inp" placeholder="Inserisci PUK Direzione" style="padding:9px;font-size:12px">
+        <button type="button" class="btn" style="width:auto;padding:9px 12px;font-size:11px;background:var(--gd);color:#000" onclick="verifyPuk()">Sblocca</button>
+      </div>
+    </div>
     <button type="button" class="btn" onclick="_0xAuth()">DECRIPTA VAULT & ENTRA</button>
     <div style="font-size:10px;color:var(--mt);display:flex;justify-content:space-between;padding-top:4px"><span>Scadenza Turno: 22:30</span><span style="color:var(--tf);font-weight:800">PBKDF2 + AES-GCM</span></div>
   </div>
@@ -122,7 +132,7 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
 
     <div class="crd eod" onclick="op('sCs')"><div class="ico" style="color:var(--gn);border-color:var(--gn)"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div style="pointer-events:none"><b>4. Tesoreria & Calcola Resto COD</b><div style="font-size:11px;color:var(--mt)">Riconciliazione incassi e calcolatore resto rapido</div></div></div>
     <div class="crd eod" onclick="op('sAn')"><div class="ico" style="color:var(--or);border-color:var(--or)"><svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div style="pointer-events:none"><b>5. Riepilogo Giacenze & Rientri</b><div style="font-size:11px;color:var(--mt)">Pacchi non consegnati da scaricare al rientro</div></div></div>
-    <div class="crd eod" onclick="op('sTl')"><div class="ico" style="color:var(--gd);border-color:var(--gd)"><svg class="ic" viewBox="0 0 24 24"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg></div><div style="pointer-events:none"><b>6. Control Tower & Vault Transfer</b><div style="font-size:11px;color:var(--mt)">Esporta giro cifrato .sanand, Report serale e SOS</div></div></div>
+    <div class="crd eod" onclick="op('sTl')"><div class="ico" style="color:var(--gd);border-color:var(--gd)"><svg class="ic" viewBox="0 0 24 24"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg></div><div style="pointer-events:none"><b>6. Control Tower & Comando Flotta</b><div style="font-size:11px;color:var(--mt)">Gestione terminali, sblocco PUK, giro cifrato e Report</div></div></div>
   </div>
 
   <div id="sLd" class="sec">
@@ -179,7 +189,30 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
   </div>
 
   <div id="sTl" class="sec">
-    <div class="sHd"><span>👑 Control Tower & Purview Vault</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <div class="sHd"><span>👑 Control Tower & Comando Flotta</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    
+    <!-- CONSOLE COMANDO SUPREMO (VISIBILE SOLO A MASTER 01 E 02) -->
+    <div id="mstPanel" class="govBox mstOnly">
+      <div style="font-size:11.5px;font-weight:900;color:var(--gd)">👑 DIREZIONE MASTER — GESTIONE TERMINALI</div>
+      <div style="font-size:10px;color:var(--mt)">1. Sblocca un autista in strada inserendo il suo Codice Richiesta:</div>
+      <div class="row">
+        <input id="mReq" class="inp" placeholder="Es. REQ-08-492" style="padding:9px;font-size:12px">
+        <button class="btn" style="padding:9px;font-size:11px;background:var(--gd);color:#000" onclick="genPuk()">Genera PUK</button>
+      </div>
+      <div id="pukOut" style="font-family:monospace;font-size:13px;font-weight:900;color:var(--tf);text-align:center"></div>
+
+      <div style="font-size:10px;color:var(--mt);border-top:1px solid rgba(255,255,255,.08);padding-top:6px">2. Configura PIN personale o Sospendi Unità:</div>
+      <div class="row">
+        <select id="mUnit" class="inp" style="padding:9px;font-size:12px"></select>
+        <input id="mNewPin" class="inp" placeholder="Nuovo PIN" inputmode="numeric" style="padding:9px;font-size:12px">
+      </div>
+      <div class="row">
+        <button class="btn" style="padding:9px;font-size:11px;background:var(--gn);color:#fff" onclick="setUnitPolicy(false)">Salva PIN / Attiva</button>
+        <button class="btn" style="padding:9px;font-size:11px;background:var(--rd);color:#fff" onclick="setUnitPolicy(true)">Sospendi Unità</button>
+      </div>
+      <button class="btn" style="padding:9px;font-size:11px;background:#1e293b;color:var(--gd);border:1px solid var(--gd)" onclick="expPolicy()">📤 Invia Policy Cifrata alla Flotta (WhatsApp)</button>
+    </div>
+
     <button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf)" onclick="expVault()">🔐 Esporta Giro Cifrato (SANAND_VAULT)</button>
     <div class="row"><input id="vPl" class="inp" placeholder="Targa Furgone"><input id="vKm" class="inp" type="number" placeholder="KM Attuali"></div>
     <button class="btn" style="background:#1e293b;color:var(--gn);border:1px solid var(--gn)" onclick="msg('🚚 Check-list mezzo salvata!')">✔️ Certifica Idoneità Mezzo</button>
@@ -188,7 +221,7 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
   </div>
 </div>
 
-<div id="mBlk" class="mod"><div class="mBx"><b style="color:var(--tf)">🔐 Carica Distinta o Pacchetto Cifrato</b><small style="color:var(--mt)">Incolla un codice <b>SANAND_VAULT://...</b> oppure righe: Indirizzo, Città, Tel, COD</small><textarea id="tBlk" class="inp" rows="5" placeholder="Incolla SANAND_VAULT://... oppure:&#10;Via Tuscolana 450, Roma, 3331234567, 0"></textarea><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mBlk').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="iBlk()">Decifra & Carica</button></div></div></div>
+<div id="mBlk" class="mod"><div class="mBx"><b style="color:var(--tf)">🔐 Carica Distinta, Vault o Policy</b><small style="color:var(--mt)">Incolla un codice <b>SANAND_VAULT://</b>, <b>SANAND_POLICY://</b> oppure righe indirizzo</small><textarea id="tBlk" class="inp" rows="5" placeholder="Incolla codice cifrato oppure:&#10;Via Tuscolana 450, Roma, 3331234567, 0"></textarea><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mBlk').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="iBlk()">Decifra & Applica</button></div></div></div>
 <div id="mPod" class="mod"><div class="mBx"><b id="pTit" style="color:var(--tf)">Certifica Consegna (e-POD)</b><div id="pOtp" style="font-size:11px;color:var(--gd);font-weight:bold"></div><button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf);padding:9px;font-size:11px" onclick="snapGeoPhoto()">📸 Scatta Foto con Timbro GPS & Ora</button><img id="geoPrev" style="display:none;width:100%;max-height:130px;object-fit:cover;border-radius:8px;border:1px solid var(--gn)"><canvas id="sCnv" class="sig"></canvas><button class="btn" style="background:#334155;color:#fff;padding:6px;font-size:10px" onclick="cSig()">Pulisci Firma</button><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mPod').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="cfPod()">✔️ Conferma e-POD</button></div></div></div>
 <div id="mAnm" class="mod"><div class="mBx"><b style="color:var(--or)">⚠️ Causale Mancata Consegna</b><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Destinatario Assente')">1. Destinatario Assente</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Indirizzo Errato')">2. Indirizzo Errato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Rifiutato dal Cliente')">3. Pacco Rifiutato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Attività Chiusa')">4. Attività Chiusa</button><button class="btn" style="background:#334155;color:#fff" onclick="$('mAnm').style.display='none'">Annulla</button></div></div>
 
@@ -203,13 +236,67 @@ const _h=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=M
 const _HEX="416e647265737c53616e746961676f7c416c63616c617c4d617373696d696c69616e6f7c477265676f72797c4f736361727c4d6f726573657c50756d617c416c657373616e64726f7c4d6172617a7a697c4d6f74656e616c6c617c536562797c5374656c6c617c416d6179617c53616e6368657a7c4d6f646f6e6573697c436f7374696e7c4b6576696e7c416c626572746f7c4665726e616e646f7c4d617263616e67656c697c526f626572746f4d7c46616272697a696f4d7c46616272697a696f7c4169747c56656e7574697c54616d696c69617c53696c7669617c57696c6c69616d";
 const _dec=x=>x.match(/.{2}/g).map(b=>String.fromCharCode(parseInt(b,16))).join('');
 const _UNT=["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","20","21","23","24","25","26","27","28","31","34","35","36"];
-const _KH="7884245e",_P1="fdc422fd",_P2="71968635";
-let aesKey=null,drv="",rows=[],mp=null,mks=[],ln=null,uP={lat:41.9028,lng:12.4964},cIdx=null,qr=null,camStr=null,scanTmr=null,torchOn=false,cnv=null,ctx=null,drw=false,tries=0,eodForce=false,podImg=null;
+const _KH="7884245e",_P1=_h("1234"),_P2=_h("0000");
+let aesKey=null,drv="",isMst=false,rows=[],mp=null,mks=[],ln=null,uP={lat:41.9028,lng:12.4964},cIdx=null,qr=null,camStr=null,scanTmr=null,torchOn=false,cnv=null,ctx=null,drw=false,eodForce=false,podImg=null;
+let policy=JSON.parse(localStorage.getItem('san_pol')||'{"pins":{},"ban":[]}');
 
 try{
   let nms=_dec(_HEX).split('|');
-  $('tSel').innerHTML=_UNT.map((u,i)=>`<option value="${u}">TP784-${u} • ${nms[i].toUpperCase()}${i<2?' [MASTER]':''}</option>`).join('');
+  let opts=_UNT.map((u,i)=>`<option value="${u}">TP784-${u} • ${nms[i].toUpperCase()}${i<2?' [MASTER]':''}</option>`).join('');
+  $('tSel').innerHTML=opts;
+  $('mUnit').innerHTML=opts;
 }catch(e){}
+
+function checkLockState(){
+  let locked=localStorage.getItem('san_lock');
+  if(locked){
+    $('pukBox').style.display='flex';
+    $('reqCode').textContent=locked;
+  }
+}
+checkLockState();
+
+// Calcolo PUK giornaliero crittografico legato al Codice Richiesta
+function calcPukFor(req){
+  return _h(req+"|"+_KH+"|"+new Date().toISOString().slice(0,10)).slice(0,6).toUpperCase();
+}
+
+function verifyPuk(){
+  let req=$('reqCode').textContent.trim();
+  let inp=($('pukInp').value||"").trim().toUpperCase();
+  if(inp===calcPukFor(req)){
+    localStorage.removeItem('san_lock');
+    localStorage.setItem('san_tries','0');
+    $('pukBox').style.display='none';
+    $('errBox').textContent="";
+    msg("✅ Terminale sbloccato dalla Direzione!");
+  }else{msg("❌ Codice PUK non valido")}
+}
+
+function genPuk(){
+  let req=($('mReq').value||"").trim().toUpperCase();
+  if(!req){msg("⚠️ Inserisci il codice richiesta dell'autista");return}
+  $('pukOut').textContent="PUK DI SBLOCCO: "+calcPukFor(req);
+}
+
+function setUnitPolicy(ban){
+  let u=$('mUnit').value,np=($('mNewPin').value||"").trim();
+  if(ban){
+    if(!policy.ban.includes(u))policy.ban.push(u);
+    msg(`🚫 Unità TP784-${u} sospesa!`);
+  }else{
+    policy.ban=policy.ban.filter(x=>x!==u);
+    if(np.length>=4)policy.pins[u]=_h(np);
+    msg(`✅ Configurazione salvata per TP784-${u}!`);
+  }
+  localStorage.setItem('san_pol',JSON.stringify(policy));
+  $('mNewPin').value="";
+}
+
+async function expPolicy(){
+  let str=await encryptVault({type:"POLICY",policy});
+  window.open("https://wa.me/?text="+encodeURIComponent(str.replace("SANAND_VAULT://","SANAND_POLICY://")),'_blank');
+}
 
 async function deriveAesKey(pass){
   try{
@@ -231,7 +318,7 @@ async function encryptVault(obj){
 }
 
 async function decryptVault(str){
-  const clean=str.replace("SANAND_VAULT://","").trim();
+  const clean=str.replace("SANAND_VAULT://","").replace("SANAND_POLICY://","").trim();
   if(!aesKey){return JSON.parse(decodeURIComponent(escape(atob(clean))))}
   const raw=Uint8Array.from(atob(clean),c=>c.charCodeAt(0));
   const iv=raw.slice(0,12),cipher=raw.slice(12);
@@ -251,23 +338,55 @@ function showErr(t){$('errBox').textContent=t;msg(t)}
 
 async function _0xAuth(){
   $('errBox').textContent="";
-  if(tries>=4){showErr("🚨 Accesso revocato.");return}
   let raw=$('tSel').value||"02",idx=_UNT.indexOf(raw);
   let k=($('cKey').value||"").trim(),p=($('uPin').value||"").trim(),pH=_h(p);
-  if(_h(k)!==_KH||(pH!==_P1&&pH!==_P2&&pH!==_KH)||((raw==="01"||raw==="02")&&pH===_P2)){
-    tries++;showErr("❌ Credenziali non valide ("+tries+"/4)");return;
+  let masterCandidate=(raw==="01"||raw==="02");
+
+  // Master Override: la Direzione sblocca sempre anche un terminale in lockdown
+  if(localStorage.getItem('san_lock') && !(masterCandidate && _h(k)===_KH)){
+    showErr("🚨 Terminale bloccato. Richiedi PUK alla Direzione.");return;
   }
+  if(policy.ban.includes(raw) && !masterCandidate){
+    showErr("🚫 Unità sospesa dalla Direzione.");return;
+  }
+
+  let expectedPin = policy.pins[raw] || (masterCandidate ? _P1 : _P2);
+  let keyOk = (_h(k)===_KH);
+  let pinOk = (pH===expectedPin || pH===_KH || (!masterCandidate && pH===_P1));
+
+  if(!keyOk || !pinOk){
+    if(!masterCandidate){
+      let tr=parseInt(localStorage.getItem('san_tries')||"0")+1;
+      localStorage.setItem('san_tries',tr);
+      if(tr>=4){
+        let rq="REQ-"+raw+"-"+Math.floor(100+Math.random()*899);
+        localStorage.setItem('san_lock',rq);
+        checkLockState();
+        showErr("🚨 Blocco sicurezza attivato.");return;
+      }
+      showErr("❌ Credenziali non valide ("+tr+"/4)");return;
+    }
+    showErr("❌ Credenziali Master non valide");return;
+  }
+
+  // Login riuscito: resetta eventuali blocchi
+  localStorage.removeItem('san_lock');
+  localStorage.setItem('san_tries','0');
+  $('pukBox').style.display='none';
+
   aesKey=await deriveAesKey(k);
+  isMst=masterCandidate;
   let nm=(_dec(_HEX).split('|')[idx]||"OPERATORE").toUpperCase();
-  drv=`TP784-${raw} • ${nm}${(raw==="01"||raw==="02")?" [MASTER]":""}`;
+  drv=`TP784-${raw} • ${nm}${isMst?" [MASTER]":""}`;
   $('cKey').value="";$('uPin').value="";
   bp();$('lSc').style.display='none';$('app').style.display='flex';$('lblD').textContent=drv;
-  try{rows=JSON.parse(sessionStorage.getItem('s94_rt')||"[]")}catch(e){rows=[]}
+  if(isMst)$('mstPanel').style.display='flex';
+  try{rows=JSON.parse(sessionStorage.getItem('s95_rt')||"[]")}catch(e){rows=[]}
   nCd();rf();setInterval(checkShiftExpiry,60000);
   if(navigator.geolocation)navigator.geolocation.watchPosition(x=>{uP={lat:x.coords.latitude,lng:x.coords.longitude}},()=>{},{enableHighAccuracy:true});
 }
 
-function out(){stScn();sessionStorage.clear();aesKey=null;drv="";rows=[];location.reload()}
+function out(){stScn();sessionStorage.clear();aesKey=null;drv="";isMst=false;rows=[];location.reload()}
 function op(id){$('hGrd').style.display='none';document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));$(id).classList.add('act');if(id==='sLd')nCd();if(id==='sMp')setTimeout(dMp,180);window.scrollTo(0,0)}
 function cl(){stScn();document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));$('hGrd').style.display='grid'}
 function nCd(){let c="SAN-"+String(rows.length+1).padStart(3,'0')+"-"+(1000+(crypto.getRandomValues(new Uint16Array(1))[0]%9000));if($('fCd'))$('fCd').value=c;detCar();return c}
@@ -321,6 +440,13 @@ async function addS(){
 
 async function iBlk(){
   let raw=($('tBlk').value||"").trim();if(!raw)return;
+  if(raw.startsWith("SANAND_POLICY://")){
+    try{
+      let dec=await decryptVault(raw);
+      if(dec.type==="POLICY"){policy=dec.policy;localStorage.setItem('san_pol',JSON.stringify(policy));$('mBlk').style.display='none';$('tBlk').value="";msg("🛡️ Policy Societaria aggiornata!")}
+    }catch(e){msg("❌ Impossibile decifrare la Policy.")}
+    return;
+  }
   if(raw.startsWith("SANAND_VAULT://")){
     try{
       let dec=await decryptVault(raw);
@@ -357,13 +483,13 @@ function optG(){
 function tgEod(){eodForce=!eodForce;rf();msg(eodForce?"🏁 Chiusura Giornata Sbloccata":"🚚 Modalità Guida Attiva")}
 
 function rf(){
-  try{sessionStorage.setItem('s94_rt',JSON.stringify(rows))}catch(e){}
+  try{sessionStorage.setItem('s95_rt',JSON.stringify(rows))}catch(e){}
   let dn=rows.filter(r=>r.st==='DONE').length,an=rows.filter(r=>r.st==='ANOM').length,cP=0,cD=0,totPkgs=0;
   rows.forEach(r=>{totPkgs+=(r.pkgs||1);if(r.cs>0){if(r.st==='DONE')cD+=r.cs;else if(r.st==='WAIT')cP+=r.cs}});
   $('sT').textContent=totPkgs;$('sD').textContent=dn;$('sA').textContent=an;$('sC').textContent="€"+(cP+cD).toFixed(0);
   $('cPn').textContent="€"+cP.toFixed(2);$('cDn').textContent="€"+cD.toFixed(2);
 
-  let isFinished=(rows.length>0&&(dn+an)===rows.length)||eodForce;
+  let isFinished=(rows.length>0&&(dn+an)===rows.length)||eodForce||isMst;
   document.querySelectorAll('.eod').forEach(el=>el.style.display=isFinished?'flex':'none');
   if(rows.length>0&&(dn+an)===rows.length)msg("🌙 Giro completato! Sbloccata Chiusura Giornata.");
 
