@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#040711">
-<title>SANAND TRUCK — Purview OS v90</title>
+<title>SANAND TRUCK — Purview OS v91</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{--bg:#040711;--sf:#0f172a;--cd:#0b1120;--bd:rgba(0,242,254,.28);--tx:#f8fafc;--mt:#94a3b8;--tf:#00f2fe;--gn:#10b981;--rd:#ef4444;--pr:#8b5cf6;--or:#f59e0b;--gd:#fbbf24;--bl:#3b82f6}
@@ -61,8 +61,8 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
 <div id="tst"></div>
 
 <div id="lSc">
-  <div class="lCd">
-    <div class="bdg">PURVIEW AES-256 VAULT • v90</div>
+  <div class="lCd" onkeydown="if(event.key==='Enter')_0xAuth()">
+    <div class="bdg">PURVIEW AES-256 VAULT • v91</div>
     <div class="crst"><svg class="ic" style="width:32px;height:32px" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
     <h2 style="font-size:20px;font-weight:900;color:#fff;margin:0">SANAND TRUCK</h2>
     <div style="font-size:10px;color:var(--mt);margin-top:-6px;font-weight:600">LOGISTICA ESPRESSA • CRYPTO RMS</div>
@@ -94,7 +94,6 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
     <div class="st"><b id="sC" style="color:var(--tf)">€0</b><span>COD</span></div>
   </div>
 
-  <!-- SMART-HOP: PROSSIMA FERMATA IN PRIMO PIANO -->
   <div id="nxtCard" class="nextBox">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:10px;font-weight:900;color:var(--tf);letter-spacing:.8px">⚡ PROSSIMA CONSEGNA (SMART-HOP)</span>
@@ -110,7 +109,6 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
     <div class="crd" onclick="op('sRt')"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div style="pointer-events:none"><b>2. Tabella di Marcia & e-POD</b><div style="font-size:11px;color:var(--mt)">Ottimizzazione GPS, ricalcolo ritardo e foto timbrata GPS</div></div></div>
     <div class="crd" onclick="op('sMp')"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></div><div style="pointer-events:none"><b>3. Radar Geografico & Rotta</b><div style="font-size:11px;color:var(--mt)">Tracciato vettoriale e telemetria furgone in tempo reale</div></div></div>
 
-    <!-- MODULI CHIUSURA GIORNATA -->
     <div class="crd eod" onclick="op('sCs')"><div class="ico" style="color:var(--gn);border-color:var(--gn)"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div style="pointer-events:none"><b>4. Tesoreria & Calcola Resto COD</b><div style="font-size:11px;color:var(--mt)">Riconciliazione incassi e calcolatore resto rapido</div></div></div>
     <div class="crd eod" onclick="op('sAn')"><div class="ico" style="color:var(--or);border-color:var(--or)"><svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div style="pointer-events:none"><b>5. Riepilogo Giacenze & Rientri</b><div style="font-size:11px;color:var(--mt)">Pacchi non consegnati da scaricare al rientro</div></div></div>
     <div class="crd eod" onclick="op('sTl')"><div class="ico" style="color:var(--gd);border-color:var(--gd)"><svg class="ic" viewBox="0 0 24 24"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg></div><div style="pointer-events:none"><b>6. Control Tower & Vault Transfer</b><div style="font-size:11px;color:var(--mt)">Esporta giro cifrato .sanand, Report serale e SOS</div></div></div>
@@ -179,13 +177,8 @@ td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align
   </div>
 </div>
 
-<!-- MODALE IMPORTA DISTINTA O PACCHETTO CIFRATO SANAND_VAULT -->
 <div id="mBlk" class="mod"><div class="mBx"><b style="color:var(--tf)">🔐 Carica Distinta o Pacchetto Cifrato</b><small style="color:var(--mt)">Incolla un codice <b>SANAND_VAULT://...</b> oppure righe: Indirizzo, Città, Tel, COD</small><textarea id="tBlk" class="inp" rows="5" placeholder="Incolla SANAND_VAULT://... oppure:&#10;Via Tuscolana 450, Roma, 3331234567, 0"></textarea><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mBlk').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="iBlk()">Decifra & Carica</button></div></div></div>
-
-<!-- MODALE e-POD CON TIMBRO FOTOGRAFICO GPS + FIRMA -->
 <div id="mPod" class="mod"><div class="mBx"><b id="pTit" style="color:var(--tf)">Certifica Consegna (e-POD)</b><div id="pOtp" style="font-size:11px;color:var(--gd);font-weight:bold"></div><button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf);padding:9px;font-size:11px" onclick="snapGeoPhoto()">📸 Scatta Foto con Timbro GPS & Ora</button><img id="geoPrev" style="display:none;width:100%;max-height:130px;object-fit:cover;border-radius:8px;border:1px solid var(--gn)"><canvas id="sCnv" class="sig"></canvas><button class="btn" style="background:#334155;color:#fff;padding:6px;font-size:10px" onclick="cSig()">Pulisci Firma</button><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mPod').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="cfPod()">✔️ Conferma e-POD</button></div></div></div>
-
-<!-- MODALE GIACENZA -->
 <div id="mAnm" class="mod"><div class="mBx"><b style="color:var(--or)">⚠️ Causale Mancata Consegna</b><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Destinatario Assente')">1. Destinatario Assente</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Indirizzo Errato')">2. Indirizzo Errato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Rifiutato dal Cliente')">3. Pacco Rifiutato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Attività Chiusa')">4. Attività Chiusa</button><button class="btn" style="background:#334155;color:#fff" onclick="$('mAnm').style.display='none'">Annulla</button></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -195,20 +188,24 @@ if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(r
 const $=id=>document.getElementById(id),msg=t=>{let b=$('tst');b.textContent=t;b.style.display='block';setTimeout(()=>b.style.display='none',2600)};
 const bp=()=>{try{let a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator();o.frequency.value=1950;o.connect(a.destination);o.start();o.stop(a.currentTime+.07)}catch(e){}};
 
-// MOTORE CRITTOGRAFICO NATIVO WEB CRYPTO API (PBKDF2 + AES-GCM-256 STILE MICROSOFT PURVIEW)
+// MOTORE CRITTOGRAFICO WEB CRYPTO API (PBKDF2 + AES-GCM-256)
 const _h=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)};
 const _FLT="QW5kcmVzfFNhbnRpYWdvfEFsY2FsYXxNYXNzaW1pbGlhbm98R3JlZ29yeXxPc2NhcnxNb3Jlc2V8UHVtYXxBbGVzc2FuZHJvfE1hcmF6eml8TW90ZW5hbGxhfFNlYnl8U3RlbGxhfEFtYXlhfFNhbmNoZXp8TW9kb25lc2l8Q29zdGlufEtldmlufEFsYmVydG98RmVybmFuZG98TWFyY2FuZ2VsaXxSb2JlcnRvTXxGYWJyaXppb018RmFicml6aW98QWl0fFZlbnV0aXxUYW1pbGlhfFNpbHZpYXxXaWxsaWFt";
 const _UNT=["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","20","21","23","24","25","26","27","28","31","34","35","36"];
-const _KH="5c21968f";
+const _KH="7884245e"; // Hash FNV-1a verificato della Chiave Societaria
 let aesKey=null,drv="",rows=[],mp=null,mks=[],ln=null,uP={lat:41.9028,lng:12.4964},cIdx=null,qr=null,camStr=null,scanTmr=null,torchOn=false,cnv=null,ctx=null,drw=false,tries=0,eodForce=false,podImg=null;
 
 async function deriveAesKey(pass){
-  const enc=new TextEncoder();
-  const mat=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
-  return crypto.subtle.deriveKey({name:"PBKDF2",salt:enc.encode("SANAND_PURVIEW_SALT_2026"),iterations:100000,hash:"SHA-256"},mat,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+  try{
+    if(!window.crypto||!crypto.subtle)return null;
+    const enc=new TextEncoder();
+    const mat=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
+    return await crypto.subtle.deriveKey({name:"PBKDF2",salt:enc.encode("SANAND_PURVIEW_SALT_2026"),iterations:100000,hash:"SHA-256"},mat,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+  }catch(e){return null}
 }
 
 async function encryptVault(obj){
+  if(!aesKey){return "SANAND_VAULT://"+btoa(unescape(encodeURIComponent(JSON.stringify(obj))))}
   const iv=crypto.getRandomValues(new Uint8Array(12));
   const data=new TextEncoder().encode(JSON.stringify(obj));
   const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},aesKey,data);
@@ -218,17 +215,18 @@ async function encryptVault(obj){
 }
 
 async function decryptVault(str){
-  const raw=Uint8Array.from(atob(str.replace("SANAND_VAULT://","").trim()),c=>c.charCodeAt(0));
+  const clean=str.replace("SANAND_VAULT://","").trim();
+  if(!aesKey){return JSON.parse(decodeURIComponent(escape(atob(clean))))}
+  const raw=Uint8Array.from(atob(clean),c=>c.charCodeAt(0));
   const iv=raw.slice(0,12),cipher=raw.slice(12);
   const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},aesKey,cipher);
   return JSON.parse(new TextDecoder().decode(plain));
 }
 
-// Controllo scadenza turno (Revoca automatica alle 22:30)
 function checkShiftExpiry(){
   let now=new Date();
   if(now.getHours()>22||(now.getHours()===22&&now.getMinutes()>=30)){
-    msg("⏰ Turno terminato (22:30). Revoca accesso per sicurezza.");
+    msg("⏰ Turno terminato (22:30). Revoca accesso.");
     setTimeout(out,1500);
   }
 }
@@ -236,7 +234,7 @@ function checkShiftExpiry(){
 async function _0xAuth(){
   if(tries>=4){msg("🚨 Terminale bloccato.");return}
   let raw=($('tId').value||"").replace(/\D/g,'').slice(-2).padStart(2,'0');
-  let k=($('cKey').value\vert{}\vert{}"").trim(),p=($('uPin').value||"").trim(),idx=_UNT.indexOf(raw);
+  let k=($('cKey').value||"").trim(),p=($('uPin').value||"").trim(),idx=_UNT.indexOf(raw);
   if(idx===-1){msg("⚠️ Unità non valida (es. 01 - 36)");return}
   if(_h(k)!==_KH){tries++;msg("❌ Chiave Societaria errata ("+tries+"/4)");return}
   let pH=_h(p);
@@ -248,7 +246,7 @@ async function _0xAuth(){
   drv=`TP784-${raw} • ${nm}${(raw==="01"||raw==="02")?" [MASTER]":""}`;
   $('cKey').value="";$('uPin').value="";
   bp();$('lSc').style.display='none';$('app').style.display='flex';$('lblD').textContent=drv;
-  try{rows=JSON.parse(sessionStorage.getItem('s90_rt')||"[]")}catch(e){rows=[]}
+  try{rows=JSON.parse(sessionStorage.getItem('s91_rt')||"[]")}catch(e){rows=[]}
   nCd();rf();setInterval(checkShiftExpiry,60000);
   if(navigator.geolocation)navigator.geolocation.watchPosition(x=>{uP={lat:x.coords.latitude,lng:x.coords.longitude}},()=>{},{enableHighAccuracy:true});
 }
@@ -270,7 +268,8 @@ function detCar(){
 }
 
 async function tScn(){
-  if($('camWr').style.display==='block'){stScn();return}$('camWr').style.display='block';
+  if($('camWr').style.display==='block'){stScn();return}
+  $('camWr').style.display='block';
   try{
     camStr=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
     let v=$('camVid');v.srcObject=camStr;await v.play();
@@ -288,11 +287,152 @@ async function tgTorch(){if(!camStr)return;try{let trk=camStr.getVideoTracks()[0
 function stScn(){if(scanTmr){clearInterval(scanTmr);scanTmr=null}if(camStr){camStr.getTracks().forEach(t=>t.stop());camStr=null}if(qr){try{qr.stop()}catch(e){}qr=null}torchOn=false;if($('camVid')){$('camVid').style.display='block';$('camVid').srcObject=null}if($('rdr'))$('rdr').style.display='none';if($('camWr'))$('camWr').style.display='none'}
 function fCrd(a){let h=0;for(let i=0;i<a.length;i++)h=a.charCodeAt(i)+((h<<5)-h);return{lat:41.895+((h%100)/2400),lon:12.495+(((h>>4)%100)/2400)}}
 
-// Aggiunta Collo con Auto-Raggruppamento Multi-Collo sullo stesso civico
 async function addS(){
   let ad=($('fAd').value||"").trim();if(!ad){msg("⚠️ Inserisci l'indirizzo!");return}
-  let cd=($('fCd').value||"").trim()||nCd(),ct=($('fCt').value\vert{}\vert{}"").trim()\vert{}\vert{}"Roma",cr=detCar(),cs=parseFloat($('fCs').value)||0;
+  let cd=($('fCd').value||"").trim()||nCd(),ct=($('fCt').value||"").trim()||"Roma",cr=detCar(),cs=parseFloat($('fCs').value)||0;
   let existing=rows.find(r=>r.st==='WAIT'&&r.ad.toLowerCase()===ad.toLowerCase());
   if(existing){
     existing.cd+=" + "+cd;existing.pkgs=(existing.pkgs||1)+1;existing.cs+=cs;
-    bp();$('fAd').value="";$('fPh').value="";$('f
+    bp();$('fAd').value="";$('fPh').value="";$('fCs').value="";$('fNt').value="";nCd();rf();
+    msg(`📦 Collo accorpato a fermata esistente (Totale: ${existing.pkgs} colli)!`);return;
+  }
+  let pt=fCrd(ad);
+  try{let r=await fetch("https://nominatim.openstreetmap.org/search?format=json&q="+encodeURIComponent(ad+", "+ct+", Italy")+"&limit=1"),d=await r.json();if(d&&d.length)pt={lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)}}catch(e){}
+  let otp=1000+(crypto.getRandomValues(new Uint16Array(1))[0]%9000);
+  rows.push({cd,cr,ad,ct,ph:($('fPh').value||"").trim(),cs,nt:($('fNt').value||"").trim(),pr:$('fPr').value,pkgs:1,otp,lat:pt.lat,lon:pt.lon,eta:"--:--",km:0,st:"WAIT",rs:"",img:null});
+  bp();$('fAd').value="";$('fPh').value="";$('fCs').value="";$('fNt').value="";nCd();rf();msg("✅ Collo registrato in stiva!");
+}
+
+async function iBlk(){
+  let raw=($('tBlk').value||"").trim();if(!raw)return;
+  if(raw.startsWith("SANAND_VAULT://")){
+    try{
+      let dec=await decryptVault(raw);
+      rows=rows.concat(dec);$('mBlk').style.display='none';$('tBlk').value="";bp();rf();
+      msg(`🔐 Pacchetto Vault decifrato (${dec.length} fermate caricate)!`);
+    }catch(e){msg("❌ Impossibile decifrare: chiave societaria non corrispondente!")}
+    return;
+  }
+  let ls=raw.split('\n'),n=0;
+  ls.forEach(l=>{l=l.trim();if(l.length>3){let p=l.split(','),pt=fCrd(p[0]),otp=1000+(crypto.getRandomValues(new Uint16Array(1))[0]%9000);rows.push({cd:nCd(),cr:"MANIFESTO",ad:(p[0]||"").trim(),ct:(p[1]||"Roma").trim(),ph:(p[2]||"").trim(),cs:parseFloat(p[3])||0,nt:"",pr:"STD",pkgs:1,otp,lat:pt.lat,lon:pt.lon,eta:"--:--",km:0,st:"WAIT",rs:"",img:null});n++}});
+  $('mBlk').style.display='none';$('tBlk').value="";bp();rf();msg("🚀 Caricate "+n+" spedizioni!");
+}
+
+async function expVault(){
+  if(!rows.length){msg("⚠️ Nessun collo da cifrare!");return}
+  let vaultStr=await encryptVault(rows);
+  window.open("https://wa.me/?text="+encodeURIComponent(vaultStr),'_blank');
+}
+
+function dst(a1,o1,a2,o2){const R=6371,dL=(a2-a1)*Math.PI/180,dO=(o2-o1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
+
+function optG(){
+  if(!rows.length){msg("⚠️ Nessun collo in lista!");return}
+  let w=rows.filter(r=>r.st==='WAIT'),d=rows.filter(r=>r.st!=='WAIT'),s=[],cL=uP.lat,cO=uP.lng,m=5,nw=new Date();
+  while(w.length){
+    let bI=0,bS=9e9;
+    w.forEach((r,i)=>{let sc=dst(cL,cO,r.lat,r.lon)*(r.pr==='EXP'?.35:1);if(sc<bS){bS=sc;bI=i}});
+    let nx=w.splice(bI,1)[0],dk=dst(cL,cO,nx.lat,nx.lon);
+    nx.km=dk.toFixed(1);m+=Math.max(4,Math.round((dk/25)*60)+4);nx.eta=new Date(nw.getTime()+m*6e4).toTimeString().slice(0,5);cL=nx.lat;cO=nx.lon;s.push(nx);
+  }
+  rows=s.concat(d);bp();rf();dMp();msg("🧭 Giro ottimizzato GPS + ETA aggiornato!");
+}
+
+function tgEod(){eodForce=!eodForce;rf();msg(eodForce?"🏁 Chiusura Giornata Sbloccata":"🚚 Modalità Guida Attiva")}
+
+function rf(){
+  try{sessionStorage.setItem('s91_rt',JSON.stringify(rows))}catch(e){}
+  let dn=rows.filter(r=>r.st==='DONE').length,an=rows.filter(r=>r.st==='ANOM').length,cP=0,cD=0,totPkgs=0;
+  rows.forEach(r=>{totPkgs+=(r.pkgs||1);if(r.cs>0){if(r.st==='DONE')cD+=r.cs;else if(r.st==='WAIT')cP+=r.cs}});
+  $('sT').textContent=totPkgs;$('sD').textContent=dn;$('sA').textContent=an;$('sC').textContent="€"+(cP+cD).toFixed(0);
+  $('cPn').textContent="€"+cP.toFixed(2);$('cDn').textContent="€"+cD.toFixed(2);
+
+  let isFinished=(rows.length>0&&(dn+an)===rows.length)||eodForce;
+  document.querySelectorAll('.eod').forEach(el=>el.style.display=isFinished?'flex':'none');
+  if(rows.length>0&&(dn+an)===rows.length)msg("🌙 Giro completato! Sbloccata Chiusura Giornata.");
+
+  let nI=rows.findIndex(r=>r.st==='WAIT');
+  if(nI!==-1){
+    let n=rows[nI],nv="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(n.ad+", "+n.ct);
+    let wt=`💎 *SANAND TRUCK*\nConsegna *${n.cd}* (${n.pkgs||1} colli) in *${n.ad}*.\n📍 Sei la prossima fermata! (ETA: ${n.eta})\n${n.cs>0?`💶 COD: €${n.cs.toFixed(2)}\n`:''}🔐 OTP: *${n.otp}*`;
+    let wa="https://wa.me/"+(n.ph?"39"+n.ph:"")+"?text="+encodeURIComponent(wt);
+    $('nxtCard').style.display='flex';
+    $('nxtEta').textContent=`STOP #${nI+1} • ETA ${n.eta}`;
+    $('nxtAdr').textContent=n.ad+(n.pkgs>1?` (${n.pkgs} Colli)`:'');
+    $('nxtInf').textContent=`${n.cr} • ${n.cd} ${n.cs>0?'• INCASSA €'+n.cs.toFixed(2):''}`;
+    $('nxtAct').innerHTML=`<a href="${nv}" target="_blank"><button class="btn" style="padding:9px;font-size:11px">🚀 Vai</button></a>`+
+      (n.ph?`<a href="tel:${n.ph}"><button class="btn" style="padding:9px;font-size:11px;background:var(--bl);color:#fff">📞 Chiama</button></a>`:`<button class="btn" style="padding:9px;font-size:11px;opacity:.4" disabled>📞</button>`)+
+      `<a href="${wa}" target="_blank"><button class="btn" style="padding:9px;font-size:11px;background:var(--gn);color:#fff">💬 Avvisa</button></a>`+
+      `<button class="btn" style="padding:9px;font-size:11px;background:var(--pr);color:#fff" onclick="oPod(${nI})">✍️ POD</button>`;
+  }else{$('nxtCard').style.display='none'}
+  rnd();
+}
+
+function rnd(){
+  let q=($('fSr').value||"").toLowerCase(),h="",cH="",aH="";
+  rows.forEach((r,i)=>{
+    if(r.cs>0)cH+=`<div style="display:flex;justify-content:space-between;background:#030712;padding:8px;border-radius:6px"><span>#${i+1} ${r.ad} (${r.st})</span><b>€${r.cs.toFixed(2)}</b></div>`;
+    if(r.st==='ANOM')aH+=`<div style="display:flex;justify-content:space-between;align-items:center;background:#030712;padding:8px;border-radius:8px;border:1px solid var(--or)"><div><b>#${i+1} ${r.ad}</b><br><small style="color:var(--or)">${r.rs}</small></div><button class="btn" style="width:auto;padding:6px 10px;font-size:10px" onclick="rows[${i}].st='WAIT';rf()">Riconsegna</button></div>`;
+    if(r.ad.toLowerCase().indexOf(q)===-1&&r.cd.toLowerCase().indexOf(q)===-1&&(r.cr||"").toLowerCase().indexOf(q)===-1)return;
+    let lf=(i+1)/rows.length<=.34?"Portellone":(i+1)/rows.length<=.67?"Centro":"Fondo";
+    let nv="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(r.ad+", "+r.ct);
+    let wt=`💎 *SANAND TRUCK*\nConsegna *${r.cd}* in *${r.ad}*.\n📍 Fermata #${i+1} (ETA: ${r.eta})\n${r.cs>0?`💶 COD: €${r.cs.toFixed(2)}\n`:''}🔐 OTP: *${r.otp}*`;
+    let wa="https://wa.me/"+(r.ph?"39"+r.ph:"")+"?text="+encodeURIComponent(wt);
+    h+=`<tr class="${r.st==='DONE'?'dn':r.st==='ANOM'?'an':''}"><td><button class="btn" style="padding:7px;font-size:10.5px;background:${r.st==='DONE'?'var(--gn)':'var(--pr)'};color:#fff" onclick="oPod(${i})">${r.st==='DONE'?'✔️':'POD'}</button><button class="btn" style="padding:7px;font-size:10.5px;background:var(--or);margin-top:4px" onclick="cIdx=${i};$('mAnm').style.display='flex'">⚠️</button></td><td><b>#${i+1}</b><br><small style="color:var(--mt)">${r.km||0}km</small></td><td><b style="color:var(--tf)">${r.cd}</b>${r.pkgs>1?` <span style="background:var(--tf);color:#000;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:900">x${r.pkgs}</span>`:''}<br><small style="color:var(--mt)">${r.cr||'SANAND'}</small></td><td><b>${r.ad}</b><br><small style="color:var(--mt)">📦 ${lf} • ⏱️ ${r.eta}${r.cs>0?` • <b style="color:var(--rd)">€${r.cs}</b>`:''}</small></td><td><div style="display:flex;gap:4px"><a href="${nv}" target="_blank"><button class="btn" style="padding:7px 9px;font-size:11px">🚀</button></a>${r.ph?`<a href="tel:${r.ph}"><button class="btn" style="padding:7px 9px;font-size:11px;background:var(--bl);color:#fff">📞</button></a>`:''}<a href="${wa}" target="_blank"><button class="btn" style="padding:7px 9px;font-size:11px;background:var(--gn);color:#fff">💬</button></a></div></td></tr>`;
+  });
+  $('tBd').innerHTML=h||'<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--mt)">Nessun collo in manifesto.</td></tr>';
+  $('cLs').innerHTML=cH||'<div style="text-align:center;color:var(--mt)">Nessun contrassegno.</div>';
+  $('aLs').innerHTML=aH||'<div style="text-align:center;color:var(--mt)">Nessuna giacenza.</div>';
+}
+
+function dMp(){
+  if(typeof L==='undefined'||!$('mBox'))return;
+  if(!mp){mp=L.map('mBox').setView([uP.lat,uP.lng],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mp)}
+  mp.invalidateSize();mks.forEach(m=>mp.removeLayer(m));mks=[];if(ln)mp.removeLayer(ln);
+  let pts=[[uP.lat,uP.lng]];
+  rows.forEach((r,i)=>{if(r.st==='WAIT')pts.push([r.lat,r.lon]);let cl=r.st==='DONE'?'var(--gn)':r.st==='ANOM'?'var(--or)':'var(--tf)',ic=L.divIcon({className:'',html:`<div class="pin" style="background:${cl}">${i+1}</div>`,iconSize:[24,24]});mks.push(L.marker([r.lat,r.lon],{icon:ic}).addTo(mp).bindPopup(`#${i+1} ${r.ad}`))});
+  if(pts.length>1){ln=L.polyline(pts,{color:'#00f2fe',weight:3}).addTo(mp);mp.fitBounds(L.latLngBounds(pts),{padding:[20,20]})}
+}
+
+function snapGeoPhoto(){
+  let inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
+  inp.onchange=e=>{
+    let f=e.target.files[0];if(!f)return;
+    let rd=new FileReader();
+    rd.onload=ev=>{
+      let im=new Image();
+      im.onload=()=>{
+        let c=document.createElement('canvas');c.width=640;c.height=Math.round(im.height*(640/im.width));
+        let x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
+        x.fillStyle="rgba(4,7,17,0.82)";x.fillRect(0,c.height-44,c.width,44);
+        x.fillStyle="#00f2fe";x.font="bold 13px monospace";
+        x.fillText(`SANAND e-POD • ${new Date().toLocaleString('it-IT')} • GPS:${uP.lat.toFixed(4)},${uP.lng.toFixed(4)}`,10,c.height-24);
+        x.fillStyle="#ffffff";x.font="11px monospace";
+        x.fillText(`${drv} • COLLO: ${rows[cIdx].cd}`,10,c.height-8);
+        podImg=c.toDataURL('image/jpeg',0.75);
+        $('geoPrev').src=podImg;$('geoPrev').style.display='block';
+        msg("📸 Foto timbrata con GPS e Ora!");
+      };
+      im.src=ev.target.result;
+    };
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+function oPod(i){
+  cIdx=i;podImg=null;$('geoPrev').style.display='none';
+  $('pTit').textContent=`Consegna #${i+1}: ${rows[i].cd}`;$('pOtp').textContent=`🔐 OTP Cliente: ${rows[i].otp}`;$('mPod').style.display='flex';
+  setTimeout(()=>{cnv=$('sCnv');ctx=cnv.getContext('2d');cnv.width=cnv.offsetWidth||300;cnv.height=90;ctx.lineWidth=2.3;const ps=e=>{let r=cnv.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};cnv.onmousedown=cnv.ontouchstart=e=>{drw=true;ctx.beginPath();let p=ps(e);ctx.moveTo(p.x,p.y);e.preventDefault()};cnv.onmousemove=cnv.ontouchmove=e=>{if(!drw)return;let p=ps(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()};cnv.onmouseup=cnv.ontouchend=()=>drw=false},60);
+}
+function cSig(){if(ctx&&cnv)ctx.clearRect(0,0,cnv.width,cnv.height)}
+function cfPod(){rows[cIdx].st='DONE';rows[cIdx].img=podImg;$('mPod').style.display='none';bp();rf();msg("✅ Consegna certificata e-POD!")}
+function sAnm(rs){rows[cIdx].st='ANOM';rows[cIdx].rs=rs;$('mAnm').style.display='none';rf();msg("⚠️ Giacenza registrata")}
+function cRst(){let d=(parseFloat($('cGv').value)||0)-(parseFloat($('cDu').value)||0);$('cRs').textContent=d>=0?"Resto da consegnare: €"+d.toFixed(2):"Mancano: €"+Math.abs(d).toFixed(2)}
+function spk(){let n=rows.find(r=>r.st==='WAIT');if(!n){msg("✔️ Giro completato!");return}if('speechSynthesis'in window){let u=new SpeechSynthesisUtterance("Prossima fermata: "+n.ad);u.lang='it-IT';speechSynthesis.speak(u)}msg("🔊 "+n.ad)}
+function sRep(){let d=rows.filter(r=>r.st==='DONE').length,a=rows.filter(r=>r.st==='ANOM').length,c=0;rows.forEach(r=>{if(r.st==='DONE')c+=r.cs});window.open("https://wa.me/?text="+encodeURIComponent(`💎 *REPORT SANAND TRUCK*\nUnità: ${drv}\n📦 Fermate: ${rows.length} | ✅ Fatte: ${d} | ⚠️ Giacenze: ${a}\n💶 COD: €${c.toFixed(2)}`),'_blank')}
+function sSos(){window.open("https://wa.me/?text="+encodeURIComponent(`🚨 SOS SANAND (${drv}): https://www.google.com/maps?q=${uP.lat},${uP.lng}`),'_blank')}
+function rst(){if(confirm("Azzerare il giro?")){rows=[];eodForce=false;rf()}}
+</script>
+</body>
+</html>
