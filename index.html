@@ -1,538 +1,298 @@
 <!DOCTYPE html>
 <html lang="it" style="background:#040711;color:#f8fafc;">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#040711">
-    <title>SANAND TRUCK — Corporate OS v75.0</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root {
-            --bg: #040711; --surface: #0f172a; --card: #0b1120;
-            --border: rgba(56, 189, 248, 0.25); --border-strong: rgba(0, 242, 254, 0.6);
-            --text: #f8fafc; --muted: #94a3b8; --tiffany: #00f2fe;
-            --green: #10b981; --red: #ef4444; --purple: #8b5cf6; --orange: #f59e0b; --gold: #fbbf24; --blue: #3b82f6;
-        }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-        input, select, textarea { user-select: text; }
-        html, body { margin: 0; padding: 0; background-color: #040711 !important; color: #f8fafc; min-height: 100vh; }
-        body { padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 980px; }
-        .svg-icon { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; pointer-events: none; }
-
-        #toast { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); background: #0b1120; border: 2px solid var(--tiffany); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 12.5px; font-weight: 800; z-index: 9999999; display: none; box-shadow: 0 12px 30px #000; }
-
-        #loginScreen { position: fixed; inset: 0; background: #040711; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; }
-        .login-card { background: var(--surface); border: 1.5px solid var(--border-strong); border-radius: 22px; padding: 24px 20px; width: 100%; max-width: 390px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 12px; }
-        .corp-badge { display: inline-block; margin: 0 auto; background: rgba(0,242,254,0.1); border: 1px solid rgba(0,242,254,0.35); color: var(--tiffany); font-size: 9.5px; font-weight: 800; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
-        .brand-crest { width: 60px; height: 60px; margin: 0 auto; border-radius: 16px; background: rgba(0,242,254,0.12); border: 1.5px solid var(--tiffany); display: flex; align-items: center; justify-content: center; color: var(--tiffany); }
-        .login-title { font-size: 20px; font-weight: 900; color: #fff; margin: 0; }
-        .login-sub { font-size: 10px; color: var(--muted); margin-top: -6px; font-weight: 600; }
-        .inp-grp { display: flex; flex-direction: column; gap: 4px; text-align: left; }
-        .inp-grp label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; padding-left: 4px; }
-        .inp { width: 100%; background: #030712; border: 1.5px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; outline: none; font-weight: 600; }
-        .btn-corp { background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%); color: #020617; font-weight: 900; width: 100%; padding: 14px; border-radius: 12px; font-size: 13px; border: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-corp:active { transform: scale(0.98); }
-
-        #appMain { display: none; flex-direction: column; gap: 11px; padding-bottom: 30px; }
-        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 13px 15px; border-radius: 16px; border: 1px solid var(--border-strong); }
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .stat { background: var(--surface); border: 1px solid var(--border); padding: 10px 5px; border-radius: 13px; text-align: center; }
-        .stat b { font-size: 18px; display: block; color: #fff; }
-        .stat span { font-size: 8.5px; color: var(--muted); font-weight: 800; text-transform: uppercase; }
-
-        .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        @media(min-width:600px){ .grid { grid-template-columns: 1fr 1fr; } }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .card:active { border-color: var(--tiffany); background: rgba(0,242,254,0.08); }
-        .ico { width: 48px; height: 48px; border-radius: 13px; background: rgba(0,242,254,0.12); border: 1px solid var(--tiffany); display: flex; align-items: center; justify-content: center; color: var(--tiffany); flex-shrink: 0; pointer-events: none; }
-
-        .sec { display: none; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 16px; padding: 15px; flex-direction: column; gap: 10px; }
-        .sec.active { display: flex; }
-        .sec-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 900; color: var(--tiffany); font-size: 14.5px; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        #mapBox { width: 100%; height: 350px; border-radius: 12px; border: 1.5px solid var(--tiffany); }
-        #readerBox { display: none; border: 2px solid var(--purple); border-radius: 12px; overflow: hidden; }
-
-        .tbl-wrap { overflow-x: auto; max-height: 380px; border: 1px solid var(--border); border-radius: 12px; background: #030712; }
-        table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 500px; text-align: left; }
-        th { background: #090e1a; color: var(--muted); padding: 9px; font-size: 9.5px; text-transform: uppercase; position: sticky; top: 0; }
-        td { padding: 9px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
-        .done { opacity: 0.45; background: rgba(16,185,129,0.1); }
-        .anom { background: rgba(245,158,11,0.15); border-left: 3px solid var(--orange); }
-        .pin { background: var(--tiffany); color: #000; border: 2px solid #fff; border-radius: 50%; text-align: center; font-weight: 900; font-size: 11px; line-height: 20px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99999; align-items: center; justify-content: center; padding: 14px; }
-        .modal-box { background: var(--card); border: 1.5px solid var(--tiffany); border-radius: 16px; padding: 16px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; text-align: center; }
-        .sig { width: 100%; height: 90px; background: #fff; border-radius: 8px; touch-action: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#040711">
+<title>SANAND TRUCK — Purview OS v90</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{--bg:#040711;--sf:#0f172a;--cd:#0b1120;--bd:rgba(0,242,254,.28);--tx:#f8fafc;--mt:#94a3b8;--tf:#00f2fe;--gn:#10b981;--rd:#ef4444;--pr:#8b5cf6;--or:#f59e0b;--gd:#fbbf24;--bl:#3b82f6}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none}
+input,select,textarea{user-select:text}
+html,body{margin:0;padding:0;background:#040711!important;color:var(--tx);min-height:100vh}
+body{padding:10px;display:flex;flex-direction:column;align-items:center}
+.ct{width:100%;max-width:960px}
+.ic{width:22px;height:22px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;pointer-events:none}
+#tst{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--cd);border:2px solid var(--tf);color:#fff;padding:11px 18px;border-radius:12px;font-size:12.5px;font-weight:800;z-index:999999;display:none;box-shadow:0 10px 30px #000}
+#lSc{position:fixed;inset:0;background:#040711;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
+.lCd{background:var(--sf);border:1.5px solid var(--tf);border-radius:22px;padding:24px 20px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:12px}
+.bdg{display:inline-block;margin:0 auto;background:rgba(0,242,254,.1);border:1px solid var(--bd);color:var(--tf);font-size:9.5px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+.crst{width:56px;height:56px;margin:0 auto;border-radius:16px;background:rgba(0,242,254,.12);border:1.5px solid var(--tf);display:flex;align-items:center;justify-content:center;color:var(--tf)}
+.ig{display:flex;flex-direction:column;gap:4px;text-align:left}
+.ig label{font-size:10px;font-weight:800;color:var(--mt);text-transform:uppercase;padding-left:4px}
+.inp{width:100%;background:#030712;border:1.5px solid var(--bd);color:#fff;padding:13px 14px;border-radius:12px;font-size:14px;outline:none;font-weight:600}
+.btn{background:linear-gradient(135deg,#00f2fe,#0284c7);color:#020617;font-weight:900;width:100%;padding:14px;border-radius:12px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.98)}
+#app{display:none;flex-direction:column;gap:11px;padding-bottom:30px}
+header{display:flex;justify-content:space-between;align-items:center;background:var(--sf);padding:12px 14px;border-radius:16px;border:1px solid var(--tf)}
+.sts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.st{background:var(--sf);border:1px solid var(--bd);padding:10px 4px;border-radius:13px;text-align:center}
+.st b{font-size:18px;display:block;color:#fff}
+.st span{font-size:8.5px;color:var(--mt);font-weight:800;text-transform:uppercase}
+.nextBox{background:linear-gradient(135deg,rgba(0,242,254,.14),rgba(15,23,42,.95));border:1.5px solid var(--tf);border-radius:16px;padding:14px;display:none;flex-direction:column;gap:8px}
+.grd{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:600px){.grd{grid-template-columns:1fr 1fr}}
+.crd{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:17px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.crd:active{border-color:var(--tf);background:rgba(0,242,254,.08)}
+.ico{width:50px;height:50px;border-radius:14px;background:rgba(0,242,254,.12);border:1px solid var(--tf);display:flex;align-items:center;justify-content:center;color:var(--tf);flex-shrink:0;pointer-events:none}
+.sec{display:none;background:var(--sf);border:1px solid var(--tf);border-radius:16px;padding:15px;flex-direction:column;gap:10px}
+.sec.act{display:flex}
+.sHd{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);padding-bottom:8px;font-weight:900;color:var(--tf);font-size:14.5px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#mBox{width:100%;height:340px;border-radius:12px;border:1.5px solid var(--tf)}
+#camWr{display:none;position:relative;border:2px solid var(--pr);border-radius:12px;overflow:hidden;background:#000}
+#camVid{width:100%;height:200px;object-fit:cover;display:block}
+.camLn{position:absolute;top:50%;left:10%;right:10%;height:2px;background:#ef4444;box-shadow:0 0 10px #ef4444}
+.tWr{overflow-x:auto;max-height:380px;border:1px solid var(--bd);border-radius:12px;background:#030712}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;text-align:left}
+th{background:#090e1a;color:var(--mt);padding:9px;font-size:9.5px;text-transform:uppercase;position:sticky;top:0}
+td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:middle}
+.dn{opacity:.45;background:rgba(16,185,129,.1)}
+.an{background:rgba(245,158,11,.15);border-left:3px solid var(--or)}
+.pin{background:var(--tf);color:#000;border:2px solid #fff;border-radius:50%;text-align:center;font-weight:900;font-size:11px;line-height:20px}
+.mod{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;align-items:center;justify-content:center;padding:14px}
+.mBx{background:var(--cd);border:1.5px solid var(--tf);border-radius:16px;padding:16px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;text-align:center;max-height:94vh;overflow-y:auto}
+.sig{width:100%;height:90px;background:#fff;border-radius:8px;touch-action:none}
+.eod{display:none}
+</style>
 </head>
 <body>
+<div id="tst"></div>
 
-<div id="toast"></div>
-
-<div id="loginScreen">
-    <div class="login-card">
-        <div class="corp-badge">AES-256 ENCRYPTED TERMINAL</div>
-        <div class="brand-crest">
-            <svg class="svg-icon" style="width:32px;height:32px;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        </div>
-        <h2 class="login-title">SANAND TRUCK</h2>
-        <div class="login-sub">DIVISIONE LOGISTICA & TRASPORTI ESPRESSI</div>
-
-        <div class="inp-grp">
-            <label>1. SELEZIONA UNITÀ OPERATIVA</label>
-            <select id="terminalSelect" class="inp">
-                <option value="TP784-01 • Andres (Direzione Master)">TP784-01 • Andres (Direzione Master)</option>
-                <option value="TP784-02 • Santiago (Direzione Master)" selected>TP784-02 • Santiago (Direzione Master)</option>
-                <option value="TP784-03 • Alcala">TP784-03 • Alcala</option>
-                <option value="TP784-04 • Massimiliano">TP784-04 • Massimiliano</option>
-                <option value="TP784-05 • Gregory">TP784-05 • Gregory</option>
-                <option value="TP784-06 • Oscar">TP784-06 • Oscar</option>
-                <option value="TP784-07 • Morese">TP784-07 • Morese</option>
-                <option value="TP784-08 • Puma">TP784-08 • Puma</option>
-                <option value="TP784-09 • Alessandro">TP784-09 • Alessandro</option>
-                <option value="TP784-10 • Marazzi">TP784-10 • Marazzi</option>
-                <option value="TP784-11 • Motenalla">TP784-11 • Motenalla</option>
-                <option value="TP784-12 • Seby">TP784-12 • Seby</option>
-                <option value="TP784-13 • Stella">TP784-13 • Stella</option>
-                <option value="TP784-14 • Amaya">TP784-14 • Amaya</option>
-                <option value="TP784-15 • Sanchez">TP784-15 • Sanchez</option>
-                <option value="TP784-16 • Modonesi">TP784-16 • Modonesi</option>
-                <option value="TP784-17 • Costin">TP784-17 • Costin</option>
-                <option value="TP784-20 • Kevin">TP784-20 • Kevin</option>
-                <option value="TP784-21 • Alberto">TP784-21 • Alberto</option>
-                <option value="TP784-23 • Fernando">TP784-23 • Fernando</option>
-                <option value="TP784-24 • Marcangeli">TP784-24 • Marcangeli</option>
-                <option value="TP784-25 • RobertoM">TP784-25 • RobertoM</option>
-                <option value="TP784-26 • FabrizioM">TP784-26 • FabrizioM</option>
-                <option value="TP784-27 • Fabrizio">TP784-27 • Fabrizio</option>
-                <option value="TP784-28 • Ait">TP784-28 • Ait</option>
-                <option value="TP784-31 • Venuti">TP784-31 • Venuti</option>
-                <option value="TP784-34 • Tamilia">TP784-34 • Tamilia</option>
-                <option value="TP784-35 • Silvia">TP784-35 • Silvia</option>
-                <option value="TP784-36 • William">TP784-36 • William</option>
-            </select>
-        </div>
-
-        <div class="inp-grp">
-            <label>2. CHIAVE CRITTOGRAFICA SOCIETARIA</label>
-            <input type="password" id="corpSecretKey" class="inp" value="SanAnd1234!">
-        </div>
-
-        <div class="inp-grp">
-            <label>3. PIN OPERATORE / MASTER</label>
-            <input type="password" id="loginPin" class="inp" value="1234">
-        </div>
-
-        <button type="button" class="btn-corp" onclick="handleLogin()">AUTENTICA TERMINALE</button>
-
-        <div style="font-size:10px;color:var(--muted);display:flex;justify-content:space-between;padding-top:6px;">
-            <span>Accesso Riservato Societario</span>
-            <span style="color:var(--tiffany);font-weight:800;">v75.0 READY</span>
-        </div>
-    </div>
+<div id="lSc">
+  <div class="lCd">
+    <div class="bdg">PURVIEW AES-256 VAULT • v90</div>
+    <div class="crst"><svg class="ic" style="width:32px;height:32px" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+    <h2 style="font-size:20px;font-weight:900;color:#fff;margin:0">SANAND TRUCK</h2>
+    <div style="font-size:10px;color:var(--mt);margin-top:-6px;font-weight:600">LOGISTICA ESPRESSA • CRYPTO RMS</div>
+    <div class="ig"><label>1. Unità Operativa (01 - 36)</label><input type="text" id="tId" class="inp" placeholder="Es. 01 o 02" inputmode="numeric" autocomplete="off"></div>
+    <div class="ig"><label>2. Chiave Crittografica Societaria</label><input type="password" id="cKey" class="inp" placeholder="••••••••••••" autocomplete="new-password"></div>
+    <div class="ig"><label>3. PIN Operatore</label><input type="password" id="uPin" class="inp" inputmode="numeric" placeholder="••••" autocomplete="new-password"></div>
+    <button type="button" class="btn" onclick="_0xAuth()">DECRIPTA VAULT & ENTRA</button>
+    <div style="font-size:10px;color:var(--mt);display:flex;justify-content:space-between;padding-top:4px"><span>Scadenza Turno: 22:30</span><span style="color:var(--tf);font-weight:800">PBKDF2 + AES-GCM</span></div>
+  </div>
 </div>
 
-<div id="appMain" class="container">
-    <header>
-        <div>
-            <div style="font-weight:900; font-size:15px; color:#fff;">SANAND TRUCK <span style="background:var(--tiffany); color:#000; font-size:9px; padding:2px 6px; border-radius:4px;">CORP v75</span></div>
-            <div id="lblDriver" style="font-size:11px; color:var(--tiffany); font-weight:700; margin-top:2px;">-</div>
-        </div>
-        <div style="display:flex; gap:6px;">
-            <button class="btn-corp" style="width:auto; padding:8px 12px; font-size:11px; background:#1e293b; color:var(--tiffany);" onclick="speakNext()">🔊 VOCE</button>
-            <button class="btn-corp" style="width:auto; padding:8px 12px; font-size:11px; background:var(--red); color:#fff;" onclick="logout()">ESCI</button>
-        </div>
-    </header>
-
-    <div class="stats">
-        <div class="stat"><b id="stTot">0</b><span>Colli Carico</span></div>
-        <div class="stat"><b id="stDone" style="color:var(--green)">0</b><span>Consegnati</span></div>
-        <div class="stat"><b id="stAnom" style="color:var(--orange)">0</b><span>Giacenze</span></div>
-        <div class="stat"><b id="stCash" style="color:var(--tiffany)">€0</b><span>Cassa COD</span></div>
+<div id="app" class="ct">
+  <header>
+    <div>
+      <div style="font-weight:900;font-size:15px;color:#fff">SANAND TRUCK <span style="background:var(--tf);color:#000;font-size:9px;padding:2px 6px;border-radius:4px">AES-256</span></div>
+      <div id="lblD" style="font-size:11px;color:var(--tf);font-weight:700;margin-top:2px">-</div>
     </div>
-
-    <div id="homeGrid" class="grid">
-        <div class="card" onclick="openSec('secLoad')">
-            <div class="ico"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></div>
-            <div style="pointer-events:none;"><b>Terminale Laser & Carico LIFO</b><div style="font-size:11px;color:var(--muted)">Scansione continua infinita, stivaggio e distinta</div></div>
-        </div>
-        <div class="card" onclick="openSec('secRoute')">
-            <div class="ico"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-            <div style="pointer-events:none;"><b>Tabella di Marcia & VIP Tracking</b><div style="font-size:11px;color:var(--muted)">Ottimizzazione GPS reale, ETA, WhatsApp e firma POD</div></div>
-        </div>
-        <div class="card" onclick="openSec('secMap')">
-            <div class="ico"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></div>
-            <div style="pointer-events:none;"><b>Radar Geografico & Rotta GPS</b><div style="font-size:11px;color:var(--muted)">Tracciato vettoriale tra le fermate e posizione live</div></div>
-        </div>
-        <div class="card" onclick="openSec('secCash')">
-            <div class="ico"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-            <div style="pointer-events:none;"><b>Tesoreria & Contrassegni COD</b><div style="font-size:11px;color:var(--muted)">Calcolatore resto rapido e riconciliazione cassa</div></div>
-        </div>
-        <div class="card" onclick="openSec('secAnom')">
-            <div class="ico" style="color:var(--orange);border-color:var(--orange);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
-            <div style="pointer-events:none;"><b>Centro Gestione Giacenze</b><div style="font-size:11px;color:var(--muted)">Mancate consegne con causali rapide e sblocco</div></div>
-        </div>
-        <div class="card" onclick="openSec('secTools')">
-            <div class="ico" style="color:var(--gold);border-color:var(--gold);"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg></div>
-            <div style="pointer-events:none;"><b>Control Tower & Fine Giornata</b><div style="font-size:11px;color:var(--muted)">Check-list furgone, Report Ufficiale serale e SOS</div></div>
-        </div>
+    <div style="display:flex;gap:5px">
+      <button class="btn" style="width:auto;padding:8px 10px;font-size:10.5px;background:#1e293b;color:var(--tf)" onclick="spk()">🔊</button>
+      <button class="btn" style="width:auto;padding:8px 10px;font-size:10.5px;background:var(--gd);color:#000" onclick="tgEod()">🏁 Fine Giro</button>
+      <button class="btn" style="width:auto;padding:8px 10px;font-size:10.5px;background:var(--rd);color:#fff" onclick="out()">Esci</button>
     </div>
+  </header>
 
-    <div id="secLoad" class="sec">
-        <div class="sec-head"><span>📦 Carico Furgone (Sequenza Infinita)</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <div class="row">
-            <button class="btn-corp" style="background:var(--purple);color:#fff;padding:11px;" onclick="toggleScan()">📷 Scanner Live</button>
-            <button class="btn-corp" style="background:#1e293b;color:var(--tiffany);border:1px solid var(--tiffany);padding:11px;" onclick="el('modBulk').style.display='flex'">📋 Importa Distinta</button>
-        </div>
-        <div id="readerBox"><div id="reader"></div></div>
-        <div class="row">
-            <input id="fCode" class="inp" placeholder="Codice Collo">
-            <select id="fPrio" class="inp"><option value="STD">Standard</option><option value="EXP">⚡ Express H12</option></select>
-        </div>
-        <input id="fAddr" class="inp" placeholder="Indirizzo e Civico (es. Via Tuscolana 450)">
-        <div class="row">
-            <input id="fCity" class="inp" value="Roma">
-            <input id="fPhone" class="inp" type="tel" placeholder="Telefono Cliente">
-        </div>
-        <div class="row">
-            <input id="fCash" class="inp" type="number" step="0.5" placeholder="Contrassegno €">
-            <input id="fNote" class="inp" placeholder="Scala / Citofono">
-        </div>
-        <button class="btn-corp" style="background:var(--green);color:#fff;" onclick="addStop()">➕ Registra Collo & Prepara Successivo</button>
-    </div>
+  <div class="sts">
+    <div class="st"><b id="sT">0</b><span>Colli</span></div>
+    <div class="st"><b id="sD" style="color:var(--gn)">0</b><span>Fatte</span></div>
+    <div class="st"><b id="sA" style="color:var(--or)">0</b><span>Giacenze</span></div>
+    <div class="st"><b id="sC" style="color:var(--tf)">€0</b><span>COD</span></div>
+  </div>
 
-    <div id="secRoute" class="sec">
-        <div class="sec-head"><span>📋 Manifesto di Carico & Ordine LIFO</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <input id="fSearch" class="inp" placeholder="🔍 Cerca spedizione o indirizzo..." oninput="render()">
-        <div class="row">
-            <button class="btn-corp" style="padding:11px;" onclick="optimizeGPS()">🧭 Ottimizza Giro GPS + LIFO</button>
-            <button class="btn-corp" style="padding:11px;background:var(--red);color:#fff;" onclick="resetAll()">🗑️ Azzera Giro</button>
-        </div>
-        <div class="tbl-wrap">
-            <table>
-                <thead><tr><th>Esito</th><th>#</th><th>Tracking & ETA</th><th>Indirizzo & Stiva LIFO</th><th>Azioni VIP</th></tr></thead>
-                <tbody id="tbBody"></tbody>
-            </table>
-        </div>
+  <!-- SMART-HOP: PROSSIMA FERMATA IN PRIMO PIANO -->
+  <div id="nxtCard" class="nextBox">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;font-weight:900;color:var(--tf);letter-spacing:.8px">⚡ PROSSIMA CONSEGNA (SMART-HOP)</span>
+      <span id="nxtEta" style="font-size:11px;font-weight:800;color:var(--gd)"></span>
     </div>
+    <div id="nxtAdr" style="font-size:16px;font-weight:900;color:#fff"></div>
+    <div id="nxtInf" style="font-size:11.5px;color:var(--mt)"></div>
+    <div id="nxtAct" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:4px"></div>
+  </div>
 
-    <div id="secMap" class="sec">
-        <div class="sec-head"><span>🗺️ Radar Geografico & Rotta</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <div id="mapBox"></div>
-        <button class="btn-corp" onclick="optimizeGPS()">⚡ Ricalcola Percorso Ottimale</button>
-    </div>
+  <div id="hGrd" class="grd">
+    <div class="crd" onclick="op('sLd')"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></div><div style="pointer-events:none"><b>1. Scanner Laser & Carico LIFO</b><div style="font-size:11px;color:var(--mt)">Lettore ottico con torcia, multi-collo e manifesti cifrati</div></div></div>
+    <div class="crd" onclick="op('sRt')"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div style="pointer-events:none"><b>2. Tabella di Marcia & e-POD</b><div style="font-size:11px;color:var(--mt)">Ottimizzazione GPS, ricalcolo ritardo e foto timbrata GPS</div></div></div>
+    <div class="crd" onclick="op('sMp')"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></div><div style="pointer-events:none"><b>3. Radar Geografico & Rotta</b><div style="font-size:11px;color:var(--mt)">Tracciato vettoriale e telemetria furgone in tempo reale</div></div></div>
 
-    <div id="secCash" class="sec">
-        <div class="sec-head"><span>💶 Tesoreria & Calcola Resto</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <div class="row">
-            <div class="stat"><b id="cPend" style="color:var(--orange)">€0.00</b><span>Da Incassare</span></div>
-            <div class="stat"><b id="cDone" style="color:var(--green)">€0.00</b><span>Incassati</span></div>
-        </div>
-        <div class="row">
-            <input id="cDue" class="inp" type="number" placeholder="Importo COD €" oninput="calcResto()">
-            <input id="cGiv" class="inp" type="number" placeholder="Banconota €" oninput="calcResto()">
-        </div>
-        <div id="cRes" style="text-align:center;font-weight:900;color:var(--green);font-size:13px;">Resto da consegnare: €0.00</div>
-        <div id="cashList" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;font-size:12px;"></div>
-        <button class="btn-corp" style="background:var(--green);color:#fff;" onclick="msg('✅ Versamento cassa certificato!')">✔️ Certifica Versamento Cassa</button>
-    </div>
+    <!-- MODULI CHIUSURA GIORNATA -->
+    <div class="crd eod" onclick="op('sCs')"><div class="ico" style="color:var(--gn);border-color:var(--gn)"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div style="pointer-events:none"><b>4. Tesoreria & Calcola Resto COD</b><div style="font-size:11px;color:var(--mt)">Riconciliazione incassi e calcolatore resto rapido</div></div></div>
+    <div class="crd eod" onclick="op('sAn')"><div class="ico" style="color:var(--or);border-color:var(--or)"><svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div style="pointer-events:none"><b>5. Riepilogo Giacenze & Rientri</b><div style="font-size:11px;color:var(--mt)">Pacchi non consegnati da scaricare al rientro</div></div></div>
+    <div class="crd eod" onclick="op('sTl')"><div class="ico" style="color:var(--gd);border-color:var(--gd)"><svg class="ic" viewBox="0 0 24 24"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg></div><div style="pointer-events:none"><b>6. Control Tower & Vault Transfer</b><div style="font-size:11px;color:var(--mt)">Esporta giro cifrato .sanand, Report serale e SOS</div></div></div>
+  </div>
 
-    <div id="secAnom" class="sec">
-        <div class="sec-head"><span>⚠️ Centro Giacenze</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <div id="anomList" style="display:flex;flex-direction:column;gap:6px;"></div>
+  <div id="sLd" class="sec">
+    <div class="sHd"><span>📦 Scanner Laser & Carico</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <div class="row">
+      <button class="btn" style="background:var(--pr);color:#fff;padding:12px" onclick="tScn()">📷 Laser Ottico</button>
+      <button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf);padding:12px" onclick="$('mBlk').style.display='flex'">🔐 Importa / Vault</button>
     </div>
+    <div id="camWr">
+      <video id="camVid" playsinline muted></video>
+      <div class="camLn"></div>
+      <div id="rdr" style="display:none"></div>
+      <div style="display:flex;gap:6px;padding:6px;background:#090e1a">
+        <button class="btn" style="background:var(--gd);color:#000;padding:8px;font-size:11px" onclick="tgTorch()">🔦 Torcia</button>
+        <button class="btn" style="background:var(--rd);color:#fff;padding:8px;font-size:11px" onclick="stScn()">Chiudi</button>
+      </div>
+    </div>
+    <div class="row"><input id="fCd" class="inp" placeholder="Codice Collo" oninput="detCar()"><select id="fPr" class="inp"><option value="STD">Standard</option><option value="EXP">⚡ Express H12</option></select></div>
+    <div id="carBdg" style="font-size:10.5px;color:var(--tf);font-weight:800;padding-left:4px">Vettore: SANAND EXPRESS</div>
+    <input id="fAd" class="inp" placeholder="Indirizzo e Civico (es. Via Tuscolana 450)">
+    <div class="row"><input id="fCt" class="inp" value="Roma"><input id="fPh" class="inp" type="tel" placeholder="Telefono Cliente"></div>
+    <div class="row"><input id="fCs" class="inp" type="number" step="0.5" placeholder="Contrassegno €"><input id="fNt" class="inp" placeholder="Scala / Citofono"></div>
+    <button class="btn" style="background:var(--gn);color:#fff" onclick="addS()">➕ Registra Collo (Auto-Raggruppa Civico)</button>
+  </div>
 
-    <div id="secTools" class="sec">
-        <div class="sec-head"><span>👑 Control Tower & Fine Giornata</span><button class="btn-corp" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff;" onclick="closeSec()">Indietro</button></div>
-        <div class="row">
-            <input id="vPlate" class="inp" placeholder="Targa Furgone">
-            <input id="vKm" class="inp" type="number" placeholder="KM Attuali">
-        </div>
-        <button class="btn-corp" style="background:#1e293b;color:var(--green);border:1px solid var(--green);" onclick="msg('🚚 Check-list mezzo salvata!')">✔️ Certifica Idoneità Mezzo</button>
-        <button class="btn-corp" style="background:var(--gold);color:#000;" onclick="sendReport()">📊 Emetti Report Ufficiale Fine Giornata</button>
-        <button class="btn-corp" style="background:var(--red);color:#fff;" onclick="sendSOS()">🚨 Invia Segnale SOS Georeferenziato</button>
+  <div id="sRt" class="sec">
+    <div class="sHd"><span>📋 Tabella di Marcia & Stiva LIFO</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <input id="fSr" class="inp" placeholder="🔍 Cerca codice, via o vettore..." oninput="rnd()">
+    <div class="row">
+      <button class="btn" style="padding:11px" onclick="optG()">🧭 Ottimizza GPS + ETA</button>
+      <button class="btn" style="padding:11px;background:var(--rd);color:#fff" onclick="rst()">🗑️ Azzera Giro</button>
     </div>
+    <div class="tWr"><table><thead><tr><th>Esito</th><th>#</th><th>Colli & Vettore</th><th>Destinazione & Stiva</th><th>Azioni</th></tr></thead><tbody id="tBd"></tbody></table></div>
+  </div>
+
+  <div id="sMp" class="sec">
+    <div class="sHd"><span>🗺️ Radar Geografico & Rotta</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <div id="mBox"></div>
+    <button class="btn" onclick="optG()">⚡ Ricalcola Rotta Più Breve</button>
+  </div>
+
+  <div id="sCs" class="sec">
+    <div class="sHd"><span>💶 Tesoreria Fine Giornata</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <div class="row"><div class="st"><b id="cPn" style="color:var(--or)">€0.00</b><span>Da Incassare</span></div><div class="st"><b id="cDn" style="color:var(--gn)">€0.00</b><span>Incassati</span></div></div>
+    <div class="row"><input id="cDu" class="inp" type="number" placeholder="Importo COD €" oninput="cRst()"><input id="cGv" class="inp" type="number" placeholder="Banconota €" oninput="cRst()"></div>
+    <div id="cRs" style="text-align:center;font-weight:900;color:var(--gn);font-size:13px">Resto da consegnare: €0.00</div>
+    <div id="cLs" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;font-size:12px"></div>
+    <button class="btn" style="background:var(--gn);color:#fff" onclick="msg('✅ Versamento cassa certificato!')">✔️ Certifica Versamento Cassa</button>
+  </div>
+
+  <div id="sAn" class="sec">
+    <div class="sHd"><span>⚠️ Riepilogo Giacenze & Rientri</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <div id="aLs" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <div id="sTl" class="sec">
+    <div class="sHd"><span>👑 Control Tower & Purview Vault</span><button class="btn" style="width:auto;padding:6px 12px;font-size:11px;background:#334155;color:#fff" onclick="cl()">Indietro</button></div>
+    <button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf)" onclick="expVault()">🔐 Esporta Giro Cifrato (SANAND_VAULT)</button>
+    <div class="row"><input id="vPl" class="inp" placeholder="Targa Furgone"><input id="vKm" class="inp" type="number" placeholder="KM Attuali"></div>
+    <button class="btn" style="background:#1e293b;color:var(--gn);border:1px solid var(--gn)" onclick="msg('🚚 Check-list mezzo salvata!')">✔️ Certifica Idoneità Mezzo</button>
+    <button class="btn" style="background:var(--gd);color:#000" onclick="sRep()">📊 Invia Report Ufficiale Fine Giornata</button>
+    <button class="btn" style="background:var(--rd);color:#fff" onclick="sSos()">🚨 Invia Posizione SOS Emergenza</button>
+  </div>
 </div>
 
-<div id="modBulk" class="modal">
-    <div class="modal-box">
-        <b style="color:var(--tiffany)">📋 Importa Distinta Multipla</b>
-        <small style="color:var(--muted)">Una per riga: Indirizzo, Città, Telefono, Contrassegno</small>
-        <textarea id="txtBulk" class="inp" rows="5" placeholder="Via Tuscolana 450, Roma, 3331234567, 0&#10;Viale Marconi 120, Roma, 3409876543, 25.50"></textarea>
-        <div class="row">
-            <button class="btn-corp" style="background:#334155;color:#fff;" onclick="el('modBulk').style.display='none'">Annulla</button>
-            <button class="btn-corp" style="background:var(--green);color:#fff;" onclick="importBulk()">Carica Tutte</button>
-        </div>
-    </div>
-</div>
+<!-- MODALE IMPORTA DISTINTA O PACCHETTO CIFRATO SANAND_VAULT -->
+<div id="mBlk" class="mod"><div class="mBx"><b style="color:var(--tf)">🔐 Carica Distinta o Pacchetto Cifrato</b><small style="color:var(--mt)">Incolla un codice <b>SANAND_VAULT://...</b> oppure righe: Indirizzo, Città, Tel, COD</small><textarea id="tBlk" class="inp" rows="5" placeholder="Incolla SANAND_VAULT://... oppure:&#10;Via Tuscolana 450, Roma, 3331234567, 0"></textarea><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mBlk').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="iBlk()">Decifra & Carica</button></div></div></div>
 
-<div id="modPod" class="modal">
-    <div class="modal-box">
-        <b id="podTit" style="color:var(--tiffany)">Certifica Consegna (e-POD)</b>
-        <div id="podOtp" style="font-size:11px;color:var(--gold);font-weight:bold;"></div>
-        <canvas id="sigCnv" class="sig"></canvas>
-        <button class="btn-corp" style="background:#334155;color:#fff;padding:6px;font-size:10px;" onclick="clearSig()">Pulisci Firma</button>
-        <div class="row">
-            <button class="btn-corp" style="background:#334155;color:#fff;" onclick="el('modPod').style.display='none'">Annulla</button>
-            <button class="btn-corp" style="background:var(--green);color:#fff;" onclick="confirmPod()">✔️ Conferma e-POD</button>
-        </div>
-    </div>
-</div>
+<!-- MODALE e-POD CON TIMBRO FOTOGRAFICO GPS + FIRMA -->
+<div id="mPod" class="mod"><div class="mBx"><b id="pTit" style="color:var(--tf)">Certifica Consegna (e-POD)</b><div id="pOtp" style="font-size:11px;color:var(--gd);font-weight:bold"></div><button class="btn" style="background:#1e293b;color:var(--tf);border:1px solid var(--tf);padding:9px;font-size:11px" onclick="snapGeoPhoto()">📸 Scatta Foto con Timbro GPS & Ora</button><img id="geoPrev" style="display:none;width:100%;max-height:130px;object-fit:cover;border-radius:8px;border:1px solid var(--gn)"><canvas id="sCnv" class="sig"></canvas><button class="btn" style="background:#334155;color:#fff;padding:6px;font-size:10px" onclick="cSig()">Pulisci Firma</button><div class="row"><button class="btn" style="background:#334155;color:#fff" onclick="$('mPod').style.display='none'">Annulla</button><button class="btn" style="background:var(--gn);color:#fff" onclick="cfPod()">✔️ Conferma e-POD</button></div></div></div>
 
-<div id="modAnom" class="modal">
-    <div class="modal-box">
-        <b style="color:var(--orange)">⚠️ Causale Mancata Consegna</b>
-        <button class="btn-corp" style="background:#030712;color:#fff;border:1px solid var(--orange);" onclick="setAnom('Destinatario Assente')">1. Destinatario Assente</button>
-        <button class="btn-corp" style="background:#030712;color:#fff;border:1px solid var(--orange);" onclick="setAnom('Indirizzo Errato / Incompleto')">2. Indirizzo Errato</button>
-        <button class="btn-corp" style="background:#030712;color:#fff;border:1px solid var(--orange);" onclick="setAnom('Rifiutato dal Cliente')">3. Pacco Rifiutato</button>
-        <button class="btn-corp" style="background:#030712;color:#fff;border:1px solid var(--orange);" onclick="setAnom('Attività Chiusa')">4. Attività Chiusa</button>
-        <button class="btn-corp" style="background:#334155;color:#fff;" onclick="el('modAnom').style.display='none'">Annulla</button>
-    </div>
-</div>
+<!-- MODALE GIACENZA -->
+<div id="mAnm" class="mod"><div class="mBx"><b style="color:var(--or)">⚠️ Causale Mancata Consegna</b><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Destinatario Assente')">1. Destinatario Assente</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Indirizzo Errato')">2. Indirizzo Errato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Rifiutato dal Cliente')">3. Pacco Rifiutato</button><button class="btn" style="background:#030712;color:#fff;border:1px solid var(--or)" onclick="sAnm('Attività Chiusa')">4. Attività Chiusa</button><button class="btn" style="background:#334155;color:#fff" onclick="$('mAnm').style.display='none'">Annulla</button></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script src="https://unpkg.com/html5-qrcode" defer></script>
 <script>
-// Rimuove eventuali vecchi Service Worker bloccati
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (let r of regs) r.unregister();
-    });
+if('serviceWorker'in navigator)navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()));
+const $=id=>document.getElementById(id),msg=t=>{let b=$('tst');b.textContent=t;b.style.display='block';setTimeout(()=>b.style.display='none',2600)};
+const bp=()=>{try{let a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator();o.frequency.value=1950;o.connect(a.destination);o.start();o.stop(a.currentTime+.07)}catch(e){}};
+
+// MOTORE CRITTOGRAFICO NATIVO WEB CRYPTO API (PBKDF2 + AES-GCM-256 STILE MICROSOFT PURVIEW)
+const _h=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)};
+const _FLT="QW5kcmVzfFNhbnRpYWdvfEFsY2FsYXxNYXNzaW1pbGlhbm98R3JlZ29yeXxPc2NhcnxNb3Jlc2V8UHVtYXxBbGVzc2FuZHJvfE1hcmF6eml8TW90ZW5hbGxhfFNlYnl8U3RlbGxhfEFtYXlhfFNhbmNoZXp8TW9kb25lc2l8Q29zdGlufEtldmlufEFsYmVydG98RmVybmFuZG98TWFyY2FuZ2VsaXxSb2JlcnRvTXxGYWJyaXppb018RmFicml6aW98QWl0fFZlbnV0aXxUYW1pbGlhfFNpbHZpYXxXaWxsaWFt";
+const _UNT=["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","20","21","23","24","25","26","27","28","31","34","35","36"];
+const _KH="5c21968f";
+let aesKey=null,drv="",rows=[],mp=null,mks=[],ln=null,uP={lat:41.9028,lng:12.4964},cIdx=null,qr=null,camStr=null,scanTmr=null,torchOn=false,cnv=null,ctx=null,drw=false,tries=0,eodForce=false,podImg=null;
+
+async function deriveAesKey(pass){
+  const enc=new TextEncoder();
+  const mat=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt:enc.encode("SANAND_PURVIEW_SALT_2026"),iterations:100000,hash:"SHA-256"},mat,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
 }
 
-var currentDriver = "", rows = [], map = null, markers = [], line = null, uPos = {lat:41.9028, lng:12.4964}, curIdx = null, qr = null, cnv = null, ctx = null, draw = false;
-function el(id) { return document.getElementById(id); }
-function msg(t) { var b = el('toast'); if(b){ b.textContent = t; b.style.display = 'block'; setTimeout(function(){ b.style.display = 'none'; }, 2600); } }
-function beep() { try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 1900; o.connect(a.destination); o.start(); o.stop(a.currentTime + 0.07); } catch(e){} }
+async function encryptVault(obj){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const data=new TextEncoder().encode(JSON.stringify(obj));
+  const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},aesKey,data);
+  const packed=new Uint8Array(iv.length+cipher.byteLength);
+  packed.set(iv,0);packed.set(new Uint8Array(cipher),iv.length);
+  return "SANAND_VAULT://"+btoa(String.fromCharCode(...packed));
+}
 
-function handleLogin() {
-    var sel = el('terminalSelect');
-    var key = (el('corpSecretKey').value || "").trim().toLowerCase();
-    var pin = (el('loginPin').value || "").trim().toLowerCase();
-    var chosen = sel ? sel.value : "TP784-02 • Santiago";
-    if (key !== "sanand1234!" && pin !== "1234" && pin !== "0000" && pin !== "sanand1234!") {
-        msg("❌ Inserisci SanAnd1234! oppure PIN 1234 / 0000"); return;
+async function decryptVault(str){
+  const raw=Uint8Array.from(atob(str.replace("SANAND_VAULT://","").trim()),c=>c.charCodeAt(0));
+  const iv=raw.slice(0,12),cipher=raw.slice(12);
+  const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},aesKey,cipher);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+// Controllo scadenza turno (Revoca automatica alle 22:30)
+function checkShiftExpiry(){
+  let now=new Date();
+  if(now.getHours()>22||(now.getHours()===22&&now.getMinutes()>=30)){
+    msg("⏰ Turno terminato (22:30). Revoca accesso per sicurezza.");
+    setTimeout(out,1500);
+  }
+}
+
+async function _0xAuth(){
+  if(tries>=4){msg("🚨 Terminale bloccato.");return}
+  let raw=($('tId').value||"").replace(/\D/g,'').slice(-2).padStart(2,'0');
+  let k=($('cKey').value\vert{}\vert{}"").trim(),p=($('uPin').value||"").trim(),idx=_UNT.indexOf(raw);
+  if(idx===-1){msg("⚠️ Unità non valida (es. 01 - 36)");return}
+  if(_h(k)!==_KH){tries++;msg("❌ Chiave Societaria errata ("+tries+"/4)");return}
+  let pH=_h(p);
+  if(pH!==_h("1234")&&pH!==_h("0000")&&pH!==_KH){tries++;msg("❌ PIN errato");return}
+  if((raw==="01"||raw==="02")&&pH===_h("0000")){msg("⚠️ PIN Direzione richiesto per Master");return}
+
+  aesKey=await deriveAesKey(k);
+  let nm=(atob(_FLT).split('|')[idx]||"OPERATORE").toUpperCase();
+  drv=`TP784-${raw} • ${nm}${(raw==="01"||raw==="02")?" [MASTER]":""}`;
+  $('cKey').value="";$('uPin').value="";
+  bp();$('lSc').style.display='none';$('app').style.display='flex';$('lblD').textContent=drv;
+  try{rows=JSON.parse(sessionStorage.getItem('s90_rt')||"[]")}catch(e){rows=[]}
+  nCd();rf();setInterval(checkShiftExpiry,60000);
+  if(navigator.geolocation)navigator.geolocation.watchPosition(x=>{uP={lat:x.coords.latitude,lng:x.coords.longitude}},()=>{},{enableHighAccuracy:true});
+}
+
+function out(){stScn();sessionStorage.clear();aesKey=null;drv="";rows=[];location.reload()}
+function op(id){$('hGrd').style.display='none';document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));$(id).classList.add('act');if(id==='sLd')nCd();if(id==='sMp')setTimeout(dMp,180);window.scrollTo(0,0)}
+function cl(){stScn();document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));$('hGrd').style.display='grid'}
+function nCd(){let c="SAN-"+String(rows.length+1).padStart(3,'0')+"-"+(1000+(crypto.getRandomValues(new Uint16Array(1))[0]%9000));if($('fCd'))$('fCd').value=c;detCar();return c}
+
+function detCar(){
+  let c=($('fCd').value||"").toUpperCase().trim(),v="SANAND EXPRESS";
+  if(c.startsWith("TBA"))v="AMAZON LOGISTICS";
+  else if(c.startsWith("LP")||c.startsWith("1Z")||c.startsWith("3S"))v="POSTE / SDA / UPS";
+  else if(c.startsWith("JJD")||c.length===10)v="DHL EXPRESS";
+  else if(c.length===12&&/^\d+$/.test(c))v="BRT BARTOLINI";
+  else if(c.startsWith("GLS")||c.length===11)v="GLS ITALY";
+  if($('carBdg'))$('carBdg').textContent="Vettore Rilevato: "+v;
+  return v;
+}
+
+async function tScn(){
+  if($('camWr').style.display==='block'){stScn();return}$('camWr').style.display='block';
+  try{
+    camStr=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
+    let v=$('camVid');v.srcObject=camStr;await v.play();
+    if('BarcodeDetector'in window){
+      let det=new BarcodeDetector({formats:['code_128','ean_13','qr_code','code_39']});
+      scanTmr=setInterval(async()=>{try{let b=await det.detect(v);if(b&&b.length){bp();$('fCd').value=b[0].rawValue;detCar();stScn();msg("📷 Letto: "+b[0].rawValue);$('fAd').focus()}}catch(e){}},220);
+    }else if(typeof Html5Qrcode!=='undefined'){
+      v.style.display='none';$('rdr').style.display='block';qr=new Html5Qrcode("rdr");
+      qr.start({facingMode:"environment"},{fps:12,qrbox:{width:240,height:110}},t=>{bp();$('fCd').value=t;detCar();stScn();msg("📷 Letto: "+t);$('fAd').focus()},()=>{});
     }
-    currentDriver = chosen;
-    try { localStorage.setItem('san_v75_driver', currentDriver); } catch(e){}
-    beep();
-    el('loginScreen').style.display = 'none';
-    el('appMain').style.display = 'flex';
-    el('lblDriver').textContent = currentDriver;
-    initApp();
+  }catch(e){stScn();nCd();msg("⚡ Fotocamera non disponibile, codice generato")}
 }
 
-function logout() { try { localStorage.removeItem('san_v75_driver'); } catch(e){} location.reload(); }
+async function tgTorch(){if(!camStr)return;try{let trk=camStr.getVideoTracks()[0];torchOn=!torchOn;await trk.applyConstraints({advanced:[{torch:torchOn}]});msg(torchOn?"🔦 Torcia ON":"🔦 Torcia OFF")}catch(e){msg("⚠️ Torcia non supportata")}}
+function stScn(){if(scanTmr){clearInterval(scanTmr);scanTmr=null}if(camStr){camStr.getTracks().forEach(t=>t.stop());camStr=null}if(qr){try{qr.stop()}catch(e){}qr=null}torchOn=false;if($('camVid')){$('camVid').style.display='block';$('camVid').srcObject=null}if($('rdr'))$('rdr').style.display='none';if($('camWr'))$('camWr').style.display='none'}
+function fCrd(a){let h=0;for(let i=0;i<a.length;i++)h=a.charCodeAt(i)+((h<<5)-h);return{lat:41.895+((h%100)/2400),lon:12.495+(((h>>4)%100)/2400)}}
 
-function initApp() {
-    try { rows = JSON.parse(localStorage.getItem('san_v75_rows') || "[]"); } catch(e){ rows = []; }
-    nextCode(); refresh();
-    if (navigator.geolocation) navigator.geolocation.watchPosition(function(p){ uPos = {lat:p.coords.latitude, lng:p.coords.longitude}; }, function(){}, {enableHighAccuracy:true});
-}
-
-function openSec(id) {
-    el('homeGrid').style.display = 'none';
-    var s = document.querySelectorAll('.sec');
-    for (var i = 0; i < s.length; i++) s[i].classList.remove('active');
-    el(id).classList.add('active');
-    if (id === 'secLoad') nextCode();
-    if (id === 'secMap') setTimeout(drawMap, 200);
-    window.scrollTo(0, 0);
-}
-
-function closeSec() {
-    if (qr) { try { qr.stop(); } catch(e){} el('readerBox').style.display = 'none'; }
-    var s = document.querySelectorAll('.sec');
-    for (var i = 0; i < s.length; i++) s[i].classList.remove('active');
-    el('homeGrid').style.display = 'grid';
-}
-
-function nextCode() {
-    var c = "SAN-" + String(rows.length + 1).padStart(3, '0') + "-" + Math.floor(1000 + Math.random() * 9000);
-    if (el('fCode')) el('fCode').value = c;
-    return c;
-}
-
-function toggleScan() {
-    var b = el('readerBox');
-    if (b.style.display === 'block') { b.style.display = 'none'; if (qr) qr.stop(); return; }
-    if (typeof Html5Qrcode === 'undefined') { nextCode(); msg("⚡ Codice generato"); return; }
-    b.style.display = 'block';
-    qr = new Html5Qrcode("reader");
-    qr.start({facingMode:"environment"}, {fps:10, qrbox:220}, function(txt){
-        beep(); el('fCode').value = txt; b.style.display = 'none'; qr.stop(); msg("📷 Letto: " + txt);
-    }, function(){}).catch(function(){ b.style.display = 'none'; nextCode(); });
-}
-
-function fallbackCoords(addr) {
-    var h = 0; for (var i = 0; i < addr.length; i++) h = addr.charCodeAt(i) + ((h << 5) - h);
-    return {lat: 41.895 + ((h % 100) / 2400), lon: 12.495 + (((h >> 4) % 100) / 2400)};
-}
-
-async function addStop() {
-    var addr = (el('fAddr').value || "").trim();
-    if (!addr) { msg("⚠️ Inserisci l'indirizzo!"); return; }
-    var code = (el('fCode').value || "").trim() || nextCode();
-    var city = (el('fCity').value || "").trim() || "Roma";
-    var pt = fallbackCoords(addr);
-    try {
-        var r = await fetch("https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(addr + ", " + city + ", Italy") + "&limit=1");
-        var d = await r.json();
-        if (d && d.length) pt = {lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon)};
-    } catch(e){}
-    rows.push({
-        code: code, addr: addr, city: city, phone: (el('fPhone').value || "").trim(),
-        cash: parseFloat(el('fCash').value) || 0, note: (el('fNote').value || "").trim(),
-        prio: el('fPrio').value, otp: Math.floor(1000 + Math.random() * 9000),
-        lat: pt.lat, lon: pt.lon, eta: "--:--", km: 0, status: "WAIT", reason: ""
-    });
-    beep(); el('fAddr').value = ""; el('fPhone').value = ""; el('fCash').value = ""; el('fNote').value = "";
-    nextCode(); refresh(); msg("✅ Collo #" + rows.length + " registrato! Inserisci il successivo.");
-}
-
-function importBulk() {
-    var lines = (el('txtBulk').value || "").split('\n');
-    var added = 0;
-    for (var i = 0; i < lines.length; i++) {
-        var l = lines[i].trim();
-        if (l.length > 3) {
-            var p = l.split(',');
-            var pt = fallbackCoords(p[0]);
-            rows.push({
-                code: nextCode(), addr: (p[0]||"").trim(), city: (p[1]||"Roma").trim(), phone: (p[2]||"").trim(),
-                cash: parseFloat(p[3]) || 0, note: "", prio: "STD", otp: Math.floor(1000 + Math.random() * 9000),
-                lat: pt.lat, lon: pt.lon, eta: "--:--", km: 0, status: "WAIT", reason: ""
-            });
-            added++;
-        }
-    }
-    el('modBulk').style.display = 'none'; el('txtBulk').value = ""; beep(); refresh(); msg("🚀 Caricate " + added + " spedizioni!");
-}
-
-function dist(a1, o1, a2, o2) {
-    var R = 6371, dLat = (a2 - a1) * Math.PI / 180, dLon = (o2 - o1) * Math.PI / 180;
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(a1 * Math.PI / 180) * Math.cos(a2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function optimizeGPS() {
-    if (!rows.length) { msg("⚠️ Nessun collo in lista!"); return; }
-    var wait = rows.filter(function(r){ return r.status === 'WAIT'; });
-    var done = rows.filter(function(r){ return r.status !== 'WAIT'; });
-    var sorted = [], cLat = uPos.lat, cLon = uPos.lng, mins = 5, now = new Date();
-    while (wait.length > 0) {
-        var bIdx = 0, bScore = 999999;
-        for (var i = 0; i < wait.length; i++) {
-            var d = dist(cLat, cLon, wait[i].lat, wait[i].lon) * (wait[i].prio === 'EXP' ? 0.35 : 1);
-            if (d < bScore) { bScore = d; bIdx = i; }
-        }
-        var nxt = wait.splice(bIdx, 1)[0];
-        var dKm = dist(cLat, cLon, nxt.lat, nxt.lon);
-        nxt.km = dKm.toFixed(1);
-        mins += Math.max(4, Math.round((dKm / 25) * 60) + 4);
-        nxt.eta = new Date(now.getTime() + mins * 60000).toTimeString().slice(0, 5);
-        cLat = nxt.lat; cLon = nxt.lon; sorted.push(nxt);
-    }
-    rows = sorted.concat(done); beep(); refresh(); drawMap(); msg("🧭 Giro ottimizzato per KM reali + LIFO!");
-}
-
-function refresh() {
-    try { localStorage.setItem('san_v75_rows', JSON.stringify(rows)); } catch(e){}
-    var done = rows.filter(function(r){ return r.status === 'DONE'; }).length;
-    var anom = rows.filter(function(r){ return r.status === 'ANOM'; }).length;
-    el('stTot').textContent = rows.length; el('stDone').textContent = done; el('stAnom').textContent = anom;
-    var cPend = 0, cDone = 0;
-    for (var i = 0; i < rows.length; i++) {
-        if (rows[i].cash > 0) { if (rows[i].status === 'DONE') cDone += rows[i].cash; else if (rows[i].status === 'WAIT') cPend += rows[i].cash; }
-    }
-    el('stCash').textContent = "€" + (cPend + cDone).toFixed(0);
-    el('cPend').textContent = "€" + cPend.toFixed(2); el('cDone').textContent = "€" + cDone.toFixed(2);
-    render();
-    if (rows.length > 0 && (done + anom) === rows.length) setTimeout(function(){ msg("🌙 Giro completato! Emetti il Report di Fine Giornata."); }, 600);
-}
-
-function render() {
-    var q = (el('fSearch').value || "").toLowerCase();
-    var html = "", cHtml = "", aHtml = "";
-    for (var i = 0; i < rows.length; i++) {
-        var r = rows[i];
-        if (r.cash > 0) cHtml += '<div style="display:flex;justify-content:space-between;background:#030712;padding:8px;border-radius:6px;"><span>#' + (i+1) + ' ' + r.addr + ' (' + r.status + ')</span><b>€' + r.cash.toFixed(2) + '</b></div>';
-        if (r.status === 'ANOM') aHtml += '<div style="display:flex;justify-content:space-between;align-items:center;background:#030712;padding:8px;border-radius:8px;border:1px solid var(--orange);"><div><b>#' + (i+1) + ' ' + r.addr + '</b><br><small style="color:var(--orange)">' + r.reason + '</small></div><button class="btn-corp" style="width:auto;padding:6px 10px;font-size:10px;" onclick="rows[' + i + '].status=\'WAIT\';refresh()">Riconsegna</button></div>';
-        if (r.addr.toLowerCase().indexOf(q) === -1 && r.code.toLowerCase().indexOf(q) === -1) continue;
-        var lifo = (i + 1) / rows.length <= 0.34 ? "Zona A (Portellone)" : (i + 1) / rows.length <= 0.67 ? "Zona B (Centro)" : "Zona C (Fondo)";
-        var nav = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(r.addr + ", " + r.city);
-        var waTxt = "💎 *SANAND TRUCK EXPRESS*\nConsegna *" + r.code + "* in *" + r.addr + "*.\n📍 Fermata #" + (i + 1) + " (ETA: " + r.eta + ")\n" + (r.cash > 0 ? "💶 COD: €" + r.cash.toFixed(2) + "\n" : "") + "🔐 OTP: *" + r.otp + "*";
-        var wa = "https://wa.me/" + (r.phone ? "39" + r.phone : "") + "?text=" + encodeURIComponent(waTxt);
-        var cls = r.status === 'DONE' ? 'done' : (r.status === 'ANOM' ? 'anom' : '');
-        html += '<tr class="' + cls + '">' +
-            '<td><button class="btn-corp" style="padding:6px;font-size:10px;background:' + (r.status === 'DONE' ? 'var(--green)' : 'var(--purple)') + ';color:#fff;" onclick="openPod(' + i + ')">' + (r.status === 'DONE' ? '✔️' : 'e-POD') + '</button>' +
-            '<button class="btn-corp" style="padding:6px;font-size:10px;background:var(--orange);margin-top:3px;" onclick="curIdx=' + i + ';el(\'modAnom\').style.display=\'flex\'">⚠️</button></td>' +
-            '<td><b>#' + (i + 1) + '</b><br><small style="color:var(--muted)">' + (r.km || 0) + 'km</small></td>' +
-            '<td><b style="color:var(--tiffany)">' + r.code + '</b><br><small style="color:var(--gold)">⏱️ ' + r.eta + '</small></td>' +
-            '<td><b>' + r.addr + '</b><br><small style="color:var(--muted)">📦 ' + lifo + (r.cash > 0 ? ' • <b style="color:var(--red)">€' + r.cash + '</b>' : '') + '</small></td>' +
-            '<td><div style="display:flex;gap:4px;"><a href="' + nav + '" target="_blank"><button class="btn-corp" style="padding:6px 8px;font-size:10px;">🚀</button></a>' +
-            (r.phone ? '<a href="tel:' + r.phone + '"><button class="btn-corp" style="padding:6px 8px;font-size:10px;background:var(--blue);color:#fff;">📞</button></a>' : '') +
-            '<a href="' + wa + '" target="_blank"><button class="btn-corp" style="padding:6px 8px;font-size:10px;background:var(--green);color:#fff;">💬</button></a></div></td></tr>';
-    }
-    el('tbBody').innerHTML = html || '<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--muted)">Nessun collo in manifesto.</td></tr>';
-    el('cashList').innerHTML = cHtml || '<div style="text-align:center;color:var(--muted)">Nessun contrassegno.</div>';
-    el('anomList').innerHTML = aHtml || '<div style="text-align:center;color:var(--muted)">Nessuna giacenza.</div>';
-}
-
-function drawMap() {
-    if (typeof L === 'undefined') return;
-    if (!map) { map = L.map('mapBox').setView([uPos.lat, uPos.lng], 12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
-    map.invalidateSize();
-    for (var m = 0; m < markers.length; m++) map.removeLayer(markers[m]);
-    markers = []; if (line) map.removeLayer(line);
-    var pts = [[uPos.lat, uPos.lng]];
-    for (var i = 0; i < rows.length; i++) {
-        var r = rows[i]; if (r.status === 'WAIT') pts.push([r.lat, r.lon]);
-        var col = r.status === 'DONE' ? 'var(--green)' : (r.status === 'ANOM' ? 'var(--orange)' : 'var(--tiffany)');
-        var ic = L.divIcon({className:'', html:'<div class="pin" style="background:' + col + '">' + (i + 1) + '</div>', iconSize:[24,24]});
-        markers.push(L.marker([r.lat, r.lon], {icon:ic}).addTo(map).bindPopup('#' + (i + 1) + ' ' + r.addr));
-    }
-    if (pts.length > 1) { line = L.polyline(pts, {color:'#00f2fe', weight:3}).addTo(map); map.fitBounds(L.latLngBounds(pts), {padding:[20,20]}); }
-}
-
-function openPod(i) {
-    curIdx = i; el('podTit').textContent = "Consegna #" + (i + 1) + ": " + rows[i].code;
-    el('podOtp').textContent = "🔐 OTP Cliente: " + rows[i].otp; el('modPod').style.display = 'flex';
-    setTimeout(function() {
-        cnv = el('sigCnv'); ctx = cnv.getContext('2d'); cnv.width = cnv.offsetWidth || 300; cnv.height = 90; ctx.lineWidth = 2.2;
-        var pos = function(e) { var r = cnv.getBoundingClientRect(), t = e.touches ? e.touches[0] : e; return {x: t.clientX - r.left, y: t.clientY - r.top}; };
-        cnv.onmousedown = cnv.ontouchstart = function(e) { draw = true; ctx.beginPath(); var p = pos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-        cnv.onmousemove = cnv.ontouchmove = function(e) { if (!draw) return; var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-        cnv.onmouseup = cnv.ontouchend = function() { draw = false; };
-    }, 60);
-}
-function clearSig() { if (ctx && cnv) ctx.clearRect(0, 0, cnv.width, cnv.height); }
-function confirmPod() { rows[curIdx].status = 'DONE'; el('modPod').style.display = 'none'; beep(); refresh(); msg("✅ Consegna certificata!"); }
-function setAnom(rs) { rows[curIdx].status = 'ANOM'; rows[curIdx].reason = rs; el('modAnom').style.display = 'none'; refresh(); msg("⚠️ Giacenza registrata"); }
-function calcResto() { var d = (parseFloat(el('cGiv').value) || 0) - (parseFloat(el('cDue').value) || 0); el('cRes').textContent = d >= 0 ? "Resto da consegnare: €" + d.toFixed(2) : "Mancano: €" + Math.abs(d).toFixed(2); }
-function speakNext() {
-    var n = rows.find(function(r){ return r.status === 'WAIT'; });
-    if (!n) { msg("✔️ Giro completato!"); return; }
-    if ('speechSynthesis' in window) { var u = new SpeechSynthesisUtterance("Prossima fermata: " + n.addr); u.lang = 'it-IT'; speechSynthesis.speak(u); }
-    msg("🔊 " + n.addr);
-}
-function sendReport() {
-    var d = rows.filter(function(r){ return r.status === 'DONE'; }).length, a = rows.filter(function(r){ return r.status === 'ANOM'; }).length, c = 0;
-    rows.forEach(function(r){ if (r.status === 'DONE') c += r.cash; });
-    var txt = "💎 *REPORT FINE GIORNATA SANAND TRUCK*\nUnità: " + currentDriver + "\n📦 Totali: " + rows.length + " | ✅ Fatte: " + d + " | ⚠️ Giacenze: " + a + "\n💶 Incasso COD: €" + c.toFixed(2);
-    window.open("https://wa.me/?text=" + encodeURIComponent(txt), '_blank');
-}
-function sendSOS() { window.open("https://wa.me/?text=" + encodeURIComponent("🚨 SOS FLOTTA SANAND (" + currentDriver + "): https://www.google.com/maps?q=" + uPos.lat + "," + uPos.lng), '_blank'); }
-function resetAll() { if (confirm("Confermi l'azzeramento del giro?")) { rows = []; refresh(); } }
-
-window.addEventListener('DOMContentLoaded', function() {
-    try {
-        var saved = localStorage.getItem('san_v75_driver');
-        if (saved) { currentDriver = saved; el('loginScreen').style.display = 'none'; el('appMain').style.display = 'flex'; el('lblDriver').textContent = currentDriver; initApp(); }
-    } catch(e){}
-});
-</script>
-</body>
-</html>
+// Aggiunta Collo con Auto-Raggruppamento Multi-Collo sullo stesso civico
+async function addS(){
+  let ad=($('fAd').value||"").trim();if(!ad){msg("⚠️ Inserisci l'indirizzo!");return}
+  let cd=($('fCd').value||"").trim()||nCd(),ct=($('fCt').value\vert{}\vert{}"").trim()\vert{}\vert{}"Roma",cr=detCar(),cs=parseFloat($('fCs').value)||0;
+  let existing=rows.find(r=>r.st==='WAIT'&&r.ad.toLowerCase()===ad.toLowerCase());
+  if(existing){
+    existing.cd+=" + "+cd;existing.pkgs=(existing.pkgs||1)+1;existing.cs+=cs;
+    bp();$('fAd').value="";$('fPh').value="";$('f
